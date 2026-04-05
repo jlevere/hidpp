@@ -1,0 +1,60 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    name: Rust ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [test, clippy, fmt]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Install system deps
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev libxkbcommon-dev
+
+      - name: cargo test
+        if: matrix.check == 'test'
+        run: cargo test --workspace --exclude hidpp-web
+
+      - name: cargo clippy
+        if: matrix.check == 'clippy'
+        run: cargo clippy --workspace --exclude hidpp-web -- -D warnings
+
+      - name: cargo fmt
+        if: matrix.check == 'fmt'
+        run: cargo fmt --all -- --check
+
+  web:
+    name: Web checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@main
+      - uses: DeterminateSystems/magic-nix-cache-action@main
+      - uses: oven-sh/setup-bun@v2
+
+      - name: Build WASM
+        run: nix develop --command bash -c "wasm-pack build crates/hidpp-web --target web --out-dir ../../web/pkg"
+
+      - name: Check frontend
+        working-directory: web
+        run: |
+          bun install --frozen-lockfile
+          bun run check

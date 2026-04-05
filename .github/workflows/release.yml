@@ -1,0 +1,191 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    name: Build ${{ matrix.target }}
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: aarch64-apple-darwin
+            runner: macos-14
+            os: macos
+          - target: x86_64-apple-darwin
+            runner: macos-13
+            os: macos
+          - target: x86_64-unknown-linux-gnu
+            runner: ubuntu-latest
+            os: linux
+          - target: x86_64-pc-windows-msvc
+            runner: windows-latest
+            os: windows
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: release-${{ matrix.target }}
+
+      - name: Install Linux deps
+        if: matrix.os == 'linux'
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev libxkbcommon-dev
+
+      - name: Build release binaries
+        run: cargo build --release --target ${{ matrix.target }} -p hidpp-cli -p hidpp-daemon
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Package (Unix)
+        if: matrix.os != 'windows'
+        shell: bash
+        run: |
+          STAGING="hidpp-${{ steps.version.outputs.version }}-${{ matrix.target }}"
+          mkdir -p "${STAGING}"
+
+          cp "target/${{ matrix.target }}/release/hidpp" "${STAGING}/"
+          cp "target/${{ matrix.target }}/release/hidppd" "${STAGING}/"
+
+          if [ "${{ matrix.os }}" = "macos" ]; then
+            cp dist/macos/com.hidpp.daemon.plist "${STAGING}/"
+            cp dist/macos/install.sh "${STAGING}/"
+            cp dist/macos/uninstall.sh "${STAGING}/"
+            chmod +x "${STAGING}/install.sh" "${STAGING}/uninstall.sh"
+          fi
+
+          if [ "${{ matrix.os }}" = "linux" ]; then
+            cp dist/linux/hidppd.service "${STAGING}/"
+            cp dist/linux/install.sh "${STAGING}/"
+            cp dist/linux/uninstall.sh "${STAGING}/"
+            cp udev/99-hidpp.rules "${STAGING}/"
+            chmod +x "${STAGING}/install.sh" "${STAGING}/uninstall.sh"
+          fi
+
+          "target/${{ matrix.target }}/release/hidppd" sample-config > "${STAGING}/config.toml.sample" 2>/dev/null || true
+
+          tar czf "${STAGING}.tar.gz" "${STAGING}"
+          echo "ASSET=${STAGING}.tar.gz" >> "$GITHUB_ENV"
+
+      - name: Package (Windows)
+        if: matrix.os == 'windows'
+        shell: pwsh
+        run: |
+          $version = "${{ steps.version.outputs.version }}"
+          $staging = "hidpp-${version}-${{ matrix.target }}"
+          New-Item -ItemType Directory -Path $staging
+
+          Copy-Item "target/${{ matrix.target }}/release/hidpp.exe" $staging/
+          Copy-Item "target/${{ matrix.target }}/release/hidppd.exe" $staging/
+
+          Compress-Archive -Path $staging -DestinationPath "${staging}.zip"
+          echo "ASSET=${staging}.zip" >> $env:GITHUB_ENV
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.target }}
+          path: ${{ env.ASSET }}
+
+  dmg:
+    name: macOS Universal DMG
+    needs: build
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download arm64 build
+        uses: actions/download-artifact@v4
+        with:
+          name: aarch64-apple-darwin
+
+      - name: Download x86_64 build
+        uses: actions/download-artifact@v4
+        with:
+          name: x86_64-apple-darwin
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Create universal DMG
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          DMG_DIR="dmg-staging"
+          mkdir -p "${DMG_DIR}"
+
+          tar xzf "hidpp-${VERSION}-aarch64-apple-darwin.tar.gz"
+          tar xzf "hidpp-${VERSION}-x86_64-apple-darwin.tar.gz"
+
+          ARM_DIR="hidpp-${VERSION}-aarch64-apple-darwin"
+          X86_DIR="hidpp-${VERSION}-x86_64-apple-darwin"
+
+          # Universal binaries via lipo.
+          lipo -create "${ARM_DIR}/hidpp" "${X86_DIR}/hidpp" -output "${DMG_DIR}/hidpp"
+          lipo -create "${ARM_DIR}/hidppd" "${X86_DIR}/hidppd" -output "${DMG_DIR}/hidppd"
+          chmod +x "${DMG_DIR}/hidpp" "${DMG_DIR}/hidppd"
+
+          # Copy supporting files.
+          cp "${ARM_DIR}/com.hidpp.daemon.plist" "${DMG_DIR}/"
+          cp "${ARM_DIR}/install.sh" "${DMG_DIR}/"
+          cp "${ARM_DIR}/uninstall.sh" "${DMG_DIR}/"
+          cp "${ARM_DIR}/config.toml.sample" "${DMG_DIR}/" 2>/dev/null || true
+          chmod +x "${DMG_DIR}/install.sh" "${DMG_DIR}/uninstall.sh"
+
+          DMG_NAME="hidpp-${VERSION}-macos-universal.dmg"
+          hdiutil create -volname "hidpp ${VERSION}" \
+            -srcfolder "${DMG_DIR}" \
+            -ov -format UDZO \
+            "${DMG_NAME}"
+
+          echo "DMG_ASSET=${DMG_NAME}" >> "$GITHUB_ENV"
+
+      - name: Upload DMG
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-universal-dmg
+          path: ${{ env.DMG_ASSET }}
+
+  release:
+    name: GitHub Release
+    needs: [build, dmg]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          merge-multiple: true
+
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: hidpp ${{ github.ref_name }}
+          draft: false
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          generate_release_notes: true
+          files: |
+            hidpp-*.tar.gz
+            hidpp-*.zip
+            hidpp-*.dmg
