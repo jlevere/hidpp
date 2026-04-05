@@ -401,19 +401,16 @@ impl WasmDevice {
     #[wasm_bindgen(js_name = getFeatures)]
     pub fn get_features(&self) -> JsValue {
         let inner = self.inner.borrow();
-        let features: Vec<serde_json::Value> = inner
-            .features
-            .iter()
-            .map(|(id, idx)| {
-                let name = hidpp::feature_id::feature_name(*id).unwrap_or("Unknown");
-                serde_json::json!({
-                    "id": format!("0x{:04X}", id.0),
-                    "index": idx.0,
-                    "name": name,
-                })
-            })
-            .collect();
-        serde_wasm_bindgen::to_value(&features).unwrap_or(JsValue::NULL)
+        let arr = js_sys::Array::new();
+        for (id, idx) in &inner.features {
+            let name = hidpp::feature_id::feature_name(*id).unwrap_or("Unknown");
+            let obj = js_sys::Object::new();
+            let _ = js_sys::Reflect::set(&obj, &"id".into(), &format!("0x{:04X}", id.0).into());
+            let _ = js_sys::Reflect::set(&obj, &"index".into(), &idx.0.into());
+            let _ = js_sys::Reflect::set(&obj, &"name".into(), &name.into());
+            arr.push(&obj);
+        }
+        arr.into()
     }
 
     /// Read battery status. Returns `{percentage, level, charging}`.

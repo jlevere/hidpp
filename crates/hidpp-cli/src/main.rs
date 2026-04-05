@@ -307,10 +307,25 @@ async fn cmd_get(setting: &str) -> anyhow::Result<()> {
                 let name = hidpp_device::DeviceProfile::by_pid("b034")
                     .and_then(|p| p.button_name(c.cid))
                     .unwrap_or("?");
+                // Also read current reporting state.
+                let reporting = device.special_key_reporting(c.cid).await;
+                let status = match &reporting {
+                    Ok(r) => {
+                        let mut parts = vec![];
+                        if r.is_diverted() { parts.push("diverted"); }
+                        if r.raw_xy_enabled() { parts.push("rawXY"); }
+                        if r.persist_enabled() { parts.push("persist"); }
+                        if r.remapped_cid != c.cid && r.remapped_cid != 0 {
+                            parts.push("remapped");
+                        }
+                        if parts.is_empty() { "default".to_string() } else { parts.join("+") }
+                    }
+                    Err(_) => "?".to_string(),
+                };
                 println!(
-                    "CID {:>3} (0x{:04X}) → TID {:>3}  {:<15} divert={} persist={} virtual={}",
-                    c.cid, c.cid, c.tid, name,
-                    c.is_divertable(), c.is_persistently_divertable(), c.is_virtual(),
+                    "CID {:>3} (0x{:04X}) → TID {:>3}  {:<15} [{}]  caps: divert={} persist={}",
+                    c.cid, c.cid, c.tid, name, status,
+                    c.is_divertable(), c.is_persistently_divertable(),
                 );
             }
         }
@@ -345,6 +360,29 @@ async fn cmd_set(setting: &str, value: &str) -> anyhow::Result<()> {
                 "SmartShift: {:?}, auto_disengage={}, torque={}",
                 applied.mode, applied.auto_disengage, applied.tunable_torque,
             );
+        }
+        "button" => {
+            // Format: "CID:action" e.g. "82:divert" or "195:remap:82" or "82:default"
+            let parts: Vec<&str> = value.split(':').collect();
+            let cid: u16 = parts.first().ok_or_else(|| anyhow::anyhow!("usage: button CID:action"))?.parse()?;
+            let action = parts.get(1).copied().unwrap_or("default");
+
+            match action {
+                "divert" => {
+                    let result = device.special_key_set_reporting(cid, 0x01, 0, 0).await?;
+                    println!("CID {cid}: diverted={}", result.is_diverted());
+                }
+                "undivide" | "default" => {
+                    let result = device.special_key_set_reporting(cid, 0x00, 0, 0).await?;
+                    println!("CID {cid}: diverted={}", result.is_diverted());
+                }
+                "remap" => {
+                    let target: u16 = parts.get(2).ok_or_else(|| anyhow::anyhow!("usage: button CID:remap:TARGET_CID"))?.parse()?;
+                    let result = device.special_key_set_reporting(cid, 0x00, target, 0).await?;
+                    println!("CID {cid}: remapped to CID {}", result.remapped_cid);
+                }
+                _ => anyhow::bail!("button actions: divert, default, remap:CID"),
+            }
         }
         "wheel" => {
             let mut mode = device.hires_wheel_get_mode().await?;

@@ -20,7 +20,7 @@ web-sys = { workspace = true, features = [
     "console",
     "Window",
 ] }
-serde-wasm-bindgen = { workspace = true }
+# serde-wasm-bindgen removed — caused "undefined" bugs. Using js_sys::Object directly.
 
 [lints.rust]
 unsafe_code = "deny"
