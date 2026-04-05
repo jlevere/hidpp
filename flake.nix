@@ -76,9 +76,32 @@
             cp ${hidpp-daemon}/bin/hidppd "$out/Applications/HID++.app/Contents/MacOS/hidppd"
             cp ${hidpp-cli}/bin/hidpp "$out/Applications/HID++.app/Contents/MacOS/hidpp"
 
-            # Launchd plist (with expanded path to .app binary).
-            mkdir -p "$out/share"
-            cp ${./dist/macos/com.hidpp.daemon.plist} "$out/share/com.hidpp.daemon.plist"
+          '';
+        };
+
+        # macOS .dmg for distribution.
+        # Opens with the .app and an alias to /Applications for drag-to-install.
+        hidpp-dmg = pkgs.stdenv.mkDerivation {
+          pname = "hidpp-dmg";
+          version = "0.1.1";
+          src = ./bundle;
+
+          buildInputs = [ hidpp-app ];
+
+          # hdiutil requires native macOS — this only builds on darwin.
+          buildPhase = ''
+            mkdir -p dmg-staging
+            cp -R ${hidpp-app}/Applications/HID++.app dmg-staging/
+            ln -s /Applications dmg-staging/Applications
+          '';
+
+          # Nix sandbox doesn't have /usr/bin in PATH — use absolute path.
+          installPhase = ''
+            mkdir -p "$out"
+            /usr/bin/hdiutil create -volname "HID++" \
+              -srcfolder dmg-staging \
+              -ov -format UDZO \
+              "$out/HID++.dmg"
           '';
         };
 
@@ -105,6 +128,7 @@
           daemon = hidpp-daemon;
           cli = hidpp-cli;
           app = hidpp-app;
+          dmg = hidpp-dmg;
         };
 
         checks = {
