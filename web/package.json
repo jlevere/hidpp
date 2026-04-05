@@ -1,0 +1,20 @@
+{
+  "name": "logi-re-web",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "bunx playwright test",
+    "test:ui": "bunx playwright test --ui"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.59.1",
+    "typescript": "^5.7",
+    "vite": "^6.2",
+    "vite-plugin-top-level-await": "^1.5",
+    "vite-plugin-wasm": "^3.4"
+  }
+}

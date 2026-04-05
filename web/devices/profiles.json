@@ -1,0 +1,5066 @@
+[
+  {
+    "name": "Actions Ring",
+    "model_id": "10000000",
+    "type": "VIRTUAL_DEVICE",
+    "depot": "88b73d28-24d8-47bd-84a2-c45cad5640d3",
+    "buttons": [
+      408,
+      409,
+      410,
+      411,
+      412,
+      413,
+      414,
+      415
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    }
+  },
+  {
+    "name": "Alto Keys K75M",
+    "model_id": "2b396",
+    "type": "KEYBOARD",
+    "depot": "0625d7ab-68d0-4622-b01e-a3fd806530d7",
+    "buttons": [
+      423,
+      259,
+      264,
+      266,
+      284,
+      229,
+      231,
+      232,
+      233,
+      419,
+      420,
+      421,
+      422
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b396"
+    ]
+  },
+  {
+    "name": "Alto Keys K98M",
+    "model_id": "2b38e",
+    "type": "KEYBOARD",
+    "depot": "2dbc7b2a-4334-409f-b9f3-48349591ad00",
+    "buttons": [
+      423,
+      259,
+      264,
+      266,
+      284,
+      229,
+      231,
+      232,
+      233,
+      419,
+      420,
+      421
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b38e"
+    ]
+  },
+  {
+    "name": "Brio",
+    "model_id": "085e",
+    "type": "CAMERA",
+    "depot": "brio",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "085e"
+    ]
+  },
+  {
+    "name": "Brio 100",
+    "model_id": "094c",
+    "type": "CAMERA",
+    "depot": "81fd3fde-3da2-464e-9c41-768f32a00f76",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "094c"
+    ]
+  },
+  {
+    "name": "Brio 101",
+    "model_id": "094d",
+    "type": "CAMERA",
+    "depot": "39d71f7b-8b8f-4253-a702-be66ca2e99a7",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "094d"
+    ]
+  },
+  {
+    "name": "Brio 105 for Business",
+    "model_id": "094b",
+    "type": "CAMERA",
+    "depot": "d8cb42a2-d48d-42ba-a5b2-9d64cd4a9ef0",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "094b"
+    ]
+  },
+  {
+    "name": "Brio 1080p Webcam",
+    "model_id": "094e",
+    "type": "CAMERA",
+    "depot": "brio_3xx",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "094e"
+    ]
+  },
+  {
+    "name": "Brio 300",
+    "model_id": "0942",
+    "type": "CAMERA",
+    "depot": "brio_3xx",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0942"
+    ]
+  },
+  {
+    "name": "Brio 301",
+    "model_id": "0945",
+    "type": "CAMERA",
+    "depot": "brio_3xx",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0945"
+    ]
+  },
+  {
+    "name": "Brio 305",
+    "model_id": "0917",
+    "type": "CAMERA",
+    "depot": "brio_3xx",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0917"
+    ]
+  },
+  {
+    "name": "Brio 4k Stream",
+    "model_id": "086b",
+    "type": "CAMERA",
+    "depot": "brio_4k",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "086b"
+    ]
+  },
+  {
+    "name": "Brio 500",
+    "model_id": "0943",
+    "type": "CAMERA",
+    "depot": "brio_500",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "046d",
+      "0943"
+    ]
+  },
+  {
+    "name": "Brio 501",
+    "model_id": "0946",
+    "type": "CAMERA",
+    "depot": "brio_501",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "046d",
+      "0946"
+    ]
+  },
+  {
+    "name": "Brio 505",
+    "model_id": "0919",
+    "type": "CAMERA",
+    "depot": "brio_505",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "046d",
+      "0919"
+    ]
+  },
+  {
+    "name": "Brio 90",
+    "model_id": "0949",
+    "type": "CAMERA",
+    "depot": "915d6c56-e268-4cde-8d74-1f8b936e41f6",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0949"
+    ]
+  },
+  {
+    "name": "Brio 95 for Business",
+    "model_id": "094a",
+    "type": "CAMERA",
+    "depot": "5b7d18a6-eef7-4fed-9448-571dcd0e0718",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "094a"
+    ]
+  },
+  {
+    "name": "C270",
+    "model_id": "0825",
+    "type": "CAMERA",
+    "depot": "c270",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0825"
+    ]
+  },
+  {
+    "name": "C920",
+    "model_id": "082d",
+    "type": "CAMERA",
+    "depot": "c920",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "082d"
+    ]
+  },
+  {
+    "name": "C920",
+    "model_id": "0892",
+    "type": "CAMERA",
+    "depot": "c920",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0892"
+    ]
+  },
+  {
+    "name": "C920",
+    "model_id": "08e5",
+    "type": "CAMERA",
+    "depot": "c920",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "08e5"
+    ]
+  },
+  {
+    "name": "C920c",
+    "model_id": "08b7",
+    "type": "CAMERA",
+    "depot": "c920c",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "08b7"
+    ]
+  },
+  {
+    "name": "C920e",
+    "model_id": "08e7",
+    "type": "CAMERA",
+    "depot": "c920e",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "08e7"
+    ]
+  },
+  {
+    "name": "C920e",
+    "model_id": "08b6",
+    "type": "CAMERA",
+    "depot": "c920e",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "08b6"
+    ]
+  },
+  {
+    "name": "C922",
+    "model_id": "0883",
+    "type": "CAMERA",
+    "depot": "c922",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0883"
+    ]
+  },
+  {
+    "name": "C922",
+    "model_id": "0894",
+    "type": "CAMERA",
+    "depot": "c922",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0894"
+    ]
+  },
+  {
+    "name": "C922",
+    "model_id": "085c",
+    "type": "CAMERA",
+    "depot": "c922",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "085c"
+    ]
+  },
+  {
+    "name": "C925e",
+    "model_id": "085b",
+    "type": "CAMERA",
+    "depot": "c925e",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "085b"
+    ]
+  },
+  {
+    "name": "C930c",
+    "model_id": "0891",
+    "type": "CAMERA",
+    "depot": "c930c",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0891"
+    ]
+  },
+  {
+    "name": "C930e",
+    "model_id": "0843",
+    "type": "CAMERA",
+    "depot": "c930e",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0843"
+    ]
+  },
+  {
+    "name": "C930n",
+    "model_id": "091c",
+    "type": "CAMERA",
+    "depot": "c930n",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "091c"
+    ]
+  },
+  {
+    "name": "C930s",
+    "model_id": "091b",
+    "type": "CAMERA",
+    "depot": "c930s",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "091b"
+    ]
+  },
+  {
+    "name": "Casa Keys",
+    "model_id": "2b371",
+    "type": "KEYBOARD",
+    "depot": "dcd5ad10-9c9a-11ed-a8fc-0242ac120002",
+    "buttons": [
+      264,
+      259,
+      266,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      284
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b371"
+    ]
+  },
+  {
+    "name": "Casa Touch",
+    "model_id": "2bb00",
+    "type": "TOUCHPAD",
+    "depot": "a817dc42-9c9a-11ed-a8fc-0242ac120002",
+    "buttons": [],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "bb00"
+    ]
+  },
+  {
+    "name": "Craft",
+    "model_id": "6b350",
+    "type": "KEYBOARD",
+    "depot": "craft",
+    "buttons": [
+      199,
+      200,
+      224,
+      225,
+      255,
+      110,
+      226,
+      227,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      10,
+      191,
+      234,
+      111
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "6b350",
+      "4066",
+      "b350"
+    ]
+  },
+  {
+    "name": "ERGO M575S Trackball",
+    "model_id": "2b041",
+    "type": "TRACKBALL",
+    "depot": "e93f22c4-fca9-4bcd-a756-33bcd09d6a79",
+    "buttons": [
+      82,
+      83,
+      86
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b041"
+    ]
+  },
+  {
+    "name": "Ergo K860",
+    "model_id": "6b359",
+    "type": "KEYBOARD",
+    "depot": "ergo_k860",
+    "buttons": [
+      199,
+      200,
+      224,
+      256,
+      110,
+      212,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      191,
+      10,
+      111,
+      234
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b359",
+      "4088"
+    ]
+  },
+  {
+    "name": "Ergo K860 for Business",
+    "model_id": "2b364",
+    "type": "KEYBOARD",
+    "depot": "ergo_k860_for_business",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      264,
+      266,
+      284,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      110,
+      212,
+      10,
+      111
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b364"
+    ]
+  },
+  {
+    "name": "Ergo M575",
+    "model_id": "6b027",
+    "type": "TRACKBALL",
+    "depot": "m575",
+    "buttons": [
+      82,
+      83,
+      86
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4096",
+      "b027"
+    ]
+  },
+  {
+    "name": "Ergo M575 for Business",
+    "model_id": "2b02f",
+    "type": "MOUSE",
+    "depot": "m575_for_business",
+    "buttons": [
+      82,
+      83,
+      86
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b02f"
+    ]
+  },
+  {
+    "name": "Flip Folio",
+    "model_id": "2b398",
+    "type": "KEYBOARD",
+    "depot": "c291e5a1-58e8-40a0-8cfe-141160df0ac5",
+    "buttons": [
+      199,
+      200,
+      212,
+      224,
+      264,
+      266,
+      321,
+      231,
+      232,
+      233
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b398"
+    ]
+  },
+  {
+    "name": "Flip Folio",
+    "model_id": "2b399",
+    "type": "KEYBOARD",
+    "depot": "564a3417-e7d2-477d-b648-59ace1d4b45e",
+    "buttons": [
+      199,
+      200,
+      212,
+      224,
+      264,
+      266,
+      321,
+      231,
+      232,
+      233
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b399"
+    ]
+  },
+  {
+    "name": "K370 for Business",
+    "model_id": "2b37f",
+    "type": "KEYBOARD",
+    "depot": "d172c429-6eb7-4c2f-b52e-73be21d1adad",
+    "buttons": [
+      246,
+      239,
+      240,
+      241,
+      242,
+      243,
+      244,
+      245,
+      333,
+      334,
+      335,
+      336,
+      229,
+      231,
+      232,
+      233,
+      199,
+      200,
+      110,
+      111,
+      10,
+      266
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b37f"
+    ]
+  },
+  {
+    "name": "K370s/K375s",
+    "model_id": "6b34c",
+    "type": "KEYBOARD",
+    "depot": "k375s",
+    "buttons": [
+      213,
+      214,
+      189,
+      191,
+      212,
+      221,
+      10
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "4061",
+      "b34c"
+    ]
+  },
+  {
+    "name": "K380",
+    "model_id": "1b342",
+    "type": "KEYBOARD",
+    "depot": "k380",
+    "buttons": [
+      187,
+      186,
+      188,
+      189,
+      190,
+      191,
+      192,
+      193
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b342"
+    ]
+  },
+  {
+    "name": "K380 for Mac",
+    "model_id": "1b362",
+    "type": "KEYBOARD",
+    "depot": "k380_mac",
+    "buttons": [
+      199,
+      200,
+      224,
+      225
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b362"
+    ]
+  },
+  {
+    "name": "K400 Plus",
+    "model_id": "4404d",
+    "type": "KEYBOARD",
+    "depot": "k400_plus",
+    "buttons": [
+      84,
+      34,
+      8,
+      79,
+      62,
+      110,
+      145,
+      149,
+      40,
+      64,
+      194
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "404d"
+    ]
+  },
+  {
+    "name": "K400 Professional",
+    "model_id": "44068",
+    "type": "KEYBOARD",
+    "depot": "k400_pro",
+    "buttons": [
+      84,
+      34,
+      8,
+      79,
+      62,
+      110,
+      145,
+      149,
+      111,
+      64,
+      194
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "4068"
+    ]
+  },
+  {
+    "name": "K480",
+    "model_id": "1b33d",
+    "type": "KEYBOARD",
+    "depot": "k480",
+    "buttons": [
+      187,
+      186,
+      188,
+      189,
+      62,
+      191,
+      194
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b33d"
+    ]
+  },
+  {
+    "name": "K480",
+    "model_id": "b33c",
+    "type": "KEYBOARD",
+    "depot": "k480",
+    "buttons": [
+      187,
+      186,
+      188,
+      189,
+      62,
+      191,
+      194
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b33c"
+    ]
+  },
+  {
+    "name": "K480",
+    "model_id": "b330",
+    "type": "KEYBOARD",
+    "depot": "k480",
+    "buttons": [
+      187,
+      186,
+      188,
+      189,
+      62,
+      191,
+      194
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b330"
+    ]
+  },
+  {
+    "name": "K540/K545",
+    "model_id": "4076",
+    "type": "KEYBOARD",
+    "depot": "k545",
+    "buttons": [
+      84,
+      87,
+      238,
+      12,
+      62,
+      73,
+      70,
+      110,
+      111,
+      34
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "4076"
+    ]
+  },
+  {
+    "name": "K580/K585",
+    "model_id": "6b35a",
+    "type": "KEYBOARD",
+    "depot": "k580",
+    "buttons": [
+      254,
+      224,
+      189,
+      212,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b35a",
+      "4089"
+    ]
+  },
+  {
+    "name": "K600 TV",
+    "model_id": "6b353",
+    "type": "KEYBOARD",
+    "depot": "k600",
+    "buttons": [
+      214,
+      199,
+      200,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      213,
+      189,
+      186,
+      212
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "4078",
+      "b353"
+    ]
+  },
+  {
+    "name": "K780",
+    "model_id": "6b33b",
+    "type": "KEYBOARD",
+    "depot": "k780",
+    "buttons": [
+      213,
+      214,
+      189,
+      212
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "405b",
+      "b33b"
+    ]
+  },
+  {
+    "name": "K800",
+    "model_id": "4406e",
+    "type": "KEYBOARD",
+    "depot": "k800",
+    "buttons": [
+      34,
+      14,
+      62,
+      8,
+      64,
+      40,
+      10
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "406e"
+    ]
+  },
+  {
+    "name": "K830",
+    "model_id": "6b335",
+    "type": "KEYBOARD",
+    "depot": "k830",
+    "buttons": [
+      84,
+      34,
+      8,
+      79,
+      62,
+      110,
+      145,
+      40,
+      64,
+      194
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "404c",
+      "b335"
+    ]
+  },
+  {
+    "name": "K830",
+    "model_id": "4032",
+    "type": "KEYBOARD",
+    "depot": "k830_4032",
+    "buttons": [
+      144,
+      145,
+      12,
+      149,
+      110,
+      62,
+      34,
+      40,
+      8,
+      64
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "4032"
+    ]
+  },
+  {
+    "name": "K840",
+    "model_id": "8c33b",
+    "type": "KEYBOARD",
+    "depot": "k840",
+    "buttons": [
+      34,
+      14,
+      62,
+      10,
+      40
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "c33b"
+    ]
+  },
+  {
+    "name": "K850",
+    "model_id": "6b34d",
+    "type": "KEYBOARD",
+    "depot": "k850",
+    "buttons": [
+      213,
+      214,
+      189,
+      212,
+      194,
+      221,
+      10
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "4062",
+      "b34d"
+    ]
+  },
+  {
+    "name": "Keys-To-Go 2",
+    "model_id": "2b38c",
+    "type": "KEYBOARD",
+    "depot": "0e035a79-730a-41ac-85f4-c51bfaff8a72",
+    "buttons": [
+      199,
+      200,
+      224,
+      264,
+      266,
+      321,
+      231,
+      232,
+      233
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b38c"
+    ]
+  },
+  {
+    "name": "Keys-To-Go 2",
+    "model_id": "2b38d",
+    "type": "KEYBOARD",
+    "depot": "16aef976-a03c-44f3-a5db-9c6443bf8570",
+    "buttons": [
+      199,
+      200,
+      224,
+      264,
+      266,
+      321,
+      231,
+      232,
+      233,
+      285
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b38d"
+    ]
+  },
+  {
+    "name": "LIFT",
+    "model_id": "2b031",
+    "type": "MOUSE",
+    "depot": "mx_vertical_mini",
+    "buttons": [
+      82,
+      83,
+      86,
+      253
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b031"
+    ]
+  },
+  {
+    "name": "LIFT for Business",
+    "model_id": "2b033",
+    "type": "MOUSE",
+    "depot": "mx_vertical_mini_for_business",
+    "buttons": [
+      82,
+      83,
+      86,
+      253
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b033"
+    ]
+  },
+  {
+    "name": "Litra Beam",
+    "model_id": "8c901",
+    "type": "ILLUMINATION_LIGHT",
+    "depot": "litra_beam",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "c901",
+      "b901",
+      "c902"
+    ]
+  },
+  {
+    "name": "Litra Glow",
+    "model_id": "8c900",
+    "type": "ILLUMINATION_LIGHT",
+    "depot": "litra_glow",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "c900"
+    ]
+  },
+  {
+    "name": "Logi Bolt USB-A receiver",
+    "model_id": "c548",
+    "type": "RECEIVER",
+    "depot": "c548",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "ab07",
+      "c548"
+    ]
+  },
+  {
+    "name": "Logi R500 Receiver",
+    "model_id": "c540",
+    "type": "RECEIVER",
+    "depot": "c540",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "c540"
+    ]
+  },
+  {
+    "name": "Logi Spotlight Receiver",
+    "model_id": "c53e",
+    "type": "RECEIVER",
+    "depot": "c53e",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "c53e"
+    ]
+  },
+  {
+    "name": "Logi USB receiver",
+    "model_id": "c52f",
+    "type": "RECEIVER",
+    "depot": "c52f",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "c52f"
+    ]
+  },
+  {
+    "name": "Logi USB receiver",
+    "model_id": "c534",
+    "type": "RECEIVER",
+    "depot": "c534",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "c534"
+    ]
+  },
+  {
+    "name": "Logi Unifying receiver",
+    "model_id": "c52b",
+    "type": "RECEIVER",
+    "depot": "c52b",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "aaad",
+      "aaac",
+      "aaaa",
+      "aaae",
+      "aaf8",
+      "aae5",
+      "c52b"
+    ]
+  },
+  {
+    "name": "M240 Silent",
+    "model_id": "2b03a",
+    "type": "MOUSE",
+    "depot": "760a0d12-4016-465a-94cc-51b4826eee39",
+    "buttons": [
+      82
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b03a"
+    ]
+  },
+  {
+    "name": "M240 Silent for Business",
+    "model_id": "2b03b",
+    "type": "MOUSE",
+    "depot": "e190fefb-4b37-4557-96f6-fbd57f0d80ba",
+    "buttons": [
+      82
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b03b"
+    ]
+  },
+  {
+    "name": "M275/M280/M320/M330/M331",
+    "model_id": "44057",
+    "type": "MOUSE",
+    "depot": "m280",
+    "buttons": [
+      82
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4057"
+    ]
+  },
+  {
+    "name": "M275/M280/M320/M330/M331",
+    "model_id": "4040",
+    "type": "MOUSE",
+    "depot": "m280",
+    "buttons": [
+      82
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4040"
+    ]
+  },
+  {
+    "name": "M275/M280/M320/M330/M331",
+    "model_id": "44058",
+    "type": "MOUSE",
+    "depot": "m280",
+    "buttons": [
+      82
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4058"
+    ]
+  },
+  {
+    "name": "M325",
+    "model_id": "44094",
+    "type": "MOUSE",
+    "depot": "m325",
+    "buttons": [
+      82,
+      83,
+      86
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4094"
+    ]
+  },
+  {
+    "name": "M335",
+    "model_id": "44050",
+    "type": "MOUSE",
+    "depot": "m335",
+    "buttons": [
+      82,
+      83,
+      86,
+      204
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4050"
+    ]
+  },
+  {
+    "name": "M336 / M337 / M535",
+    "model_id": "1b016",
+    "type": "MOUSE",
+    "depot": "m337",
+    "buttons": [
+      82,
+      206,
+      207,
+      208
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b016"
+    ]
+  },
+  {
+    "name": "M336/M337/M535",
+    "model_id": "1b014",
+    "type": "MOUSE",
+    "depot": "m336",
+    "buttons": [
+      82,
+      206,
+      207,
+      208
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b014"
+    ]
+  },
+  {
+    "name": "M500s",
+    "model_id": "8c093",
+    "type": "MOUSE",
+    "depot": "m500s",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "c093"
+    ]
+  },
+  {
+    "name": "M510",
+    "model_id": "44051",
+    "type": "MOUSE",
+    "depot": "m510",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4051"
+    ]
+  },
+  {
+    "name": "M545/M546",
+    "model_id": "44052",
+    "type": "MOUSE",
+    "depot": "m545_m546",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4052"
+    ]
+  },
+  {
+    "name": "M570",
+    "model_id": "41028",
+    "type": "TRACKBALL",
+    "depot": "m570",
+    "buttons": [
+      82,
+      83,
+      86
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "1028"
+    ]
+  },
+  {
+    "name": "M585/M590",
+    "model_id": "6b01b",
+    "type": "MOUSE",
+    "depot": "m585",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93
+    ],
+    "hosts": 2,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "406b",
+      "b01b"
+    ]
+  },
+  {
+    "name": "M705",
+    "model_id": "4101b",
+    "type": "MOUSE",
+    "depot": "m705_lcc",
+    "buttons": [
+      82,
+      83,
+      86,
+      89,
+      91,
+      93
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "101b"
+    ]
+  },
+  {
+    "name": "M705",
+    "model_id": "4406d",
+    "type": "MOUSE",
+    "depot": "m705",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "406d"
+    ]
+  },
+  {
+    "name": "M720 TRIATHLON",
+    "model_id": "6b015",
+    "type": "MOUSE",
+    "depot": "m720_triathlon",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93,
+      208
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "405e",
+      "b015"
+    ]
+  },
+  {
+    "name": "MX Anywhere",
+    "model_id": "41017",
+    "type": "MOUSE",
+    "depot": "mx_anywhere",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "1017"
+    ]
+  },
+  {
+    "name": "MX Anywhere 2",
+    "model_id": "6b013",
+    "type": "MOUSE",
+    "depot": "mx_anywhere_2",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "404a",
+      "b013"
+    ]
+  },
+  {
+    "name": "MX Anywhere 2",
+    "model_id": "6b018",
+    "type": "MOUSE",
+    "depot": "mx_anywhere_2_restage",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b018",
+      "4063"
+    ]
+  },
+  {
+    "name": "MX Anywhere 2",
+    "model_id": "6b01f",
+    "type": "MOUSE",
+    "depot": "mx_anywhere_2_cr",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4072",
+      "b01f"
+    ]
+  },
+  {
+    "name": "MX Anywhere 2S",
+    "model_id": "6b01a",
+    "type": "MOUSE",
+    "depot": "mx_anywhere_2s",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b01a",
+      "406a"
+    ]
+  },
+  {
+    "name": "MX Anywhere 3",
+    "model_id": "6b025",
+    "type": "MOUSE",
+    "depot": "mx_anywhere_3",
+    "buttons": [
+      82,
+      83,
+      86,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b025",
+      "4090"
+    ]
+  },
+  {
+    "name": "MX Anywhere 3 for Business",
+    "model_id": "2b02d",
+    "type": "MOUSE",
+    "depot": "mx_anywhere_3_for_business",
+    "buttons": [
+      82,
+      83,
+      86,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b02d"
+    ]
+  },
+  {
+    "name": "MX Anywhere 3S",
+    "model_id": "2b037",
+    "type": "MOUSE",
+    "depot": "5d30ec43-b3f7-45e9-8a86-d5d087a27682",
+    "buttons": [
+      82,
+      83,
+      86,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": true,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "dpi": {
+      "min": 200,
+      "max": 4000,
+      "default": 1000,
+      "step": 50
+    },
+    "pids": [
+      "b037"
+    ]
+  },
+  {
+    "name": "MX Anywhere 3S for Business",
+    "model_id": "2b038",
+    "type": "MOUSE",
+    "depot": "8583f89a-6654-4f8e-aeee-7ff020fc2e8c",
+    "buttons": [
+      82,
+      83,
+      86,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": true,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "dpi": {
+      "min": 200,
+      "max": 4000,
+      "default": 1000,
+      "step": 50
+    },
+    "pids": [
+      "b038"
+    ]
+  },
+  {
+    "name": "MX Brio",
+    "model_id": "0944",
+    "type": "CAMERA",
+    "depot": "15f653ce-7c30-4c9e-9daf-2e4833f04f73",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "046d",
+      "0944"
+    ]
+  },
+  {
+    "name": "MX Brio 705 for Business",
+    "model_id": "091d",
+    "type": "CAMERA",
+    "depot": "07757dc5-cb9d-4931-a8e1-e81ea3e263e1",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "091d",
+      "046d"
+    ]
+  },
+  {
+    "name": "MX Creative Dialpad",
+    "model_id": "2bc00",
+    "type": "DIAL",
+    "depot": "3348402c-d6c2-42e1-afb8-f129275647aa",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "bc00"
+    ]
+  },
+  {
+    "name": "MX Creative Keypad",
+    "model_id": "8c354",
+    "type": "CONTEXTUAL_KEYS",
+    "depot": "7ff8f5fe-c263-11ed-a0c5-325096b39f47",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "abd4",
+      "c354"
+    ]
+  },
+  {
+    "name": "MX Ergo",
+    "model_id": "6b01d",
+    "type": "TRACKBALL",
+    "depot": "mx_ergo",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93,
+      237
+    ],
+    "hosts": 2,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b01d",
+      "406f"
+    ]
+  },
+  {
+    "name": "MX Ergo S",
+    "model_id": "2b03e",
+    "type": "TRACKBALL",
+    "depot": "924b0645-1c6a-48ee-94ce-00591467404c",
+    "buttons": [
+      82,
+      83,
+      86,
+      91,
+      93,
+      253
+    ],
+    "hosts": 2,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b03e"
+    ]
+  },
+  {
+    "name": "MX Keys",
+    "model_id": "6b35b",
+    "type": "KEYBOARD",
+    "depot": "mx_keys",
+    "buttons": [
+      199,
+      200,
+      224,
+      225,
+      110,
+      226,
+      227,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      10,
+      191,
+      234,
+      111
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "408a",
+      "b35b"
+    ]
+  },
+  {
+    "name": "MX Keys B",
+    "model_id": "2b363",
+    "type": "KEYBOARD",
+    "depot": "mx_keys_for_business",
+    "buttons": [
+      199,
+      200,
+      226,
+      227,
+      259,
+      264,
+      284,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      10,
+      266,
+      234,
+      111
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b363"
+    ]
+  },
+  {
+    "name": "MX Keys Mini",
+    "model_id": "2b369",
+    "type": "KEYBOARD",
+    "depot": "mx_keys_mini",
+    "buttons": [
+      226,
+      227,
+      259,
+      264,
+      266,
+      284,
+      229,
+      231,
+      232,
+      233
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b369"
+    ]
+  },
+  {
+    "name": "MX Keys Mini for Business",
+    "model_id": "2b36e",
+    "type": "KEYBOARD",
+    "depot": "mx_keys_mini_for_business",
+    "buttons": [
+      226,
+      227,
+      259,
+      264,
+      266,
+      284,
+      229,
+      231,
+      232,
+      233
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b36e"
+    ]
+  },
+  {
+    "name": "MX Keys Mini for Mac",
+    "model_id": "2b36a",
+    "type": "KEYBOARD",
+    "depot": "mx_keys_mini_mac",
+    "buttons": [
+      226,
+      227,
+      259,
+      264,
+      266,
+      284,
+      229,
+      231,
+      232,
+      233,
+      285
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b36a"
+    ]
+  },
+  {
+    "name": "MX Keys S",
+    "model_id": "2b378",
+    "type": "KEYBOARD",
+    "depot": "c097f928-2718-4125-ade5-15d1b39c3f60",
+    "buttons": [
+      199,
+      200,
+      226,
+      227,
+      259,
+      264,
+      284,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      10,
+      266,
+      234,
+      111
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b378"
+    ]
+  },
+  {
+    "name": "MX Keys S for Mac",
+    "model_id": "2b37c",
+    "type": "KEYBOARD",
+    "depot": "efab3873-8c16-4e9f-a2e4-f353448c31ea",
+    "buttons": [
+      199,
+      200,
+      226,
+      227,
+      259,
+      264,
+      284,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      10,
+      266,
+      212,
+      285
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b37c"
+    ]
+  },
+  {
+    "name": "MX Keys for Mac",
+    "model_id": "6b361",
+    "type": "KEYBOARD",
+    "depot": "mx_keys_mac",
+    "buttons": [
+      199,
+      200,
+      224,
+      225,
+      13,
+      226,
+      227,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      10,
+      191,
+      234,
+      111
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "4092",
+      "b361"
+    ]
+  },
+  {
+    "name": "MX Keys for business",
+    "model_id": "2b380",
+    "type": "KEYBOARD",
+    "depot": "5d1fbaaf-3f0a-44bf-a874-3ca085073f66",
+    "buttons": [
+      199,
+      200,
+      226,
+      227,
+      259,
+      264,
+      284,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      10,
+      266,
+      234,
+      111
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b380"
+    ]
+  },
+  {
+    "name": "MX Master",
+    "model_id": "6b012",
+    "type": "MOUSE",
+    "depot": "mx_master",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4041",
+      "b012"
+    ]
+  },
+  {
+    "name": "MX Master",
+    "model_id": "6b01e",
+    "type": "MOUSE",
+    "depot": "mx_master_cr",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b01e",
+      "4071"
+    ]
+  },
+  {
+    "name": "MX Master",
+    "model_id": "6b017",
+    "type": "MOUSE",
+    "depot": "mx_master_restage",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4060",
+      "b017"
+    ]
+  },
+  {
+    "name": "MX Master 2S",
+    "model_id": "6b019",
+    "type": "MOUSE",
+    "depot": "mx_master_2s",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4069",
+      "b019"
+    ]
+  },
+  {
+    "name": "MX Master 3",
+    "model_id": "6b023",
+    "type": "MOUSE",
+    "depot": "mx_master_3",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4082",
+      "b023"
+    ]
+  },
+  {
+    "name": "MX Master 3 B",
+    "model_id": "2b028",
+    "type": "MOUSE",
+    "depot": "mx_master_3_for_business",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b028"
+    ]
+  },
+  {
+    "name": "MX Master 3S",
+    "model_id": "2b034",
+    "type": "MOUSE",
+    "depot": "mx_master_3s",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": true,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "dpi": {
+      "min": 200,
+      "max": 4000,
+      "default": 1000,
+      "step": 50
+    },
+    "pids": [
+      "b034"
+    ]
+  },
+  {
+    "name": "MX Master 3S",
+    "model_id": "2b043",
+    "type": "MOUSE",
+    "depot": "mx_master_3s",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": true,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "dpi": {
+      "min": 200,
+      "max": 4000,
+      "default": 1000,
+      "step": 50
+    },
+    "pids": [
+      "b043"
+    ]
+  },
+  {
+    "name": "MX Master 3s for Business",
+    "model_id": "2b035",
+    "type": "MOUSE",
+    "depot": "mx_master_3s_for_business",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": true,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "dpi": {
+      "min": 200,
+      "max": 4000,
+      "default": 1000,
+      "step": 50
+    },
+    "pids": [
+      "b035"
+    ]
+  },
+  {
+    "name": "MX Master 3s for Business",
+    "model_id": "2b044",
+    "type": "MOUSE",
+    "depot": "mx_master_3s_for_business",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": true,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "dpi": {
+      "min": 200,
+      "max": 4000,
+      "default": 1000,
+      "step": 50
+    },
+    "pids": [
+      "b044"
+    ]
+  },
+  {
+    "name": "MX Master 4",
+    "model_id": "2b042",
+    "type": "MOUSE",
+    "depot": "2334eaeb-eeeb-4249-abfd-67002f421230",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196,
+      416
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": true,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "dpi": {
+      "min": 200,
+      "max": 4000,
+      "default": 1000,
+      "step": 50
+    },
+    "pids": [
+      "b042"
+    ]
+  },
+  {
+    "name": "MX Master 4 for Business",
+    "model_id": "2b048",
+    "type": "MOUSE",
+    "depot": "49a3cbfc-6157-4d84-b165-370086b0d455",
+    "buttons": [
+      82,
+      83,
+      86,
+      195,
+      196,
+      416
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": true,
+      "smartshift": true,
+      "hires_scroll": true,
+      "thumbwheel": true,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "dpi": {
+      "min": 200,
+      "max": 4000,
+      "default": 1000,
+      "step": 50
+    },
+    "pids": [
+      "b048"
+    ]
+  },
+  {
+    "name": "MX Mechanical",
+    "model_id": "2b366",
+    "type": "KEYBOARD",
+    "depot": "mx_mechanical",
+    "buttons": [
+      199,
+      200,
+      226,
+      227,
+      259,
+      264,
+      266,
+      284,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      267,
+      268,
+      269,
+      270,
+      271,
+      272,
+      273,
+      274,
+      275,
+      276,
+      277,
+      286,
+      278,
+      280,
+      281,
+      282,
+      283,
+      10,
+      110,
+      212,
+      111
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b366"
+    ]
+  },
+  {
+    "name": "MX Mechanical Mini",
+    "model_id": "2b367",
+    "type": "KEYBOARD",
+    "depot": "mx_mechanical_mini",
+    "buttons": [
+      226,
+      227,
+      259,
+      264,
+      266,
+      284,
+      231,
+      232,
+      233,
+      212,
+      280,
+      281,
+      282,
+      283,
+      321
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b367"
+    ]
+  },
+  {
+    "name": "MX Mechanical Mini for Mac",
+    "model_id": "2b36d",
+    "type": "KEYBOARD",
+    "depot": "mx_mechanical_mini_mac",
+    "buttons": [
+      226,
+      227,
+      259,
+      264,
+      266,
+      284,
+      231,
+      232,
+      233,
+      285,
+      212,
+      280,
+      281,
+      282,
+      283,
+      321
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b36d"
+    ]
+  },
+  {
+    "name": "MX Vertical",
+    "model_id": "eb020",
+    "type": "MOUSE",
+    "depot": "mx_vertical",
+    "buttons": [
+      82,
+      83,
+      86,
+      253
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "407b",
+      "c08a",
+      "b020"
+    ]
+  },
+  {
+    "name": "POP Icon Keys",
+    "model_id": "2b38f",
+    "type": "KEYBOARD",
+    "depot": "2fa9a1ae-1b69-4cd5-bd29-174a1ebab914",
+    "buttons": [
+      199,
+      200,
+      110,
+      264,
+      266,
+      321,
+      231,
+      232,
+      233,
+      212,
+      259,
+      419,
+      420,
+      421,
+      422
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b38f"
+    ]
+  },
+  {
+    "name": "POP Keys",
+    "model_id": "2b365",
+    "type": "KEYBOARD",
+    "depot": "pop_keys",
+    "buttons": [
+      209,
+      210,
+      211,
+      110,
+      224,
+      265,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      266,
+      260,
+      261,
+      262,
+      263,
+      264,
+      236,
+      235,
+      284,
+      259
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b365"
+    ]
+  },
+  {
+    "name": "POP Mouse",
+    "model_id": "2b030",
+    "type": "MOUSE",
+    "depot": "pop_mouse",
+    "buttons": [
+      82,
+      264
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b030"
+    ]
+  },
+  {
+    "name": "Pebble Keys 2 K380s",
+    "model_id": "2b377",
+    "type": "KEYBOARD",
+    "depot": "ffa457d6-9869-11ed-adf4-37f8415113ce",
+    "buttons": [
+      110,
+      212,
+      206,
+      259,
+      264,
+      266,
+      229,
+      231,
+      232,
+      233
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b377"
+    ]
+  },
+  {
+    "name": "Pebble Keys 2 K390 for Mac",
+    "model_id": "2b379",
+    "type": "KEYBOARD",
+    "depot": "ffa458c6-9869-11ed-adf5-b7bf848fb999",
+    "buttons": [
+      199,
+      200,
+      110,
+      259,
+      264,
+      266,
+      229,
+      231,
+      232,
+      233,
+      285
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b379"
+    ]
+  },
+  {
+    "name": "Pebble Mouse 2 M350s",
+    "model_id": "2b036",
+    "type": "MOUSE",
+    "depot": "e6e5ba46-9869-11ed-93af-9b54b65e3514",
+    "buttons": [
+      82
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b036"
+    ]
+  },
+  {
+    "name": "Performance MX",
+    "model_id": "4101a",
+    "type": "MOUSE",
+    "depot": "performance_mx",
+    "buttons": [
+      82,
+      83,
+      86,
+      89,
+      91,
+      93,
+      94
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "101a",
+      "4101a"
+    ]
+  },
+  {
+    "name": "Pop-Up Keys for Business",
+    "model_id": "2b374",
+    "type": "KEYBOARD",
+    "depot": "bc1c2378-9c9b-11ed-a8fc-0242ac120002",
+    "buttons": [
+      264,
+      259,
+      266,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      284
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b374"
+    ]
+  },
+  {
+    "name": "Pop-Up Touch for Business",
+    "model_id": "2bb01",
+    "type": "TOUCHPAD",
+    "depot": "411531c2-9883-11ed-a8fc-0242ac120002",
+    "buttons": [],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "bb01"
+    ]
+  },
+  {
+    "name": "R500",
+    "model_id": "6b505",
+    "type": "PRESENTER",
+    "depot": "r500_r500s",
+    "buttons": [
+      251,
+      252,
+      217,
+      218,
+      219,
+      220
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "407a",
+      "b505"
+    ]
+  },
+  {
+    "name": "Reach",
+    "model_id": "0948",
+    "type": "CAMERA",
+    "depot": "reach",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0948"
+    ]
+  },
+  {
+    "name": "Signature AI Edition M750",
+    "model_id": "2b040",
+    "type": "MOUSE",
+    "depot": "2cf9a81d-47cb-4736-9bc0-39e3143d71d3",
+    "buttons": [
+      82,
+      83,
+      86,
+      253
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b040"
+    ]
+  },
+  {
+    "name": "Signature K650",
+    "model_id": "2b36f",
+    "type": "KEYBOARD",
+    "depot": "k650",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      264,
+      266,
+      284,
+      206,
+      287,
+      238,
+      288,
+      166,
+      24,
+      10,
+      110,
+      212,
+      111,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      221,
+      280,
+      281,
+      282,
+      283
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b36f"
+    ]
+  },
+  {
+    "name": "Signature K650 for Business",
+    "model_id": "2b370",
+    "type": "KEYBOARD",
+    "depot": "k650_for_business",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      264,
+      266,
+      284,
+      206,
+      287,
+      238,
+      288,
+      166,
+      24,
+      10,
+      110,
+      212,
+      111,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      221,
+      280,
+      281,
+      282,
+      283
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b370"
+    ]
+  },
+  {
+    "name": "Signature K855",
+    "model_id": "2b372",
+    "type": "KEYBOARD",
+    "depot": "signature_k855",
+    "buttons": [
+      212,
+      259,
+      264,
+      266,
+      284,
+      229,
+      231,
+      232,
+      233
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b372"
+    ]
+  },
+  {
+    "name": "Signature K865",
+    "model_id": "2b381",
+    "type": "KEYBOARD",
+    "depot": "a4896684-4639-4d1a-9a54-05728dca7f47",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      264,
+      266,
+      284,
+      229,
+      231,
+      232,
+      233
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b381"
+    ]
+  },
+  {
+    "name": "Signature M550 L",
+    "model_id": "2b02b",
+    "type": "MOUSE",
+    "depot": "signature_m550",
+    "buttons": [
+      82
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b02b"
+    ]
+  },
+  {
+    "name": "Signature M650 For Business",
+    "model_id": "2b032",
+    "type": "MOUSE",
+    "depot": "signature_m650_for_business",
+    "buttons": [
+      82,
+      83,
+      86
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b032"
+    ]
+  },
+  {
+    "name": "Signature M650 L",
+    "model_id": "2b02a",
+    "type": "MOUSE",
+    "depot": "signature_m650",
+    "buttons": [
+      82,
+      83,
+      86
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b02a"
+    ]
+  },
+  {
+    "name": "Signature Mechanical K848",
+    "model_id": "8c362",
+    "type": "KEYBOARD",
+    "depot": "3e826a89-b536-4e85-aa26-e891b62199d4",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      266,
+      229,
+      231,
+      232,
+      233,
+      419,
+      422
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "c362"
+    ]
+  },
+  {
+    "name": "Signature Mechanical K868",
+    "model_id": "ab39a",
+    "type": "KEYBOARD",
+    "depot": "1a65c02e-bfbf-49e8-86fd-bf7ece635350",
+    "buttons": [
+      423,
+      433,
+      259,
+      266,
+      229,
+      231,
+      232,
+      233,
+      419,
+      420
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": true,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "c35e",
+      "b39a"
+    ]
+  },
+  {
+    "name": "Signature Plus M750 L",
+    "model_id": "2b02c",
+    "type": "MOUSE",
+    "depot": "signature_m750",
+    "buttons": [
+      82,
+      83,
+      86,
+      253
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b02c"
+    ]
+  },
+  {
+    "name": "Signature Plus M750 L For Business",
+    "model_id": "2b03d",
+    "type": "MOUSE",
+    "depot": "c6df3179-10f0-4ecf-b8d1-df7743a5fc00",
+    "buttons": [
+      82,
+      83,
+      86,
+      253
+    ],
+    "hosts": 3,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "b03d"
+    ]
+  },
+  {
+    "name": "Signature Slim K950",
+    "model_id": "2b386",
+    "type": "KEYBOARD",
+    "depot": "14b9f52a-1bd1-4137-a04c-5a130de5b4af",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      264,
+      284,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      10,
+      266,
+      212,
+      111,
+      280,
+      281,
+      282,
+      283,
+      289
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b386"
+    ]
+  },
+  {
+    "name": "Signature Slim K950 for Business",
+    "model_id": "2b388",
+    "type": "KEYBOARD",
+    "depot": "14056517-b0bd-4cd6-bd00-fe74f2d51179",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      264,
+      284,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      10,
+      266,
+      212,
+      111,
+      280,
+      281,
+      282,
+      283,
+      289
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b388"
+    ]
+  },
+  {
+    "name": "Signature Slim K950 for Business Copilot Edition",
+    "model_id": "2b395",
+    "type": "KEYBOARD",
+    "depot": "e4fd2f36-49cf-46f7-ad70-97c5bcdf8eb8",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      264,
+      284,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      10,
+      266,
+      212,
+      111,
+      278,
+      280,
+      281,
+      282,
+      283
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b395"
+    ]
+  },
+  {
+    "name": "Signature Slim Solar+",
+    "model_id": "2b391",
+    "type": "KEYBOARD",
+    "depot": "978242a5-cddb-4d69-bcb3-cef516007f9d",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      264,
+      266,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      419,
+      284,
+      428,
+      111,
+      278,
+      280,
+      281,
+      282,
+      283,
+      429,
+      430
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b391"
+    ]
+  },
+  {
+    "name": "Signature Slim Solar+ K980 for Business",
+    "model_id": "2b394",
+    "type": "KEYBOARD",
+    "depot": "44884ec4-d6c2-4579-bc06-c2c75fad1ab1",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      264,
+      266,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      419,
+      284,
+      428,
+      111,
+      278,
+      280,
+      281,
+      282,
+      283,
+      429,
+      430
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b394"
+    ]
+  },
+  {
+    "name": "Signature Slim Solar+ for Mac",
+    "model_id": "2b392",
+    "type": "KEYBOARD",
+    "depot": "4879e5ef-01b9-4d68-8690-15a276fef348",
+    "buttons": [
+      199,
+      200,
+      224,
+      212,
+      259,
+      264,
+      266,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      419,
+      284,
+      428,
+      285,
+      280,
+      281,
+      282,
+      283
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b392"
+    ]
+  },
+  {
+    "name": "Signature Slim Wired K620 for Business",
+    "model_id": "8c35d",
+    "type": "KEYBOARD",
+    "depot": "fe01b978-fbab-4e7c-841f-01d41c99163d",
+    "buttons": [
+      199,
+      200,
+      224,
+      265,
+      259,
+      264,
+      284,
+      228,
+      229,
+      230,
+      231,
+      232,
+      233,
+      425,
+      426,
+      427,
+      428,
+      429,
+      430,
+      419,
+      266,
+      111,
+      278,
+      280,
+      281,
+      282,
+      283
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "abde",
+      "c35d"
+    ]
+  },
+  {
+    "name": "Signature Wired M520 L for Business",
+    "model_id": "8c0a2",
+    "type": "MOUSE",
+    "depot": "5bf3bbb2-8e4e-4d33-a0b3-1c010ece1afc",
+    "buttons": [
+      82,
+      253
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "c0a2",
+      "abdd"
+    ]
+  },
+  {
+    "name": "Software events",
+    "model_id": "10000001",
+    "type": "VIRTUAL_DEVICE",
+    "depot": "software_events_virtual_device",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    }
+  },
+  {
+    "name": "Spotlight",
+    "model_id": "6b503",
+    "type": "PRESENTER",
+    "depot": "spotlight",
+    "buttons": [
+      80,
+      216,
+      217,
+      223,
+      218,
+      219,
+      220
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "405c",
+      "b503"
+    ]
+  },
+  {
+    "name": "StreamCam",
+    "model_id": "0893",
+    "type": "CAMERA",
+    "depot": "streamcam",
+    "buttons": [],
+    "hosts": 0,
+    "features": {
+      "battery": false,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": false
+    },
+    "pids": [
+      "0893"
+    ]
+  },
+  {
+    "name": "Wave Keys",
+    "model_id": "2b383",
+    "type": "KEYBOARD",
+    "depot": "04a827ee-fa8a-4f96-88aa-3eb321f20f7e",
+    "buttons": [
+      224,
+      259,
+      264,
+      266,
+      284,
+      321,
+      231,
+      232,
+      233,
+      280,
+      281,
+      282,
+      283
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b383"
+    ]
+  },
+  {
+    "name": "Wave Keys for Business",
+    "model_id": "2b384",
+    "type": "KEYBOARD",
+    "depot": "030391ea-323d-487a-8a5a-538b11e6112b",
+    "buttons": [
+      224,
+      259,
+      264,
+      266,
+      284,
+      321,
+      231,
+      232,
+      233,
+      280,
+      281,
+      282,
+      283
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b384"
+    ]
+  },
+  {
+    "name": "Wave Keys for Mac",
+    "model_id": "2b385",
+    "type": "KEYBOARD",
+    "depot": "cba04d37-8016-43aa-819a-04316bc90f4d",
+    "buttons": [
+      224,
+      259,
+      264,
+      266,
+      284,
+      321,
+      231,
+      232,
+      233,
+      280,
+      281,
+      282,
+      283
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "b385"
+    ]
+  },
+  {
+    "name": "Wireless Keyboard",
+    "model_id": "4075",
+    "type": "KEYBOARD",
+    "depot": "k470",
+    "buttons": [
+      34,
+      14,
+      62,
+      10
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": false,
+      "thumbwheel": false,
+      "fn_inversion": true,
+      "backlight": false,
+      "disable_keys": true,
+      "pointer_speed": false
+    },
+    "pids": [
+      "4075"
+    ]
+  },
+  {
+    "name": "Wireless Mouse",
+    "model_id": "44055",
+    "type": "MOUSE",
+    "depot": "m310",
+    "buttons": [
+      82
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4055"
+    ]
+  },
+  {
+    "name": "Wireless Mouse",
+    "model_id": "4091",
+    "type": "MOUSE",
+    "depot": "m185",
+    "buttons": [
+      82
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4091"
+    ]
+  },
+  {
+    "name": "Wireless Mouse",
+    "model_id": "4054",
+    "type": "MOUSE",
+    "depot": "m187",
+    "buttons": [
+      82
+    ],
+    "hosts": 0,
+    "features": {
+      "battery": true,
+      "dpi": false,
+      "smartshift": false,
+      "hires_scroll": true,
+      "thumbwheel": false,
+      "fn_inversion": false,
+      "backlight": false,
+      "disable_keys": false,
+      "pointer_speed": true
+    },
+    "pids": [
+      "4054"
+    ]
+  }
+]

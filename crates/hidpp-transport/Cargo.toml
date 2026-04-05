@@ -1,0 +1,38 @@
+[package]
+name = "hidpp-transport"
+description = "HID++ 2.0 async transport trait and platform backends"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = ["native"]
+native = ["dep:hidapi", "dep:tokio"]
+# web feature will be added when we implement WASM backend
+
+[dependencies]
+hidpp = { workspace = true }
+thiserror = { workspace = true }
+async-trait = { workspace = true }
+futures-core = { workspace = true }
+
+# Native
+hidapi = { workspace = true, optional = true }
+tokio = { workspace = true, optional = true }
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+unimplemented = "deny"
+todo = "deny"
+unreachable = "deny"
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+missing_errors_doc = "allow"

@@ -1,0 +1,61 @@
+[workspace]
+resolver = "2"
+members = [
+    "crates/hidpp",
+    "crates/hidpp-transport",
+    "crates/hidpp-device",
+    "crates/hidpp-cli",
+    "crates/hidpp-web",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+license = "MIT OR Apache-2.0"
+
+# Lints are configured per-crate in each crate's Cargo.toml.
+# Cargo doesn't support partial inheritance (override + workspace = true),
+# so each crate defines its own lint set with a shared baseline:
+#   - unsafe_code = deny
+#   - unwrap_used, expect_used, panic, todo, unreachable = deny (libs)
+#   - correctness = deny, suspicious/style/complexity/perf = warn
+
+[workspace.dependencies]
+# Internal
+hidpp = { path = "crates/hidpp" }
+hidpp-transport = { path = "crates/hidpp-transport" }
+hidpp-device = { path = "crates/hidpp-device" }
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+toml = "0.8"
+
+# Error handling
+thiserror = "2"
+anyhow = "1"
+
+# Async
+tokio = { version = "1", features = ["macros", "rt-multi-thread", "sync", "time"] }
+async-trait = "0.1"
+futures-core = "0.3"
+
+# HID
+hidapi = "2"
+
+# CLI
+clap = { version = "4", features = ["derive"] }
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+# Bit manipulation
+bitflags = "2"
+
+# WASM
+wasm-bindgen = "0.2"
+wasm-bindgen-futures = "0.4"
+web-sys = "0.3"
+js-sys = "0.3"
+serde-wasm-bindgen = "0.6"

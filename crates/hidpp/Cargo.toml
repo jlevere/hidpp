@@ -1,0 +1,38 @@
+[package]
+name = "hidpp"
+description = "HID++ 2.0 protocol types, codec, and feature encode/decode"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[features]
+default = ["std"]
+std = []
+serde = ["dep:serde"]
+
+[dependencies]
+bitflags = { workspace = true }
+serde = { workspace = true, optional = true }
+thiserror = { workspace = true }
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+# Ban panicking constructs.
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"
+unimplemented = "deny"
+todo = "deny"
+unreachable = "deny"
+# Lint groups.
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+# Report params are fixed-size (16 bytes for LongReport). Indexing is safe.
+indexing_slicing = "allow"
+# Decode functions documented by protocol spec, not Errors sections.
+missing_errors_doc = "allow"

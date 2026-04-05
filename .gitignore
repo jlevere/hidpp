@@ -1,0 +1,17 @@
+# Build
+target
+web/node_modules
+web/dist
+web/pkg
+web/test-results
+web/log-server.ts
+
+# RE workbench (not committed — large binaries and analysis output)
+work/
+logi_installed/
+logiplus_extracted/
+logioptionsplus_installer.zip
+/devices/
+
+# Editor
+.direnv
