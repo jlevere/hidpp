@@ -83,8 +83,7 @@ impl WasmDevice {
     /// Returns null if no device is available — caller should fall back to `connect()`.
     #[wasm_bindgen(js_name = connectGranted)]
     pub async fn connect_granted() -> Result<Option<WasmDevice>, JsValue> {
-        let hid = webhid::get_hid()
-            .ok_or_else(|| JsValue::from_str("WebHID not available"))?;
+        let hid = webhid::get_hid().ok_or_else(|| JsValue::from_str("WebHID not available"))?;
 
         let devices_js = JsFuture::from(hid.get_devices()).await?;
         let devices: js_sys::Array = devices_js.into();
@@ -103,7 +102,10 @@ impl WasmDevice {
             return Ok(None);
         };
 
-        wlog(&format!("WASM: found granted device: {}", hid_device.product_name()));
+        wlog(&format!(
+            "WASM: found granted device: {}",
+            hid_device.product_name()
+        ));
 
         if !hid_device.opened() {
             JsFuture::from(hid_device.open()).await?;
@@ -146,7 +148,11 @@ impl WasmDevice {
 
     /// Internal: set up a device (open, register callback, discover features).
     async fn setup_device(hid_device: webhid::HidDevice) -> Result<WasmDevice, JsValue> {
-        wlog(&format!("WASM: device: {} (opened={})", hid_device.product_name(), hid_device.opened()));
+        wlog(&format!(
+            "WASM: device: {} (opened={})",
+            hid_device.product_name(),
+            hid_device.opened()
+        ));
         if !hid_device.opened() {
             wlog("WASM: opening device...");
             JsFuture::from(hid_device.open()).await?;
@@ -232,11 +238,7 @@ impl WasmDevice {
                 let fidx = report.feature_index();
                 let feature_id = reverse_feature_lookup(&inner.features, fidx);
                 let obj = js_sys::Object::new();
-                let _ = js_sys::Reflect::set(
-                    &obj,
-                    &"featureIndex".into(),
-                    &fidx.0.into(),
-                );
+                let _ = js_sys::Reflect::set(&obj, &"featureIndex".into(), &fidx.0.into());
                 let _ = js_sys::Reflect::set(
                     &obj,
                     &"featureId".into(),
@@ -280,7 +282,10 @@ impl WasmDevice {
             let promise = js_sys::Promise::new(&mut |resolve, _reject| {
                 resolve_fn = Some(resolve);
             });
-            (promise, resolve_fn.ok_or_else(|| JsValue::from_str("failed to create promise"))?)
+            (
+                promise,
+                resolve_fn.ok_or_else(|| JsValue::from_str("failed to create promise"))?,
+            )
         };
 
         // Register pending request.
@@ -319,8 +324,7 @@ impl WasmDevice {
         let mut buf = [0u8; 20];
         bytes.copy_to(&mut buf);
 
-        LongReport::from_bytes(&buf)
-            .ok_or_else(|| JsValue::from_str("invalid response length"))
+        LongReport::from_bytes(&buf).ok_or_else(|| JsValue::from_str("invalid response length"))
     }
 
     /// Discover all features on the device.
@@ -459,7 +463,11 @@ impl WasmDevice {
         let obj = js_sys::Object::new();
         js_sys::Reflect::set(&obj, &"percentage".into(), &status.percentage.into())?;
         js_sys::Reflect::set(&obj, &"level".into(), &format!("{:?}", status.level).into())?;
-        js_sys::Reflect::set(&obj, &"charging".into(), &format!("{:?}", status.charging).into())?;
+        js_sys::Reflect::set(
+            &obj,
+            &"charging".into(),
+            &format!("{:?}", status.charging).into(),
+        )?;
         js_sys::Reflect::set(&obj, &"externalPower".into(), &status.external_power.into())?;
         Ok(obj.into())
     }
@@ -496,8 +504,8 @@ impl WasmDevice {
             }
         };
         let resp = self.request_report(&req).await?;
-        let state = smart_shift::decode_get_mode(&resp)
-            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+        let state =
+            smart_shift::decode_get_mode(&resp).map_err(|e| JsValue::from_str(&format!("{e}")))?;
         let obj = js_sys::Object::new();
         js_sys::Reflect::set(&obj, &"mode".into(), &format!("{:?}", state.mode).into())?;
         js_sys::Reflect::set(&obj, &"autoDisengage".into(), &state.auto_disengage.into())?;
@@ -533,11 +541,15 @@ impl WasmDevice {
             }
         };
         let resp = self.request_report(&req).await?;
-        let applied = smart_shift::decode_set_mode(&resp)
-            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+        let applied =
+            smart_shift::decode_set_mode(&resp).map_err(|e| JsValue::from_str(&format!("{e}")))?;
         let obj = js_sys::Object::new();
         js_sys::Reflect::set(&obj, &"mode".into(), &format!("{:?}", applied.mode).into())?;
-        js_sys::Reflect::set(&obj, &"autoDisengage".into(), &applied.auto_disengage.into())?;
+        js_sys::Reflect::set(
+            &obj,
+            &"autoDisengage".into(),
+            &applied.auto_disengage.into(),
+        )?;
         js_sys::Reflect::set(&obj, &"torque".into(), &applied.tunable_torque.into())?;
         Ok(obj.into())
     }
@@ -573,7 +585,11 @@ impl WasmDevice {
             let info = hidpp::features::firmware_info::decode_get_fw_info(&resp)
                 .map_err(|e| JsValue::from_str(&format!("{e}")))?;
             let obj = js_sys::Object::new();
-            js_sys::Reflect::set(&obj, &"type".into(), &format!("{:?}", info.entity_type).into())?;
+            js_sys::Reflect::set(
+                &obj,
+                &"type".into(),
+                &format!("{:?}", info.entity_type).into(),
+            )?;
             js_sys::Reflect::set(&obj, &"name".into(), &info.name.into())?;
             js_sys::Reflect::set(&obj, &"versionMajor".into(), &info.version_major.into())?;
             js_sys::Reflect::set(&obj, &"versionMinor".into(), &info.version_minor.into())?;
@@ -629,7 +645,11 @@ impl WasmDevice {
 
     /// Set HiResWheel mode.
     #[wasm_bindgen(js_name = setHiResWheel)]
-    pub async fn set_hires_wheel(&self, high_resolution: bool, inverted: bool) -> Result<JsValue, JsValue> {
+    pub async fn set_hires_wheel(
+        &self,
+        high_resolution: bool,
+        inverted: bool,
+    ) -> Result<JsValue, JsValue> {
         let (di, sw, idx) = self.ctx(hidpp::feature_id::HIRES_WHEEL)?;
         // Read current to preserve other fields.
         let get_req = hidpp::features::hires_wheel::encode_get_mode(di, idx, sw);
@@ -643,7 +663,11 @@ impl WasmDevice {
         let applied = hidpp::features::hires_wheel::decode_set_mode(&resp)
             .map_err(|e| JsValue::from_str(&format!("{e}")))?;
         let obj = js_sys::Object::new();
-        js_sys::Reflect::set(&obj, &"highResolution".into(), &applied.high_resolution.into())?;
+        js_sys::Reflect::set(
+            &obj,
+            &"highResolution".into(),
+            &applied.high_resolution.into(),
+        )?;
         js_sys::Reflect::set(&obj, &"inverted".into(), &applied.inverted.into())?;
         Ok(obj.into())
     }
@@ -659,7 +683,11 @@ impl WasmDevice {
         let status = hidpp::features::thumbwheel::decode_get_status(&resp)
             .map_err(|e| JsValue::from_str(&format!("{e}")))?;
         let obj = js_sys::Object::new();
-        js_sys::Reflect::set(&obj, &"mode".into(), &format!("{:?}", status.reporting_mode).into())?;
+        js_sys::Reflect::set(
+            &obj,
+            &"mode".into(),
+            &format!("{:?}", status.reporting_mode).into(),
+        )?;
         js_sys::Reflect::set(&obj, &"inverted".into(), &status.inverted.into())?;
         js_sys::Reflect::set(&obj, &"diverted".into(), &status.diverted.into())?;
         Ok(obj.into())
@@ -679,7 +707,11 @@ impl WasmDevice {
         let status = hidpp::features::thumbwheel::decode_set_reporting(&resp)
             .map_err(|e| JsValue::from_str(&format!("{e}")))?;
         let obj = js_sys::Object::new();
-        js_sys::Reflect::set(&obj, &"mode".into(), &format!("{:?}", status.reporting_mode).into())?;
+        js_sys::Reflect::set(
+            &obj,
+            &"mode".into(),
+            &format!("{:?}", status.reporting_mode).into(),
+        )?;
         js_sys::Reflect::set(&obj, &"inverted".into(), &status.inverted.into())?;
         js_sys::Reflect::set(&obj, &"diverted".into(), &status.diverted.into())?;
         Ok(obj.into())
@@ -733,11 +765,19 @@ impl WasmDevice {
     pub async fn get_host_name(&self, host_index: u8) -> Result<String, JsValue> {
         let (di, sw, idx) = self.ctx(hidpp::feature_id::HOSTS_INFOS)?;
         let req = hidpp::report::LongReport::request(
-            di, idx, hidpp::types::FunctionId(3), sw, &[host_index, 0],
+            di,
+            idx,
+            hidpp::types::FunctionId(3),
+            sw,
+            &[host_index, 0],
         );
         let resp = self.request_report(&req).await?;
         let params = resp.params();
-        let name_bytes: Vec<u8> = params[2..].iter().copied().take_while(|&b| b != 0).collect();
+        let name_bytes: Vec<u8> = params[2..]
+            .iter()
+            .copied()
+            .take_while(|&b| b != 0)
+            .collect();
         Ok(String::from_utf8(name_bytes).unwrap_or_default())
     }
 
@@ -751,9 +791,8 @@ impl WasmDevice {
         let chunk = &name_bytes[..name_bytes.len().min(12)];
         let mut params = vec![host_index, 0]; // hostIndex, charOffset=0
         params.extend_from_slice(chunk);
-        let req = hidpp::report::LongReport::request(
-            di, idx, hidpp::types::FunctionId(4), sw, &params,
-        );
+        let req =
+            hidpp::report::LongReport::request(di, idx, hidpp::types::FunctionId(4), sw, &params);
         self.request_report(&req).await?;
         Ok(())
     }
@@ -790,19 +829,55 @@ impl WasmDevice {
         let inner = self.inner.borrow();
         let f = &inner.features;
         let obj = js_sys::Object::new();
-        let _ = js_sys::Reflect::set(&obj, &"dpi".into(), &f.contains_key(&hidpp::feature_id::ADJUSTABLE_DPI).into());
-        let _ = js_sys::Reflect::set(&obj, &"scroll".into(), &(
-            f.contains_key(&hidpp::feature_id::SMART_SHIFT) ||
-            f.contains_key(&hidpp::feature_id::SMART_SHIFT_TUNABLE_TORQUE) ||
-            f.contains_key(&hidpp::feature_id::HIRES_WHEEL)
-        ).into());
-        let _ = js_sys::Reflect::set(&obj, &"buttons".into(), &f.contains_key(&hidpp::feature_id::SPECIAL_KEYS_V4).into());
-        let _ = js_sys::Reflect::set(&obj, &"host".into(), &f.contains_key(&hidpp::feature_id::CHANGE_HOST).into());
-        let _ = js_sys::Reflect::set(&obj, &"battery".into(), &f.contains_key(&hidpp::feature_id::UNIFIED_BATTERY).into());
-        let _ = js_sys::Reflect::set(&obj, &"thumbwheel".into(), &f.contains_key(&hidpp::feature_id::THUMBWHEEL).into());
-        let _ = js_sys::Reflect::set(&obj, &"firmware".into(), &f.contains_key(&hidpp::feature_id::FIRMWARE_INFO).into());
-        let _ = js_sys::Reflect::set(&obj, &"friendlyName".into(), &f.contains_key(&hidpp::feature_id::DEVICE_FRIENDLY_NAME).into());
-        let _ = js_sys::Reflect::set(&obj, &"hostsInfo".into(), &f.contains_key(&hidpp::feature_id::HOSTS_INFOS).into());
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &"dpi".into(),
+            &f.contains_key(&hidpp::feature_id::ADJUSTABLE_DPI).into(),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &"scroll".into(),
+            &(f.contains_key(&hidpp::feature_id::SMART_SHIFT)
+                || f.contains_key(&hidpp::feature_id::SMART_SHIFT_TUNABLE_TORQUE)
+                || f.contains_key(&hidpp::feature_id::HIRES_WHEEL))
+            .into(),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &"buttons".into(),
+            &f.contains_key(&hidpp::feature_id::SPECIAL_KEYS_V4).into(),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &"host".into(),
+            &f.contains_key(&hidpp::feature_id::CHANGE_HOST).into(),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &"battery".into(),
+            &f.contains_key(&hidpp::feature_id::UNIFIED_BATTERY).into(),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &"thumbwheel".into(),
+            &f.contains_key(&hidpp::feature_id::THUMBWHEEL).into(),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &"firmware".into(),
+            &f.contains_key(&hidpp::feature_id::FIRMWARE_INFO).into(),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &"friendlyName".into(),
+            &f.contains_key(&hidpp::feature_id::DEVICE_FRIENDLY_NAME)
+                .into(),
+        );
+        let _ = js_sys::Reflect::set(
+            &obj,
+            &"hostsInfo".into(),
+            &f.contains_key(&hidpp::feature_id::HOSTS_INFOS).into(),
+        );
         obj.into()
     }
 
@@ -834,7 +909,13 @@ impl WasmDevice {
     ) -> Result<JsValue, JsValue> {
         let (di, sw, idx) = self.ctx(hidpp::feature_id::SPECIAL_KEYS_V4)?;
         let req = hidpp::features::special_keys::encode_set_ctrl_id_reporting(
-            di, idx, sw, cid, flags, remapped_cid, 0,
+            di,
+            idx,
+            sw,
+            cid,
+            flags,
+            remapped_cid,
+            0,
         );
         let resp = self.request_report(&req).await?;
         let r = hidpp::features::special_keys::decode_set_ctrl_id_reporting(&resp)
@@ -857,7 +938,10 @@ impl WasmDevice {
         // Don't wait for response — device disconnects.
         let send_promise = {
             let inner = self.inner.borrow();
-            inner.device.send_report(REPORT_ID_LONG, &js_sys::Uint8Array::from(&req.as_ref()[1..]))
+            inner.device.send_report(
+                REPORT_ID_LONG,
+                &js_sys::Uint8Array::from(&req.as_ref()[1..]),
+            )
         };
         JsFuture::from(send_promise).await?;
         Ok(())
@@ -876,7 +960,10 @@ impl WasmDevice {
     }
 
     /// Helper to get device context for a feature.
-    fn ctx(&self, feature_id: FeatureId) -> Result<(DeviceIndex, SoftwareId, FeatureIndex), JsValue> {
+    fn ctx(
+        &self,
+        feature_id: FeatureId,
+    ) -> Result<(DeviceIndex, SoftwareId, FeatureIndex), JsValue> {
         let idx = self.feature_index(feature_id)?;
         let inner = self.inner.borrow();
         Ok((inner.device_index, inner.sw_id, idx))
@@ -885,7 +972,9 @@ impl WasmDevice {
     /// Check if device has 0x2111 (enhanced SmartShift) vs 0x2110 (legacy).
     fn has_enhanced_smart_shift(&self) -> bool {
         let inner = self.inner.borrow();
-        inner.features.contains_key(&hidpp::feature_id::SMART_SHIFT_TUNABLE_TORQUE)
+        inner
+            .features
+            .contains_key(&hidpp::feature_id::SMART_SHIFT_TUNABLE_TORQUE)
     }
 
     /// Get SmartShift feature index (tries 0x2111 then 0x2110).

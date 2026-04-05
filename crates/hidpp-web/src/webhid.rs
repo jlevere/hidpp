@@ -57,11 +57,19 @@ extern "C" {
     /// `report_id` is the HID report ID (0x11 for HID++ long).
     /// `data` is a `Uint8Array` of the report payload (without the report ID byte).
     #[wasm_bindgen(method, js_name = sendReport)]
-    pub fn send_report(this: &HidDevice, report_id: u8, data: &js_sys::Uint8Array) -> js_sys::Promise;
+    pub fn send_report(
+        this: &HidDevice,
+        report_id: u8,
+        data: &js_sys::Uint8Array,
+    ) -> js_sys::Promise;
 
     /// Register an event listener for input reports.
     #[wasm_bindgen(method, js_name = addEventListener)]
-    pub fn add_event_listener(this: &HidDevice, event: &str, callback: &Closure<dyn FnMut(JsValue)>);
+    pub fn add_event_listener(
+        this: &HidDevice,
+        event: &str,
+        callback: &Closure<dyn FnMut(JsValue)>,
+    );
 
     // --- HIDInputReportEvent ---
 

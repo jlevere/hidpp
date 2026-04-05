@@ -17,7 +17,10 @@ use config::Config;
 use gesture::GestureTracker;
 
 #[derive(Parser)]
-#[command(name = "hidppd", about = "HID++ 2.0 daemon — catches diverted events and maps them to actions")]
+#[command(
+    name = "hidppd",
+    about = "HID++ 2.0 daemon — catches diverted events and maps them to actions"
+)]
 struct Cli {
     #[command(subcommand)]
     command: Option<Command>,
@@ -314,8 +317,7 @@ fn handle_notification(
                 // All buttons released.
                 if execute_actions {
                     for (&cid, gesture_cfg) in &cfg.gestures {
-                        if let Some(result) = gestures.button_released(cid, gesture_cfg.threshold)
-                        {
+                        if let Some(result) = gestures.button_released(cid, gesture_cfg.threshold) {
                             let action = match &result {
                                 gesture::GestureResult::Direction(d) => {
                                     info!("gesture CID {cid}: swipe {d:?}");

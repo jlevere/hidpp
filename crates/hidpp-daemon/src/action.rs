@@ -40,10 +40,7 @@ fn execute_keystroke(keystroke: &str) {
     // Everything except the last part is a modifier, last part is the main key.
     let (modifier_strs, main_str) = parts.split_at(parts.len() - 1);
 
-    let modifiers: Vec<Key> = modifier_strs
-        .iter()
-        .filter_map(|s| parse_key(s))
-        .collect();
+    let modifiers: Vec<Key> = modifier_strs.iter().filter_map(|s| parse_key(s)).collect();
 
     let Some(main_key) = main_str.first().and_then(|s| parse_key(s)) else {
         error!("unknown key in keystroke: {keystroke}");
@@ -82,14 +79,10 @@ fn execute_command(cmd: &str) {
     info!("command: {cmd}");
 
     #[cfg(unix)]
-    let result = std::process::Command::new("sh")
-        .args(["-c", cmd])
-        .spawn();
+    let result = std::process::Command::new("sh").args(["-c", cmd]).spawn();
 
     #[cfg(windows)]
-    let result = std::process::Command::new("cmd")
-        .args(["/C", cmd])
-        .spawn();
+    let result = std::process::Command::new("cmd").args(["/C", cmd]).spawn();
 
     match result {
         Ok(mut child) => {

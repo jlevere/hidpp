@@ -24,7 +24,10 @@ pub struct Config {
 impl Config {
     /// All CIDs that need to be diverted (buttons + gestures).
     pub fn all_diverted_cids(&self) -> impl Iterator<Item = u16> + '_ {
-        self.buttons.keys().copied().chain(self.gestures.keys().copied())
+        self.buttons
+            .keys()
+            .copied()
+            .chain(self.gestures.keys().copied())
     }
 
     /// Whether this CID is a gesture button (needs rawXY).
@@ -96,7 +99,10 @@ pub fn default_config_path() -> PathBuf {
     let home = std::env::var("HOME")
         .or_else(|_| std::env::var("USERPROFILE"))
         .unwrap_or_else(|_| ".".into());
-    Path::new(&home).join(".config").join("hidpp").join("config.toml")
+    Path::new(&home)
+        .join(".config")
+        .join("hidpp")
+        .join("config.toml")
 }
 
 /// Parse a TOML string into a Config.
@@ -107,7 +113,9 @@ fn parse(content: &str) -> anyhow::Result<Config> {
         .buttons
         .into_iter()
         .map(|(k, v)| {
-            let cid: u16 = k.parse().map_err(|_| anyhow::anyhow!("invalid button CID: {k}"))?;
+            let cid: u16 = k
+                .parse()
+                .map_err(|_| anyhow::anyhow!("invalid button CID: {k}"))?;
             Ok((cid, v))
         })
         .collect::<anyhow::Result<_>>()?;
@@ -116,7 +124,9 @@ fn parse(content: &str) -> anyhow::Result<Config> {
         .gestures
         .into_iter()
         .map(|(k, v)| {
-            let cid: u16 = k.parse().map_err(|_| anyhow::anyhow!("invalid gesture CID: {k}"))?;
+            let cid: u16 = k
+                .parse()
+                .map_err(|_| anyhow::anyhow!("invalid gesture CID: {k}"))?;
             Ok((cid, v))
         })
         .collect::<anyhow::Result<_>>()?;

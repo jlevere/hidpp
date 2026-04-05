@@ -155,7 +155,9 @@ pub fn feature_name(id: FeatureId) -> Option<&'static str> {
         FeatureId(0x0011) => "PropertyAccess",
         CONFIG_CHANGE => "ConfigChange",
         FeatureId(0x0021) => "CryptoId",
-        FeatureId(0x00C0) | FeatureId(0x00C1) | FeatureId(0x00C2) | FeatureId(0x00C3) => "DFUControl",
+        FeatureId(0x00C0) | FeatureId(0x00C1) | FeatureId(0x00C2) | FeatureId(0x00C3) => {
+            "DFUControl"
+        }
         FeatureId(0x00D0) => "DFU",
         FeatureId(0x00D1) => "ResumableDFU",
         UNIFIED_BATTERY => "UnifiedBattery",

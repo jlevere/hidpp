@@ -47,13 +47,7 @@ pub fn encode_set_current_host(
     sw_id: SoftwareId,
     host_index: u8,
 ) -> LongReport {
-    LongReport::request(
-        device,
-        feature_index,
-        FunctionId(1),
-        sw_id,
-        &[host_index],
-    )
+    LongReport::request(device, feature_index, FunctionId(1), sw_id, &[host_index])
 }
 
 #[cfg(test)]

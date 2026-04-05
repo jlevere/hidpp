@@ -15,20 +15,16 @@ pub fn encode_get_feature(
     sw_id: SoftwareId,
 ) -> LongReport {
     let params = feature_id.0.to_be_bytes();
-    LongReport::request(
-        device,
-        FeatureIndex::ROOT,
-        FunctionId(0),
-        sw_id,
-        &params,
-    )
+    LongReport::request(device, FeatureIndex::ROOT, FunctionId(0), sw_id, &params)
 }
 
 /// Decode the response to GetFeature.
 ///
 /// Returns `(feature_index, feature_type)`. A feature index of 0 means
 /// the feature is not supported by this device.
-pub fn decode_get_feature(report: &LongReport) -> Result<(FeatureIndex, FeatureFlags), DecodeError> {
+pub fn decode_get_feature(
+    report: &LongReport,
+) -> Result<(FeatureIndex, FeatureFlags), DecodeError> {
     report.check_error()?;
     let params = report.params();
     let index = FeatureIndex(params[0]);

@@ -57,13 +57,7 @@ pub fn encode_get_dpi_list(
     sensor_index: u8,
     sw_id: SoftwareId,
 ) -> LongReport {
-    LongReport::request(
-        device,
-        feature_index,
-        FunctionId(1),
-        sw_id,
-        &[sensor_index],
-    )
+    LongReport::request(device, feature_index, FunctionId(1), sw_id, &[sensor_index])
 }
 
 /// Decoded DPI list — either a continuous range or discrete values.
@@ -126,13 +120,7 @@ pub fn encode_get_dpi(
     sensor_index: u8,
     sw_id: SoftwareId,
 ) -> LongReport {
-    LongReport::request(
-        device,
-        feature_index,
-        FunctionId(2),
-        sw_id,
-        &[sensor_index],
-    )
+    LongReport::request(device, feature_index, FunctionId(2), sw_id, &[sensor_index])
 }
 
 /// Decode GetSensorDPI response. Returns the current DPI value.
@@ -178,13 +166,7 @@ pub fn encode_get_default_dpi(
     sensor_index: u8,
     sw_id: SoftwareId,
 ) -> LongReport {
-    LongReport::request(
-        device,
-        feature_index,
-        FunctionId(4),
-        sw_id,
-        &[sensor_index],
-    )
+    LongReport::request(device, feature_index, FunctionId(4), sw_id, &[sensor_index])
 }
 
 pub fn decode_get_default_dpi(report: &LongReport) -> Result<u16, DecodeError> {
@@ -217,7 +199,7 @@ mod tests {
     #[test]
     fn decode_dpi_response() {
         let mut report = LongReport::new();
-        report.as_bytes_mut()[4] = 0;    // sensor index
+        report.as_bytes_mut()[4] = 0; // sensor index
         report.as_bytes_mut()[5] = 0x06; // DPI high byte
         report.as_bytes_mut()[6] = 0x40; // DPI low byte (0x0640 = 1600)
 

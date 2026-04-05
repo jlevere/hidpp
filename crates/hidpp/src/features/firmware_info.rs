@@ -67,13 +67,7 @@ pub fn encode_get_fw_info(
     entity_index: u8,
     sw_id: SoftwareId,
 ) -> LongReport {
-    LongReport::request(
-        device,
-        feature_index,
-        FunctionId(1),
-        sw_id,
-        &[entity_index],
-    )
+    LongReport::request(device, feature_index, FunctionId(1), sw_id, &[entity_index])
 }
 
 pub fn decode_get_fw_info(report: &LongReport) -> Result<EntityInfo, DecodeError> {
@@ -107,15 +101,15 @@ mod tests {
     #[test]
     fn decode_fw_info() {
         let mut report = LongReport::new();
-        report.as_bytes_mut()[4] = 0;              // Firmware type
-        report.as_bytes_mut()[5] = b'M';           // name
+        report.as_bytes_mut()[4] = 0; // Firmware type
+        report.as_bytes_mut()[5] = b'M'; // name
         report.as_bytes_mut()[6] = b'P';
         report.as_bytes_mut()[7] = b'M';
-        report.as_bytes_mut()[8] = 0x12;           // major
-        report.as_bytes_mut()[9] = 0x34;           // minor
-        report.as_bytes_mut()[10] = 0x00;          // build hi
-        report.as_bytes_mut()[11] = 0x42;          // build lo
-        report.as_bytes_mut()[12] = 0x04;          // transport
+        report.as_bytes_mut()[8] = 0x12; // major
+        report.as_bytes_mut()[9] = 0x34; // minor
+        report.as_bytes_mut()[10] = 0x00; // build hi
+        report.as_bytes_mut()[11] = 0x42; // build lo
+        report.as_bytes_mut()[12] = 0x04; // transport
 
         let info = decode_get_fw_info(&report).unwrap();
         assert_eq!(info.entity_type, EntityType::Firmware);

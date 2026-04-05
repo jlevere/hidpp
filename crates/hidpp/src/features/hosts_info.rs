@@ -152,10 +152,10 @@ mod tests {
     #[test]
     fn decode_host_os_macos() {
         let mut report = LongReport::new();
-        report.as_bytes_mut()[4] = 6;  // macOS
+        report.as_bytes_mut()[4] = 6; // macOS
         report.as_bytes_mut()[5] = 14; // Sonoma major
-        report.as_bytes_mut()[6] = 5;  // minor
-        report.as_bytes_mut()[7] = 0;  // patch
+        report.as_bytes_mut()[6] = 5; // minor
+        report.as_bytes_mut()[7] = 0; // patch
 
         let os = decode_get_host_os_version(&report).unwrap();
         assert_eq!(os.os_type, HostOS::MacOS);

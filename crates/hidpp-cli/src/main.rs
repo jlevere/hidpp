@@ -63,9 +63,7 @@ async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt()
         .with_env_filter(
             tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| {
-                    tracing_subscriber::EnvFilter::new(&cli.log_level)
-                }),
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new(&cli.log_level)),
         )
         .with_target(false)
         .with_level(true)
@@ -106,10 +104,7 @@ fn cmd_list() -> anyhow::Result<()> {
 
     for dev in &devices {
         let name = dev.name.as_deref().unwrap_or("Unknown");
-        println!(
-            "{:04X}:{:04X}  {}",
-            dev.vendor_id, dev.product_id, name,
-        );
+        println!("{:04X}:{:04X}  {}", dev.vendor_id, dev.product_id, name,);
     }
 
     Ok(())
@@ -159,7 +154,10 @@ async fn cmd_info(idx: Option<DeviceIndex>) -> anyhow::Result<()> {
     // Print features table.
     for feature in device.features() {
         let name = hidpp::feature_id::feature_name(feature.id).unwrap_or("-");
-        let flags = if feature.flags.contains(hidpp::types::FeatureFlags::ENGINEERING_HIDDEN) {
+        let flags = if feature
+            .flags
+            .contains(hidpp::types::FeatureFlags::ENGINEERING_HIDDEN)
+        {
             " [hidden]"
         } else {
             ""
@@ -177,7 +175,10 @@ async fn cmd_info(idx: Option<DeviceIndex>) -> anyhow::Result<()> {
     // Print current settings.
     if device.supports(hidpp::feature_id::UNIFIED_BATTERY) {
         match device.battery_status().await {
-            Ok(s) => println!("Battery:     {}% ({:?}, {:?})", s.percentage, s.level, s.charging),
+            Ok(s) => println!(
+                "Battery:     {}% ({:?}, {:?})",
+                s.percentage, s.level, s.charging
+            ),
             Err(e) => println!("Battery:     error ({e})"),
         }
     }
@@ -229,7 +230,11 @@ async fn cmd_info(idx: Option<DeviceIndex>) -> anyhow::Result<()> {
     if device.supports(hidpp::feature_id::CHANGE_HOST) {
         match device.host_info().await {
             Ok(h) => {
-                println!("Easy-Switch: host {} of {}", h.current_host + 1, h.num_hosts);
+                println!(
+                    "Easy-Switch: host {} of {}",
+                    h.current_host + 1,
+                    h.num_hosts
+                );
                 // Show OS for each host slot.
                 if device.supports(hidpp::feature_id::HOSTS_INFOS) {
                     for i in 0..h.num_hosts {
@@ -237,7 +242,10 @@ async fn cmd_info(idx: Option<DeviceIndex>) -> anyhow::Result<()> {
                             let marker = if i == h.current_host { "→" } else { " " };
                             println!(
                                 "  {marker} Slot {}: {:?} v{}.{}",
-                                i + 1, os.os_type, os.version_major, os.version_minor,
+                                i + 1,
+                                os.os_type,
+                                os.version_major,
+                                os.version_minor,
                             );
                         }
                     }
@@ -296,22 +304,34 @@ async fn cmd_get(idx: Option<DeviceIndex>, setting: &str) -> anyhow::Result<()> 
     match setting {
         "battery" => {
             let s = device.battery_status().await?;
-            println!("{}% | {:?} | {:?} | external_power={}", s.percentage, s.level, s.charging, s.external_power);
+            println!(
+                "{}% | {:?} | {:?} | external_power={}",
+                s.percentage, s.level, s.charging, s.external_power
+            );
         }
         "dpi" => {
             println!("{}", device.dpi_get().await?);
         }
         "smartshift" => {
             let s = device.smart_shift_get().await?;
-            println!("mode={:?} auto_disengage={} torque={}", s.mode, s.auto_disengage, s.tunable_torque);
+            println!(
+                "mode={:?} auto_disengage={} torque={}",
+                s.mode, s.auto_disengage, s.tunable_torque
+            );
         }
         "wheel" => {
             let m = device.hires_wheel_get_mode().await?;
-            println!("hires={} inverted={} diverted={}", m.high_resolution, m.inverted, m.diverted);
+            println!(
+                "hires={} inverted={} diverted={}",
+                m.high_resolution, m.inverted, m.diverted
+            );
         }
         "thumbwheel" => {
             let s = device.thumbwheel_get_status().await?;
-            println!("mode={:?} inverted={} diverted={}", s.reporting_mode, s.inverted, s.diverted);
+            println!(
+                "mode={:?} inverted={} diverted={}",
+                s.reporting_mode, s.inverted, s.diverted
+            );
         }
         "host" => {
             let h = device.host_info().await?;
@@ -337,25 +357,42 @@ async fn cmd_get(idx: Option<DeviceIndex>, setting: &str) -> anyhow::Result<()> 
                 let status = match &reporting {
                     Ok(r) => {
                         let mut parts = vec![];
-                        if r.is_diverted() { parts.push("diverted"); }
-                        if r.raw_xy_enabled() { parts.push("rawXY"); }
-                        if r.persist_enabled() { parts.push("persist"); }
+                        if r.is_diverted() {
+                            parts.push("diverted");
+                        }
+                        if r.raw_xy_enabled() {
+                            parts.push("rawXY");
+                        }
+                        if r.persist_enabled() {
+                            parts.push("persist");
+                        }
                         if r.remapped_cid != c.cid && r.remapped_cid != 0 {
                             parts.push("remapped");
                         }
-                        if parts.is_empty() { "default".to_string() } else { parts.join("+") }
+                        if parts.is_empty() {
+                            "default".to_string()
+                        } else {
+                            parts.join("+")
+                        }
                     }
                     Err(_) => "?".to_string(),
                 };
                 println!(
                     "CID {:>3} (0x{:04X}) → TID {:>3}  {:<15} [{}]  caps: divert={} persist={}",
-                    c.cid, c.cid, c.tid, name, status,
-                    c.is_divertable(), c.is_persistently_divertable(),
+                    c.cid,
+                    c.cid,
+                    c.tid,
+                    name,
+                    status,
+                    c.is_divertable(),
+                    c.is_persistently_divertable(),
                 );
             }
         }
         other => {
-            anyhow::bail!("Unknown setting: {other}\nAvailable: battery, dpi, smartshift, wheel, thumbwheel, host, firmware, buttons");
+            anyhow::bail!(
+                "Unknown setting: {other}\nAvailable: battery, dpi, smartshift, wheel, thumbwheel, host, firmware, buttons"
+            );
         }
     }
 
@@ -374,7 +411,9 @@ async fn cmd_set(idx: Option<DeviceIndex>, setting: &str, value: &str) -> anyhow
         "smartshift" => {
             let mut state = device.smart_shift_get().await?;
             match value {
-                "free" | "freespin" => state.mode = hidpp::features::smart_shift::WheelMode::FreeScroll,
+                "free" | "freespin" => {
+                    state.mode = hidpp::features::smart_shift::WheelMode::FreeScroll
+                }
                 "ratchet" => state.mode = hidpp::features::smart_shift::WheelMode::Ratchet,
                 v => {
                     state.auto_disengage = v.parse()?;
@@ -389,7 +428,10 @@ async fn cmd_set(idx: Option<DeviceIndex>, setting: &str, value: &str) -> anyhow
         "button" => {
             // Format: "CID:action" e.g. "82:divert" or "195:remap:82" or "82:default"
             let parts: Vec<&str> = value.split(':').collect();
-            let cid: u16 = parts.first().ok_or_else(|| anyhow::anyhow!("usage: button CID:action"))?.parse()?;
+            let cid: u16 = parts
+                .first()
+                .ok_or_else(|| anyhow::anyhow!("usage: button CID:action"))?
+                .parse()?;
             let action = parts.get(1).copied().unwrap_or("default");
 
             match action {
@@ -402,8 +444,13 @@ async fn cmd_set(idx: Option<DeviceIndex>, setting: &str, value: &str) -> anyhow
                     println!("CID {cid}: diverted={}", result.is_diverted());
                 }
                 "remap" => {
-                    let target: u16 = parts.get(2).ok_or_else(|| anyhow::anyhow!("usage: button CID:remap:TARGET_CID"))?.parse()?;
-                    let result = device.special_key_set_reporting(cid, 0x00, target, 0).await?;
+                    let target: u16 = parts
+                        .get(2)
+                        .ok_or_else(|| anyhow::anyhow!("usage: button CID:remap:TARGET_CID"))?
+                        .parse()?;
+                    let result = device
+                        .special_key_set_reporting(cid, 0x00, target, 0)
+                        .await?;
                     println!("CID {cid}: remapped to CID {}", result.remapped_cid);
                 }
                 _ => anyhow::bail!("button actions: divert, default, remap:CID"),
@@ -418,7 +465,10 @@ async fn cmd_set(idx: Option<DeviceIndex>, setting: &str, value: &str) -> anyhow
                 _ => anyhow::bail!("wheel values: hires, lowres, invert"),
             }
             let applied = device.hires_wheel_set_mode(&mode).await?;
-            println!("Wheel: hires={} inverted={}", applied.high_resolution, applied.inverted);
+            println!(
+                "Wheel: hires={} inverted={}",
+                applied.high_resolution, applied.inverted
+            );
         }
         other => {
             anyhow::bail!("Unknown setting: {other}\nAvailable: dpi, smartshift, wheel");
@@ -457,7 +507,12 @@ async fn cmd_import(idx: Option<DeviceIndex>, file: &str) -> anyhow::Result<()> 
     Ok(())
 }
 
-async fn cmd_raw(idx: Option<DeviceIndex>, feature_hex: &str, function: u8, params_hex: &str) -> anyhow::Result<()> {
+async fn cmd_raw(
+    idx: Option<DeviceIndex>,
+    feature_hex: &str,
+    function: u8,
+    params_hex: &str,
+) -> anyhow::Result<()> {
     let device = open_first_device(idx).await?;
 
     let feature_id = u16::from_str_radix(feature_hex.trim_start_matches("0x"), 16)?;

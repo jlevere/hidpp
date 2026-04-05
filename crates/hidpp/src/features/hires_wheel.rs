@@ -149,10 +149,10 @@ mod tests {
     #[test]
     fn decode_capabilities() {
         let mut report = LongReport::new();
-        report.as_bytes_mut()[4] = 8;     // multiplier
-        report.as_bytes_mut()[5] = 0x0F;  // all flags except analytics
-        report.as_bytes_mut()[6] = 24;    // ratchets per rotation
-        report.as_bytes_mut()[7] = 30;    // diameter
+        report.as_bytes_mut()[4] = 8; // multiplier
+        report.as_bytes_mut()[5] = 0x0F; // all flags except analytics
+        report.as_bytes_mut()[6] = 24; // ratchets per rotation
+        report.as_bytes_mut()[7] = 30; // diameter
 
         let caps = decode_get_capabilities(&report).unwrap();
         assert_eq!(caps.multiplier, 8);

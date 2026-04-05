@@ -128,13 +128,7 @@ pub fn encode_get_ctrl_id_reporting(
     sw_id: SoftwareId,
 ) -> LongReport {
     let cid_bytes = cid.to_be_bytes();
-    LongReport::request(
-        device,
-        feature_index,
-        FunctionId(2),
-        sw_id,
-        &cid_bytes,
-    )
+    LongReport::request(device, feature_index, FunctionId(2), sw_id, &cid_bytes)
 }
 
 pub fn decode_get_ctrl_id_reporting(report: &LongReport) -> Result<ControlReporting, DecodeError> {
@@ -176,9 +170,7 @@ pub fn encode_set_ctrl_id_reporting(
     )
 }
 
-pub fn decode_set_ctrl_id_reporting(
-    report: &LongReport,
-) -> Result<ControlReporting, DecodeError> {
+pub fn decode_set_ctrl_id_reporting(report: &LongReport) -> Result<ControlReporting, DecodeError> {
     decode_get_ctrl_id_reporting(report)
 }
 
@@ -217,7 +209,7 @@ mod tests {
             DeviceIndex::BLE_DIRECT,
             FeatureIndex(0x09),
             SoftwareId::DEFAULT,
-            82,  // CID
+            82,   // CID
             0x01, // flags: divert
             0,    // no remap
             0,

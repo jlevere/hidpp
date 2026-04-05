@@ -127,10 +127,10 @@ mod tests {
     #[test]
     fn decode_battery_status() {
         let mut report = LongReport::new();
-        report.as_bytes_mut()[4] = 75;  // 75% battery
-        report.as_bytes_mut()[5] = 4;   // Good level
-        report.as_bytes_mut()[6] = 0;   // Discharging
-        report.as_bytes_mut()[7] = 0;   // No external power
+        report.as_bytes_mut()[4] = 75; // 75% battery
+        report.as_bytes_mut()[5] = 4; // Good level
+        report.as_bytes_mut()[6] = 0; // Discharging
+        report.as_bytes_mut()[7] = 0; // No external power
 
         let status = decode_get_status(&report).unwrap();
         assert_eq!(status.percentage, 75);
@@ -143,9 +143,9 @@ mod tests {
     fn decode_battery_charging() {
         let mut report = LongReport::new();
         report.as_bytes_mut()[4] = 50;
-        report.as_bytes_mut()[5] = 2;   // Low
-        report.as_bytes_mut()[6] = 1;   // Charging
-        report.as_bytes_mut()[7] = 1;   // External power
+        report.as_bytes_mut()[5] = 2; // Low
+        report.as_bytes_mut()[6] = 1; // Charging
+        report.as_bytes_mut()[7] = 1; // External power
 
         let status = decode_get_status(&report).unwrap();
         assert_eq!(status.percentage, 50);

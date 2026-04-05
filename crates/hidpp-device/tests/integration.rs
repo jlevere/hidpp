@@ -132,7 +132,10 @@ async fn smartshift_read() {
         return;
     }
 
-    let state = device.smart_shift_get().await.expect("SmartShift read failed");
+    let state = device
+        .smart_shift_get()
+        .await
+        .expect("SmartShift read failed");
 
     println!(
         "SmartShift: {:?} auto_disengage={} torque={}",
@@ -200,7 +203,11 @@ async fn host_info_read() {
         info.current_host,
         info.num_hosts,
     );
-    println!("Easy-Switch: host {} of {}", info.current_host + 1, info.num_hosts);
+    println!(
+        "Easy-Switch: host {} of {}",
+        info.current_host + 1,
+        info.num_hosts
+    );
 }
 
 #[tokio::test]
@@ -217,8 +224,7 @@ async fn config_export() {
     assert!(toml.contains("MX Master") || toml.contains(&device.name()));
 
     // Round-trip: parse the TOML back.
-    let parsed =
-        hidpp_device::DeviceConfig::from_toml(&toml).expect("TOML parse failed");
+    let parsed = hidpp_device::DeviceConfig::from_toml(&toml).expect("TOML parse failed");
     assert_eq!(parsed.device.name, config.device.name);
 }
 

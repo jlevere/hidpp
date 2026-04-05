@@ -84,9 +84,7 @@ pub fn encode_get_capabilities(
 /// read_capabilities: has_tunable_torque: %d, auto_disangage_default: %d,
 ///                    default_tunable_torque: %d, max_force: %d
 /// ```
-pub fn decode_get_capabilities(
-    report: &LongReport,
-) -> Result<SmartShiftCapabilities, DecodeError> {
+pub fn decode_get_capabilities(report: &LongReport) -> Result<SmartShiftCapabilities, DecodeError> {
     report.check_error()?;
     let p = report.params();
     Ok(SmartShiftCapabilities {
@@ -240,7 +238,7 @@ mod tests {
     #[test]
     fn decode_mode_response() {
         let mut report = LongReport::new();
-        report.as_bytes_mut()[4] = 1;  // FreeScroll = 1
+        report.as_bytes_mut()[4] = 1; // FreeScroll = 1
         report.as_bytes_mut()[5] = 10; // auto_disengage
         report.as_bytes_mut()[6] = 15; // tunable_torque (only meaningful for 0x2111)
 

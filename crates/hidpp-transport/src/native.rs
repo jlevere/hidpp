@@ -2,7 +2,7 @@ use std::sync::Arc;
 use std::time::Duration;
 
 use hidapi::{HidApi, HidDevice};
-use tokio::sync::{broadcast, mpsc, Mutex};
+use tokio::sync::{Mutex, broadcast, mpsc};
 
 use hidpp::report::{LongReport, REPORT_ID_LONG};
 use hidpp::types::{FeatureIndex, FunctionId, SoftwareId};
@@ -53,8 +53,8 @@ impl HidapiEnumerator {
 
     /// Open a transport to a specific device by path.
     pub fn open(&self, info: &DeviceInfo) -> Result<HidapiTransport, TransportError> {
-        let c_path =
-            std::ffi::CString::new(info.path.as_bytes()).map_err(|e| TransportError::Io(e.to_string()))?;
+        let c_path = std::ffi::CString::new(info.path.as_bytes())
+            .map_err(|e| TransportError::Io(e.to_string()))?;
 
         let device = self
             .api

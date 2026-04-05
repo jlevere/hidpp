@@ -250,7 +250,13 @@ mod tests {
         let profile = DeviceProfile::by_pid("b034").unwrap();
         assert!(profile.display_name.contains("MX Master 3S"));
         assert!(profile.capabilities.pointer_speed);
-        assert!(profile.capabilities.scroll_wheel_capabilities.as_ref().is_some_and(|s| s.smartshift));
+        assert!(
+            profile
+                .capabilities
+                .scroll_wheel_capabilities
+                .as_ref()
+                .is_some_and(|s| s.smartshift)
+        );
     }
 
     #[test]

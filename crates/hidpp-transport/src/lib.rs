@@ -35,9 +35,7 @@ pub trait Transport {
     async fn send(&self, report: &LongReport) -> Result<(), TransportError>;
 
     /// Subscribe to unsolicited notifications from the device.
-    fn notifications(
-        &self,
-    ) -> Pin<Box<dyn futures_core::Stream<Item = LongReport> + '_>>;
+    fn notifications(&self) -> Pin<Box<dyn futures_core::Stream<Item = LongReport> + '_>>;
 }
 
 /// Enumerate and open HID++ devices.

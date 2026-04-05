@@ -60,8 +60,7 @@ impl Device {
         for (i, &index) in DeviceIndex::PROBE_ORDER.iter().enumerate() {
             let sw_id = SoftwareId::new((i as u8 + 1).min(0x0F));
             let ping = root::encode_ping(index, sw_id);
-            match tokio::time::timeout(Duration::from_millis(300), transport.request(&ping)).await
-            {
+            match tokio::time::timeout(Duration::from_millis(300), transport.request(&ping)).await {
                 Ok(Ok(resp)) if root::decode_ping(&resp).is_ok() => {
                     tracing::info!("probed device index 0x{:02X} — responded", index.0);
                     return Ok(index);
@@ -92,8 +91,7 @@ impl Device {
         );
 
         // Step 2: Find the FeatureSet feature index.
-        let fs_req =
-            root::encode_get_feature(device_index, hidpp::feature_id::FEATURE_SET, sw_id);
+        let fs_req = root::encode_get_feature(device_index, hidpp::feature_id::FEATURE_SET, sw_id);
         let fs_resp = transport.request(&fs_req).await?;
         let (fs_index, _) = root::decode_get_feature(&fs_resp)?;
 
@@ -136,8 +134,7 @@ impl Device {
             let resp = transport.request(&req).await?;
             let info = feature_set::decode_get_feature_id(&resp)?;
 
-            let name = hidpp::feature_id::feature_name(info.feature_id)
-                .unwrap_or("Unknown");
+            let name = hidpp::feature_id::feature_name(info.feature_id).unwrap_or("Unknown");
 
             tracing::debug!(
                 "  [{:02X}] {} ({}), flags={:?}, v{}",
@@ -201,8 +198,7 @@ impl Device {
         let mut name_bytes = Vec::with_capacity(name_len as usize);
         let mut offset = 0u8;
         while (name_bytes.len()) < name_len as usize {
-            let chunk_req =
-                device_name::encode_get_name_chunk(device_index, idx, sw_id, offset);
+            let chunk_req = device_name::encode_get_name_chunk(device_index, idx, sw_id, offset);
             let Ok(chunk_resp) = transport.request(&chunk_req).await else {
                 break;
             };
@@ -298,12 +294,9 @@ impl Device {
     // --- Typed feature accessors ---
 
     /// Read battery status (feature 0x1004).
-    pub async fn battery_status(
-        &self,
-    ) -> Result<unified_battery::BatteryStatus, DeviceError> {
+    pub async fn battery_status(&self) -> Result<unified_battery::BatteryStatus, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::UNIFIED_BATTERY)?;
-        let req =
-            unified_battery::encode_get_status(self.device_index, idx, self.sw_id);
+        let req = unified_battery::encode_get_status(self.device_index, idx, self.sw_id);
         let resp = self.transport.request(&req).await?;
         Ok(unified_battery::decode_get_status(&resp)?)
     }
@@ -312,9 +305,7 @@ impl Device {
     ///
     /// Automatically uses the correct function IDs based on whether the device
     /// has 0x2111 (enhanced, Fn1=GET) or 0x2110 (legacy, Fn0=GET).
-    pub async fn smart_shift_get(
-        &self,
-    ) -> Result<smart_shift::SmartShiftState, DeviceError> {
+    pub async fn smart_shift_get(&self) -> Result<smart_shift::SmartShiftState, DeviceError> {
         let (idx, enhanced) = self.smart_shift_info()?;
         let req = if enhanced {
             smart_shift::encode_get_mode_v1(self.device_index, idx, self.sw_id)
@@ -361,9 +352,7 @@ impl Device {
     // --- HiResWheel (0x2121) ---
 
     /// Read HiResWheel mode (feature 0x2121).
-    pub async fn hires_wheel_get_mode(
-        &self,
-    ) -> Result<hires_wheel::WheelMode, DeviceError> {
+    pub async fn hires_wheel_get_mode(&self) -> Result<hires_wheel::WheelMode, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::HIRES_WHEEL)?;
         let req = hires_wheel::encode_get_mode(self.device_index, idx, self.sw_id);
         let resp = self.transport.request(&req).await?;
@@ -376,8 +365,7 @@ impl Device {
         mode: &hires_wheel::WheelMode,
     ) -> Result<hires_wheel::WheelMode, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::HIRES_WHEEL)?;
-        let req =
-            hires_wheel::encode_set_mode(self.device_index, idx, self.sw_id, mode);
+        let req = hires_wheel::encode_set_mode(self.device_index, idx, self.sw_id, mode);
         let resp = self.transport.request(&req).await?;
         Ok(hires_wheel::decode_set_mode(&resp)?)
     }
@@ -385,9 +373,7 @@ impl Device {
     // --- Thumbwheel (0x2150) ---
 
     /// Read thumbwheel info (feature 0x2150).
-    pub async fn thumbwheel_get_info(
-        &self,
-    ) -> Result<thumbwheel::ThumbwheelInfo, DeviceError> {
+    pub async fn thumbwheel_get_info(&self) -> Result<thumbwheel::ThumbwheelInfo, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::THUMBWHEEL)?;
         let req = thumbwheel::encode_get_info(self.device_index, idx, self.sw_id);
         let resp = self.transport.request(&req).await?;
@@ -395,9 +381,7 @@ impl Device {
     }
 
     /// Read thumbwheel status (feature 0x2150).
-    pub async fn thumbwheel_get_status(
-        &self,
-    ) -> Result<thumbwheel::ThumbwheelStatus, DeviceError> {
+    pub async fn thumbwheel_get_status(&self) -> Result<thumbwheel::ThumbwheelStatus, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::THUMBWHEEL)?;
         let req = thumbwheel::encode_get_status(self.device_index, idx, self.sw_id);
         let resp = self.transport.request(&req).await?;
@@ -409,8 +393,7 @@ impl Device {
     /// Read host info (feature 0x1814).
     pub async fn host_info(&self) -> Result<change_host::HostInfo, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::CHANGE_HOST)?;
-        let req =
-            change_host::encode_get_host_info(self.device_index, idx, self.sw_id);
+        let req = change_host::encode_get_host_info(self.device_index, idx, self.sw_id);
         let resp = self.transport.request(&req).await?;
         Ok(change_host::decode_get_host_info(&resp)?)
     }
@@ -418,19 +401,15 @@ impl Device {
     // --- FirmwareInfo (0x0003) ---
 
     /// Read firmware entity info (feature 0x0003).
-    pub async fn firmware_info(
-        &self,
-    ) -> Result<Vec<firmware_info::EntityInfo>, DeviceError> {
+    pub async fn firmware_info(&self) -> Result<Vec<firmware_info::EntityInfo>, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::FIRMWARE_INFO)?;
-        let count_req =
-            firmware_info::encode_get_entity_count(self.device_index, idx, self.sw_id);
+        let count_req = firmware_info::encode_get_entity_count(self.device_index, idx, self.sw_id);
         let count_resp = self.transport.request(&count_req).await?;
         let count = firmware_info::decode_get_entity_count(&count_resp)?;
 
         let mut entities = Vec::with_capacity(count as usize);
         for i in 0..count {
-            let req =
-                firmware_info::encode_get_fw_info(self.device_index, idx, i, self.sw_id);
+            let req = firmware_info::encode_get_fw_info(self.device_index, idx, i, self.sw_id);
             let resp = self.transport.request(&req).await?;
             entities.push(firmware_info::decode_get_fw_info(&resp)?);
         }
@@ -440,23 +419,15 @@ impl Device {
     // --- SpecialKeys (0x1B04) ---
 
     /// List all remappable controls (feature 0x1B04).
-    pub async fn special_keys_list(
-        &self,
-    ) -> Result<Vec<special_keys::ControlInfo>, DeviceError> {
+    pub async fn special_keys_list(&self) -> Result<Vec<special_keys::ControlInfo>, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::SPECIAL_KEYS_V4)?;
-        let count_req =
-            special_keys::encode_get_count(self.device_index, idx, self.sw_id);
+        let count_req = special_keys::encode_get_count(self.device_index, idx, self.sw_id);
         let count_resp = self.transport.request(&count_req).await?;
         let count = special_keys::decode_get_count(&count_resp)?;
 
         let mut controls = Vec::with_capacity(count as usize);
         for i in 0..count {
-            let req = special_keys::encode_get_ctrl_id_info(
-                self.device_index,
-                idx,
-                i,
-                self.sw_id,
-            );
+            let req = special_keys::encode_get_ctrl_id_info(self.device_index, idx, i, self.sw_id);
             let resp = self.transport.request(&req).await?;
             controls.push(special_keys::decode_get_ctrl_id_info(&resp)?);
         }
@@ -469,12 +440,8 @@ impl Device {
         cid: u16,
     ) -> Result<special_keys::ControlReporting, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::SPECIAL_KEYS_V4)?;
-        let req = special_keys::encode_get_ctrl_id_reporting(
-            self.device_index,
-            idx,
-            cid,
-            self.sw_id,
-        );
+        let req =
+            special_keys::encode_get_ctrl_id_reporting(self.device_index, idx, cid, self.sw_id);
         let resp = self.transport.request(&req).await?;
         Ok(special_keys::decode_get_ctrl_id_reporting(&resp)?)
     }
@@ -506,12 +473,8 @@ impl Device {
     /// Warning: this will disconnect the device from the current host.
     pub async fn switch_host(&self, host_index: u8) -> Result<(), DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::CHANGE_HOST)?;
-        let req = change_host::encode_set_current_host(
-            self.device_index,
-            idx,
-            self.sw_id,
-            host_index,
-        );
+        let req =
+            change_host::encode_set_current_host(self.device_index, idx, self.sw_id, host_index);
         // SetCurrentHost causes a disconnect, so don't wait for response.
         self.transport.send(&req).await?;
         Ok(())
@@ -523,16 +486,14 @@ impl Device {
     pub async fn friendly_name(&self) -> Result<String, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::DEVICE_FRIENDLY_NAME)?;
 
-        let len_req =
-            friendly_name::encode_get_name_len(self.device_index, idx, self.sw_id);
+        let len_req = friendly_name::encode_get_name_len(self.device_index, idx, self.sw_id);
         let len_resp = self.transport.request(&len_req).await?;
         let lengths = friendly_name::decode_get_name_len(&len_resp)?;
 
         let mut name_bytes = Vec::with_capacity(lengths.name_len as usize);
         let mut offset = 0u8;
         while name_bytes.len() < lengths.name_len as usize {
-            let req =
-                friendly_name::encode_get_name(self.device_index, idx, offset, self.sw_id);
+            let req = friendly_name::encode_get_name(self.device_index, idx, offset, self.sw_id);
             let resp = self.transport.request(&req).await?;
             let chunk = friendly_name::decode_get_name_chunk(&resp);
             let remaining = lengths.name_len as usize - name_bytes.len();
@@ -552,12 +513,8 @@ impl Device {
         host_index: u8,
     ) -> Result<hosts_info::HostOSVersion, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::HOSTS_INFOS)?;
-        let req = hosts_info::encode_get_host_os_version(
-            self.device_index,
-            idx,
-            host_index,
-            self.sw_id,
-        );
+        let req =
+            hosts_info::encode_get_host_os_version(self.device_index, idx, host_index, self.sw_id);
         let resp = self.transport.request(&req).await?;
         Ok(hosts_info::decode_get_host_os_version(&resp)?)
     }
@@ -565,12 +522,9 @@ impl Device {
     // --- WirelessStatus (0x1D4B) ---
 
     /// Read wireless connection status (feature 0x1D4B).
-    pub async fn wireless_status(
-        &self,
-    ) -> Result<wireless_status::WirelessStatus, DeviceError> {
+    pub async fn wireless_status(&self) -> Result<wireless_status::WirelessStatus, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::WIRELESS_STATUS)?;
-        let req =
-            wireless_status::encode_get_status(self.device_index, idx, self.sw_id);
+        let req = wireless_status::encode_get_status(self.device_index, idx, self.sw_id);
         let resp = self.transport.request(&req).await?;
         Ok(wireless_status::decode_get_status(&resp)?)
     }
@@ -578,8 +532,7 @@ impl Device {
     /// Read current DPI (feature 0x2201).
     pub async fn dpi_get(&self) -> Result<u16, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::ADJUSTABLE_DPI)?;
-        let req =
-            adjustable_dpi::encode_get_dpi(self.device_index, idx, 0, self.sw_id);
+        let req = adjustable_dpi::encode_get_dpi(self.device_index, idx, 0, self.sw_id);
         let resp = self.transport.request(&req).await?;
         Ok(adjustable_dpi::decode_get_dpi(&resp)?)
     }
@@ -587,8 +540,7 @@ impl Device {
     /// Set DPI (feature 0x2201).
     pub async fn dpi_set(&self, dpi: u16) -> Result<u16, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::ADJUSTABLE_DPI)?;
-        let req =
-            adjustable_dpi::encode_set_dpi(self.device_index, idx, 0, dpi, self.sw_id);
+        let req = adjustable_dpi::encode_set_dpi(self.device_index, idx, 0, dpi, self.sw_id);
         let resp = self.transport.request(&req).await?;
         Ok(adjustable_dpi::decode_set_dpi(&resp)?)
     }
@@ -695,7 +647,11 @@ impl Device {
             current.high_resolution = wheel.high_resolution;
             current.inverted = wheel.inverted;
             self.hires_wheel_set_mode(&current).await?;
-            tracing::info!("Applied wheel: hires={}, inverted={}", wheel.high_resolution, wheel.inverted);
+            tracing::info!(
+                "Applied wheel: hires={}, inverted={}",
+                wheel.high_resolution,
+                wheel.inverted
+            );
         }
 
         Ok(())
