@@ -154,6 +154,18 @@ export class Device {
     };
   }
 
+  async setThumbwheel(
+    diverted: boolean,
+    inverted: boolean,
+  ): Promise<{ mode: string; inverted: boolean; diverted: boolean }> {
+    log(`setThumbwheel(${String(diverted)}, ${String(inverted)})...`);
+    return (await this.#raw.setThumbwheel(diverted, inverted)) as {
+      mode: string;
+      inverted: boolean;
+      diverted: boolean;
+    };
+  }
+
   async getFriendlyName(): Promise<string> {
     log("getFriendlyName...");
     return this.#raw.getFriendlyName();

@@ -282,8 +282,12 @@ async function loadButtonReporting(device: Device, data: PageData): Promise<void
       )?.parentElement;
       if (parent) {
         const select = parent.querySelector("select");
-        if (select && r.remappedCid !== 0 && r.remappedCid !== btn.cid) {
-          select.value = String(r.remappedCid);
+        if (select) {
+          if (r.diverted) {
+            select.value = "divert";
+          } else if (r.remappedCid !== 0 && r.remappedCid !== btn.cid) {
+            select.value = `remap:${String(r.remappedCid)}`;
+          }
         }
       }
     } catch {
@@ -491,12 +495,49 @@ function renderDevicePage(data: PageData): void {
 
     // Thumbwheel.
     if (data.thumbwheel) {
+      const tw = data.thumbwheel;
+      const twNativeBtn = el("button", {}, "native");
+      const twDivertBtn = el("button", {}, "diverted");
+      if (tw.mode === "Native") twNativeBtn.classList.add("active");
+      else twDivertBtn.classList.add("active");
+
+      if (data.demo || !data.device) {
+        twNativeBtn.setAttribute("disabled", "");
+        twDivertBtn.setAttribute("disabled", "");
+      } else {
+        const device = data.device;
+        twNativeBtn.addEventListener("click", () => {
+          void (async (): Promise<void> => {
+            try {
+              const r = await device.setThumbwheel(false, tw.inverted);
+              tw.mode = r.mode;
+              twNativeBtn.classList.toggle("active", r.mode === "Native");
+              twDivertBtn.classList.toggle("active", r.mode !== "Native");
+            } catch (e) {
+              logError(`Thumbwheel: ${String(e)}`);
+            }
+          })();
+        });
+        twDivertBtn.addEventListener("click", () => {
+          void (async (): Promise<void> => {
+            try {
+              const r = await device.setThumbwheel(true, tw.inverted);
+              tw.mode = r.mode;
+              twNativeBtn.classList.toggle("active", r.mode === "Native");
+              twDivertBtn.classList.toggle("active", r.mode !== "Native");
+            } catch (e) {
+              logError(`Thumbwheel: ${String(e)}`);
+            }
+          })();
+        });
+      }
+
       section.append(
         el(
           "div",
           { class: "row" },
           el("span", { class: "row-label" }, "Thumbwheel"),
-          el("span", { class: "row-value" }, data.thumbwheel.mode),
+          el("div", { class: "toggle" }, twNativeBtn, twDivertBtn),
         ),
       );
     }
@@ -539,26 +580,51 @@ function renderDevicePage(data: PageData): void {
         defaultOpt.textContent = `${name} (default)`;
         select.append(defaultOpt);
 
+        // Separator + remap targets.
+        const sep = document.createElement("option");
+        sep.disabled = true;
+        sep.textContent = "── remap to ──";
+        select.append(sep);
+
         for (const target of remapTargets) {
           if (target.cid === cid) continue;
           const opt = document.createElement("option");
-          opt.value = String(target.cid);
+          opt.value = `remap:${String(target.cid)}`;
           opt.textContent = target.name;
           select.append(opt);
         }
 
-        // Set current remap value (loaded lazily).
+        // Divert option.
+        const sep2 = document.createElement("option");
+        sep2.disabled = true;
+        sep2.textContent = "──────────";
+        select.append(sep2);
+        const divertOpt = document.createElement("option");
+        divertOpt.value = "divert";
+        divertOpt.textContent = "→ divert to software";
+        select.append(divertOpt);
+
+        // Set current value (loaded lazily).
         select.value = String(cid);
 
         select.addEventListener("change", () => {
-          const targetCid = parseInt(select.value, 10);
+          const val = select.value;
           void (async (): Promise<void> => {
             try {
-              const isRemap = targetCid !== cid;
-              const result = await device.setButtonReporting(cid, isRemap ? 0x00 : 0x00, targetCid);
-              log(`Button ${String(cid)} → ${String(result.remappedCid)}`);
+              if (val === "divert") {
+                await device.setButtonReporting(cid, 0x01, 0);
+                log(`Button ${String(cid)} → diverted`);
+              } else if (val.startsWith("remap:")) {
+                const targetCid = parseInt(val.split(":")[1] ?? "0", 10);
+                const result = await device.setButtonReporting(cid, 0x00, targetCid);
+                log(`Button ${String(cid)} → remapped to ${String(result.remappedCid)}`);
+              } else {
+                // Default — reset to self.
+                await device.setButtonReporting(cid, 0x00, cid);
+                log(`Button ${String(cid)} → default`);
+              }
             } catch (e) {
-              logError(`Remap ${String(cid)}: ${String(e)}`);
+              logError(`Button ${String(cid)}: ${String(e)}`);
             }
           })();
         });
@@ -578,9 +644,9 @@ function renderDevicePage(data: PageData): void {
       const active = i === data.hostCurrent;
       const slot = data.hostSlots[i];
       const osLabel = slot && slot.osType !== "Unknown" ? ` · ${slot.osType}` : "";
-      const right = el("span", {});
+      const right = el("span", { class: "row-value" });
       if (active) {
-        right.append(el("span", { style: "color: var(--success); font-size: 0.75rem" }, "active"));
+        right.append(el("span", { style: "color: var(--success)" }, "active"));
       } else if (!data.demo && data.device) {
         const switchBtn = el("button", { class: "btn-sm" }, "switch");
         const hostIdx = i;

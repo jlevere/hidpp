@@ -628,6 +628,26 @@ impl WasmDevice {
         Ok(obj.into())
     }
 
+    /// Set thumbwheel reporting mode. mode: 0=native, 1=diverted. invert: bool.
+    #[wasm_bindgen(js_name = setThumbwheel)]
+    pub async fn set_thumbwheel(&self, diverted: bool, inverted: bool) -> Result<JsValue, JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::THUMBWHEEL)?;
+        let mode = if diverted {
+            hidpp::features::thumbwheel::ReportingMode::Diverted
+        } else {
+            hidpp::features::thumbwheel::ReportingMode::Native
+        };
+        let req = hidpp::features::thumbwheel::encode_set_reporting(di, idx, sw, mode, inverted);
+        let resp = self.request_report(&req).await?;
+        let status = hidpp::features::thumbwheel::decode_set_reporting(&resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+        let obj = js_sys::Object::new();
+        js_sys::Reflect::set(&obj, &"mode".into(), &format!("{:?}", status.reporting_mode).into())?;
+        js_sys::Reflect::set(&obj, &"inverted".into(), &status.inverted.into())?;
+        js_sys::Reflect::set(&obj, &"diverted".into(), &status.diverted.into())?;
+        Ok(obj.into())
+    }
+
     // --- FriendlyName ---
 
     /// Read BT friendly name.
