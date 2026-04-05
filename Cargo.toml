@@ -42,7 +42,7 @@ async-trait = "0.1"
 futures-core = "0.3"
 
 # HID
-hidapi = "2"
+hidapi = { version = "2", features = ["macos-shared-device"] }
 
 # CLI
 clap = { version = "4", features = ["derive"] }
