@@ -416,14 +416,21 @@ input[type="number"]:focus {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 1.5rem;
+  padding: 2rem;
   display: flex;
   justify-content: center;
   overflow: hidden;
 }
 
+/* Inner container that matches the image dimensions exactly. */
+.device-image-inner {
+  position: relative;
+  display: inline-block;
+}
+
 .device-image {
-  max-height: 320px;
+  display: block;
+  max-height: 340px;
   width: auto;
   object-fit: contain;
   user-select: none;

@@ -11,6 +11,7 @@ const MX_MASTER_3S_BUTTONS: readonly ButtonHotspot[] = [
   { cid: 82, name: "Middle Click", x: 71, y: 15 },
   { cid: 196, name: "Mode Shift", x: 81, y: 34 },
   { cid: 86, name: "Forward", x: 35, y: 43 },
+  { cid: 0, name: "Thumbwheel", x: 55, y: 51.5 },
   { cid: 195, name: "Gesture", x: 8, y: 58 },
   { cid: 83, name: "Back", x: 45, y: 60 },
 ] as const;
@@ -26,6 +27,7 @@ export function createDeviceImageCard(
   const container = el("div", { class: "device-image-container" });
 
   const imageWrapper = el("div", { class: "device-image-wrapper" });
+  const inner = el("div", { class: "device-image-inner" });
 
   const img = el("img", {
     src: "/logi-re/devices/assets/mx-master-3s/side.png",
@@ -34,9 +36,10 @@ export function createDeviceImageCard(
     draggable: "false",
   });
 
-  imageWrapper.append(img);
+  inner.append(img);
 
-  // Add button hotspots.
+  // Add button hotspots — positioned relative to the inner wrapper
+  // which matches the image dimensions exactly.
   const hotspotEls = new Map<number, HTMLElement>();
   for (const btn of MX_MASTER_3S_BUTTONS) {
     const dot = el(
@@ -57,9 +60,10 @@ export function createDeviceImageCard(
     });
 
     hotspotEls.set(btn.cid, dot);
-    imageWrapper.append(dot);
+    inner.append(dot);
   }
 
+  imageWrapper.append(inner);
   container.append(imageWrapper);
 
   return {
