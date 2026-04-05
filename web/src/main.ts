@@ -508,6 +508,7 @@ function renderDevicePage(data: PageData): void {
     section.append(el("div", { class: "section-label" }, "Buttons"));
     for (const btn of data.buttons) {
       const name = BUTTON_NAMES[btn.cid] ?? `Control ${String(btn.cid)}`;
+      const statusLabel = btn.diverted ? "software" : "standard";
       const item = el(
         "div",
         { class: "button-item" },
@@ -518,32 +519,10 @@ function renderDevicePage(data: PageData): void {
         ),
         el("span", { class: "name" }, name),
       );
-      if (btn.divertable && !data.demo && data.device) {
-        const divertBtn = el(
-          "button",
-          { style: "font-size: 0.65rem; padding: 0.15rem 0.5rem" },
-          btn.diverted ? "diverted" : "default",
-        );
-        divertBtn.classList.toggle("active", btn.diverted);
-        const cid = btn.cid;
-        const device = data.device;
-        divertBtn.addEventListener("click", () => {
-          void (async (): Promise<void> => {
-            try {
-              const newFlags = btn.diverted ? 0x00 : 0x01;
-              const result = await device.setButtonReporting(cid, newFlags, 0);
-              btn.diverted = result.diverted;
-              divertBtn.textContent = result.diverted ? "diverted" : "default";
-              divertBtn.classList.toggle("active", result.diverted);
-              log(`Button ${String(cid)}: ${result.diverted ? "diverted" : "default"}`);
-            } catch (e) {
-              logError(`Button ${String(cid)}: ${String(e)}`);
-            }
-          })();
-        });
-        item.append(divertBtn);
-      } else if (btn.divertable) {
-        item.append(el("span", { class: "tag" }, btn.diverted ? "diverted" : "divertable"));
+      if (btn.divertable) {
+        const tag = el("span", { class: "tag" }, statusLabel);
+        tag.classList.toggle("active", btn.diverted);
+        item.append(tag);
       }
       section.append(item);
     }
@@ -619,12 +598,14 @@ function renderDevicePage(data: PageData): void {
     root.append(section);
   }
 
-  // Features — only show if we have real feature data.
+  // Features.
   if (data.features.length > 0) {
     const known = data.features.filter(
-      (f) => f.name !== "Unknown" && f.name !== "-" && f.name !== "?",
+      (f) => f.name !== "Unknown" && !f.name.startsWith("Unknown"),
     );
-    const unknownCount = data.features.length - known.length;
+    const unknown = data.features.filter(
+      (f) => f.name === "Unknown" || f.name.startsWith("Unknown"),
+    );
 
     const section = el("div", { class: "section" });
     section.append(
@@ -641,9 +622,30 @@ function renderDevicePage(data: PageData): void {
         ),
       );
     }
-    if (unknownCount > 0) {
-      wrap.append(el("span", { class: "feature-item" }, `+${String(unknownCount)} more`));
+
+    if (unknown.length > 0) {
+      const moreWrap = el("span", { class: "feature-item" });
+      const moreBtn = el("button", { class: "more-toggle" }, `+${String(unknown.length)} unknown`);
+      const moreList = el("span", { style: "display: none" });
+      for (const f of unknown) {
+        moreList.append(
+          el(
+            "span",
+            { class: "feature-item" },
+            el("span", { class: "fid" }, f.id),
+            document.createTextNode(` ${f.name}`),
+          ),
+        );
+      }
+      moreBtn.addEventListener("click", () => {
+        const showing = moreList.style.display !== "none";
+        moreList.style.display = showing ? "none" : "";
+        moreBtn.textContent = showing ? `+${String(unknown.length)} unknown` : "hide";
+      });
+      moreWrap.append(moreBtn, moreList);
+      wrap.append(moreWrap);
     }
+
     section.append(wrap);
     root.append(section);
   }

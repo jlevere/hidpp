@@ -325,10 +325,29 @@ body {
 }
 
 .button-item .tag {
-  color: var(--accent);
-  font-size: 0.6rem;
-  letter-spacing: 0.05em;
+  color: var(--muted);
+  font-size: 0.65rem;
+  letter-spacing: 0.03em;
   margin-left: auto;
+}
+
+.button-item .tag.active {
+  color: var(--accent);
+}
+
+.more-toggle {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.65rem;
+  cursor: pointer;
+  font-family: var(--mono);
+  padding: 0;
+  letter-spacing: 0.03em;
+}
+
+.more-toggle:hover {
+  color: var(--fg);
 }
 
 /* ── Firmware ──────────────────────── */
