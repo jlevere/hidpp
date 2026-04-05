@@ -110,4 +110,18 @@ export class Device {
     log(`getHostInfo: host ${info.currentHost + 1} of ${info.numHosts}`);
     return info;
   }
+
+  async getFirmware(): Promise<unknown[]> {
+    log("getFirmware...");
+    const fw = (await this.#raw.getFirmware()) as unknown[];
+    log(`getFirmware: ${fw.length} entities`);
+    return fw;
+  }
+
+  async getButtons(): Promise<unknown[]> {
+    log("getButtons...");
+    const btns = (await this.#raw.getButtons()) as unknown[];
+    log(`getButtons: ${btns.length} controls`);
+    return btns;
+  }
 }

@@ -514,6 +514,60 @@ impl WasmDevice {
         Ok(obj.into())
     }
 
+    /// Read firmware info. Returns array of `{type, name, versionMajor, versionMinor, build}`.
+    #[wasm_bindgen(js_name = getFirmware)]
+    pub async fn get_firmware(&self) -> Result<JsValue, JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::FIRMWARE_INFO)?;
+
+        let count_req = hidpp::features::firmware_info::encode_get_entity_count(di, idx, sw);
+        let count_resp = self.request_report(&count_req).await?;
+        let count = hidpp::features::firmware_info::decode_get_entity_count(&count_resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+
+        let arr = js_sys::Array::new();
+        for i in 0..count {
+            let req = hidpp::features::firmware_info::encode_get_fw_info(di, idx, i, sw);
+            let resp = self.request_report(&req).await?;
+            let info = hidpp::features::firmware_info::decode_get_fw_info(&resp)
+                .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+            let obj = js_sys::Object::new();
+            js_sys::Reflect::set(&obj, &"type".into(), &format!("{:?}", info.entity_type).into())?;
+            js_sys::Reflect::set(&obj, &"name".into(), &info.name.into())?;
+            js_sys::Reflect::set(&obj, &"versionMajor".into(), &info.version_major.into())?;
+            js_sys::Reflect::set(&obj, &"versionMinor".into(), &info.version_minor.into())?;
+            js_sys::Reflect::set(&obj, &"build".into(), &info.build.into())?;
+            arr.push(&obj);
+        }
+        Ok(arr.into())
+    }
+
+    /// Read remappable buttons. Returns array of `{cid, tid, flags, divertable}`.
+    #[wasm_bindgen(js_name = getButtons)]
+    pub async fn get_buttons(&self) -> Result<JsValue, JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::SPECIAL_KEYS_V4)?;
+
+        let count_req = hidpp::features::special_keys::encode_get_count(di, idx, sw);
+        let count_resp = self.request_report(&count_req).await?;
+        let count = hidpp::features::special_keys::decode_get_count(&count_resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+
+        let arr = js_sys::Array::new();
+        for i in 0..count {
+            let req = hidpp::features::special_keys::encode_get_ctrl_id_info(di, idx, i, sw);
+            let resp = self.request_report(&req).await?;
+            let info = hidpp::features::special_keys::decode_get_ctrl_id_info(&resp)
+                .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+            let obj = js_sys::Object::new();
+            js_sys::Reflect::set(&obj, &"cid".into(), &info.cid.into())?;
+            js_sys::Reflect::set(&obj, &"tid".into(), &info.tid.into())?;
+            js_sys::Reflect::set(&obj, &"flags".into(), &info.flags.into())?;
+            js_sys::Reflect::set(&obj, &"divertable".into(), &info.is_divertable().into())?;
+            js_sys::Reflect::set(&obj, &"position".into(), &info.position.into())?;
+            arr.push(&obj);
+        }
+        Ok(arr.into())
+    }
+
     /// Helper to get device context for a feature.
     fn ctx(&self, feature_id: FeatureId) -> Result<(DeviceIndex, SoftwareId, FeatureIndex), JsValue> {
         let idx = self.feature_index(feature_id)?;

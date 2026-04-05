@@ -60,7 +60,7 @@ export function row(
 /** Create a badge element. */
 export function badge(
   text: string,
-  variant: "default" | "warn" | "success" = "default",
+  variant: "default" | "warn" | "success" | "info" = "default",
 ): HTMLSpanElement {
   const cls =
     variant === "default" ? "badge" : `badge ${variant}`;
