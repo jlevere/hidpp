@@ -2,6 +2,7 @@ import { connect, isSupported, type Device } from "./device";
 import { qs, el, card, badge, setText } from "./dom";
 import { log, logError } from "./log";
 import { createConnectScreen } from "./components/connect";
+import { createDeviceImageCard } from "./components/device-image";
 import { createDpiCard } from "./components/dpi";
 import { createSmartShiftCard } from "./components/smart-shift";
 import { createHostCard } from "./components/host";
@@ -66,6 +67,12 @@ async function showDeviceUI(device: Device): Promise<void> {
     el("div", { class: "stat-card" }, hostVal, el("div", { class: "stat-label" }, "Host")),
   );
   app.append(statsGrid);
+
+  // Device image with button hotspots.
+  const deviceImage = createDeviceImageCard((cid, name) => {
+    log(`Button clicked: ${name} (CID ${cid})`);
+  });
+  app.append(deviceImage.root);
 
   // DPI control.
   const dpi = createDpiCard();
