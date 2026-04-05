@@ -721,6 +721,22 @@ impl WasmDevice {
         obj.into()
     }
 
+    // --- Switch Host ---
+
+    /// Switch to a different Easy-Switch host slot. WARNING: disconnects the device.
+    #[wasm_bindgen(js_name = switchHost)]
+    pub async fn switch_host(&self, host_index: u8) -> Result<(), JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::CHANGE_HOST)?;
+        let req = hidpp::features::change_host::encode_set_current_host(di, idx, sw, host_index);
+        // Don't wait for response — device disconnects.
+        let send_promise = {
+            let inner = self.inner.borrow();
+            inner.device.send_report(REPORT_ID_LONG, &js_sys::Uint8Array::from(&req.as_ref()[1..]))
+        };
+        JsFuture::from(send_promise).await?;
+        Ok(())
+    }
+
     /// Helper to get device context for a feature.
     fn ctx(&self, feature_id: FeatureId) -> Result<(DeviceIndex, SoftwareId, FeatureIndex), JsValue> {
         let idx = self.feature_index(feature_id)?;

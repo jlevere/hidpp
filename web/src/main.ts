@@ -154,7 +154,9 @@ function showDemoDevice(profile: Record<string, unknown>): void {
     smartShiftAutoDisengage: 10,
     hiresWheel: null,
     thumbwheel: null,
-    buttons: (caps?.specialKeys as { programmable?: number[] } | undefined)?.programmable ?? [],
+    buttons: (
+      (caps?.specialKeys as { programmable?: number[] } | undefined)?.programmable ?? []
+    ).map((cid) => ({ cid, divertable: true })),
     hosts: (caps?.flow as { hostCount?: number } | undefined)?.hostCount ?? 0,
     hostCurrent: 0,
     hostSlots: [],
@@ -221,7 +223,10 @@ function showDevice(device: Device): void {
           /* optional */
         }),
       device.getButtons().then((btns) => {
-        data.buttons = (btns as { cid: number }[]).map((b) => b.cid);
+        data.buttons = (btns as { cid: number; divertable: boolean }[]).map((b) => ({
+          cid: b.cid,
+          divertable: b.divertable,
+        }));
       }),
       device.getHostInfo().then(async (h) => {
         data.hosts = h.numHosts;
@@ -269,7 +274,7 @@ interface PageData {
   smartShiftAutoDisengage: number;
   hiresWheel: { highResolution: boolean; inverted: boolean } | null;
   thumbwheel: { mode: string; inverted: boolean } | null;
-  buttons: number[];
+  buttons: { cid: number; divertable: boolean }[];
   hosts: number;
   hostCurrent: number;
   hostSlots: { osType: string; major: number; minor: number }[];
@@ -326,7 +331,17 @@ function renderDevicePage(data: PageData): void {
       style: `left:${String(h.x)}%;top:${String(h.y)}%`,
     });
     dot.addEventListener("click", () => {
-      log(`Button: ${h.name}`);
+      // Scroll to and highlight the button in the list.
+      const row = document.querySelector(
+        `.button-item .cid[data-cid="${String(h.cid)}"]`,
+      )?.parentElement;
+      if (row) {
+        row.scrollIntoView({ behavior: "smooth", block: "center" });
+        row.style.background = "var(--dim)";
+        setTimeout(() => {
+          row.style.background = "";
+        }, 1500);
+      }
     });
     imgInner.append(dot);
   }
@@ -465,16 +480,22 @@ function renderDevicePage(data: PageData): void {
   if (data.buttons.length > 0) {
     const section = el("div", { class: "section" });
     section.append(el("div", { class: "section-label" }, "Buttons"));
-    for (const cid of data.buttons) {
-      const name = BUTTON_NAMES[cid] ?? `Control ${String(cid)}`;
-      section.append(
+    for (const btn of data.buttons) {
+      const name = BUTTON_NAMES[btn.cid] ?? `Control ${String(btn.cid)}`;
+      const item = el(
+        "div",
+        { class: "button-item" },
         el(
-          "div",
-          { class: "button-item" },
-          el("span", { class: "cid" }, `0x${cid.toString(16).padStart(4, "0")}`),
-          el("span", { class: "name" }, name),
+          "span",
+          { class: "cid", "data-cid": String(btn.cid) },
+          `0x${btn.cid.toString(16).padStart(4, "0")}`,
         ),
+        el("span", { class: "name" }, name),
       );
+      if (btn.divertable) {
+        item.append(el("span", { class: "tag" }, "divertable"));
+      }
+      section.append(item);
     }
     root.append(section);
   }
@@ -487,6 +508,29 @@ function renderDevicePage(data: PageData): void {
       const active = i === data.hostCurrent;
       const slot = data.hostSlots[i];
       const osLabel = slot && slot.osType !== "Unknown" ? ` · ${slot.osType}` : "";
+      const right = el("span", {});
+      if (active) {
+        right.append(el("span", { style: "color: var(--success); font-size: 0.75rem" }, "active"));
+      } else if (!data.demo && data.device) {
+        const switchBtn = el(
+          "button",
+          { style: "font-size: 0.7rem; padding: 0.2rem 0.6rem" },
+          "switch",
+        );
+        const hostIdx = i;
+        switchBtn.addEventListener("click", () => {
+          if (confirm(`Switch to Slot ${String(hostIdx + 1)}? This will disconnect the mouse.`)) {
+            void (async (): Promise<void> => {
+              try {
+                await data.device!.switchHost(hostIdx);
+              } catch (e) {
+                logError(`Switch host: ${String(e)}`);
+              }
+            })();
+          }
+        });
+        right.append(switchBtn);
+      }
       section.append(
         el(
           "div",
@@ -496,11 +540,7 @@ function renderDevicePage(data: PageData): void {
             { class: "row-label" },
             `${active ? "●" : "○"} Slot ${String(i + 1)}${osLabel}`,
           ),
-          el(
-            "span",
-            { class: "row-value", style: active ? "color: var(--success)" : "" },
-            active ? "active" : "",
-          ),
+          right,
         ),
       );
     }

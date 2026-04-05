@@ -177,4 +177,9 @@ export class Device {
   getSupportedSections(): unknown {
     return this.#raw.getSupportedSections();
   }
+
+  async switchHost(hostIndex: number): Promise<void> {
+    log(`switchHost(${String(hostIndex)})...`);
+    await this.#raw.switchHost(hostIndex);
+  }
 }
