@@ -234,12 +234,24 @@ function showDevice(device: Device): void {
         data.hostCurrent = h.currentHost;
         // Load per-slot OS info.
         for (let i = 0; i < h.numHosts; i++) {
+          let osType = "Unknown";
+          let major = 0;
+          let minor = 0;
+          let name = "";
           try {
             const os = await device.getHostOsVersion(i);
-            data.hostSlots.push(os);
+            osType = os.osType;
+            major = os.major;
+            minor = os.minor;
           } catch {
-            data.hostSlots.push({ osType: "Unknown", major: 0, minor: 0 });
+            /* */
           }
+          try {
+            name = await device.getHostName(i);
+          } catch {
+            /* */
+          }
+          data.hostSlots.push({ osType, major, minor, name });
         }
       }),
       device.getFirmware().then((fw) => {
@@ -309,7 +321,7 @@ interface PageData {
   buttons: { cid: number; divertable: boolean; diverted: boolean }[];
   hosts: number;
   hostCurrent: number;
-  hostSlots: { osType: string; major: number; minor: number }[];
+  hostSlots: { osType: string; major: number; minor: number; name: string }[];
   firmware: {
     name: string;
     type: string;
@@ -643,7 +655,10 @@ function renderDevicePage(data: PageData): void {
     for (let i = 0; i < data.hosts; i++) {
       const active = i === data.hostCurrent;
       const slot = data.hostSlots[i];
-      const osLabel = slot && slot.osType !== "Unknown" ? ` · ${slot.osType}` : "";
+      const parts: string[] = [];
+      if (slot?.name) parts.push(slot.name);
+      else if (slot && slot.osType !== "Unknown") parts.push(slot.osType);
+      const slotDetail = parts.length > 0 ? ` · ${parts.join(" ")}` : "";
       const right = el("span", { class: "row-value" });
       if (active) {
         right.append(el("span", { style: "color: var(--success)" }, "active"));
@@ -670,7 +685,7 @@ function renderDevicePage(data: PageData): void {
           el(
             "span",
             { class: "row-label" },
-            `${active ? "●" : "○"} Slot ${String(i + 1)}${osLabel}`,
+            `${active ? "●" : "○"} Slot ${String(i + 1)}${slotDetail}`,
           ),
           right,
         ),

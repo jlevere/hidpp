@@ -171,6 +171,10 @@ export class Device {
     return this.#raw.getFriendlyName();
   }
 
+  async getHostName(hostIndex: number): Promise<string> {
+    return this.#raw.getHostName(hostIndex);
+  }
+
   async getHostOsVersion(
     hostIndex: number,
   ): Promise<{ osType: string; major: number; minor: number }> {
