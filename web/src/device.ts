@@ -134,6 +134,17 @@ export class Device {
     };
   }
 
+  async setHiResWheel(
+    highResolution: boolean,
+    inverted: boolean,
+  ): Promise<{ highResolution: boolean; inverted: boolean }> {
+    log(`setHiResWheel(${String(highResolution)}, ${String(inverted)})...`);
+    return (await this.#raw.setHiResWheel(highResolution, inverted)) as {
+      highResolution: boolean;
+      inverted: boolean;
+    };
+  }
+
   async getThumbwheel(): Promise<{ mode: string; inverted: boolean; diverted: boolean }> {
     log("getThumbwheel...");
     return (await this.#raw.getThumbwheel()) as {

@@ -152,9 +152,12 @@ function showDemoDevice(profile: Record<string, unknown>): void {
       ? "Ratchet"
       : null,
     smartShiftAutoDisengage: 10,
+    hiresWheel: null,
+    thumbwheel: null,
     buttons: (caps?.specialKeys as { programmable?: number[] } | undefined)?.programmable ?? [],
     hosts: (caps?.flow as { hostCount?: number } | undefined)?.hostCount ?? 0,
     hostCurrent: 0,
+    hostSlots: [],
     firmware: [],
     features: [],
     friendlyName: null,
@@ -177,9 +180,12 @@ function showDevice(device: Device): void {
       dpiRange: null,
       smartShift: null,
       smartShiftAutoDisengage: 0,
+      hiresWheel: null,
+      thumbwheel: null,
       buttons: [],
       hosts: 0,
       hostCurrent: 0,
+      hostSlots: [],
       firmware: [],
       features: device.getFeatures() as { id: string; name: string }[],
       friendlyName: null,
@@ -198,12 +204,37 @@ function showDevice(device: Device): void {
         data.smartShift = s.mode;
         data.smartShiftAutoDisengage = s.autoDisengage;
       }),
+      device
+        .getHiResWheel()
+        .then((hw) => {
+          data.hiresWheel = hw;
+        })
+        .catch(() => {
+          /* optional */
+        }),
+      device
+        .getThumbwheel()
+        .then((tw) => {
+          data.thumbwheel = tw;
+        })
+        .catch(() => {
+          /* optional */
+        }),
       device.getButtons().then((btns) => {
         data.buttons = (btns as { cid: number }[]).map((b) => b.cid);
       }),
-      device.getHostInfo().then((h) => {
+      device.getHostInfo().then(async (h) => {
         data.hosts = h.numHosts;
         data.hostCurrent = h.currentHost;
+        // Load per-slot OS info.
+        for (let i = 0; i < h.numHosts; i++) {
+          try {
+            const os = await device.getHostOsVersion(i);
+            data.hostSlots.push(os);
+          } catch {
+            data.hostSlots.push({ osType: "Unknown", major: 0, minor: 0 });
+          }
+        }
       }),
       device.getFirmware().then((fw) => {
         data.firmware = fw as typeof data.firmware;
@@ -236,9 +267,12 @@ interface PageData {
   dpiRange: { min: number; max: number; step: number } | null;
   smartShift: string | null;
   smartShiftAutoDisengage: number;
+  hiresWheel: { highResolution: boolean; inverted: boolean } | null;
+  thumbwheel: { mode: string; inverted: boolean } | null;
   buttons: number[];
   hosts: number;
   hostCurrent: number;
+  hostSlots: { osType: string; major: number; minor: number }[];
   firmware: {
     name: string;
     type: string;
@@ -379,6 +413,51 @@ function renderDevicePage(data: PageData): void {
         el("div", { class: "toggle" }, ratchetBtn, freeBtn),
       ),
     );
+
+    // HiResWheel.
+    if (data.hiresWheel) {
+      const hw = data.hiresWheel;
+      const hiresBtn = el("button", {}, hw.highResolution ? "on" : "off");
+      hiresBtn.classList.toggle("active", hw.highResolution);
+      if (!data.demo) {
+        hiresBtn.addEventListener("click", () => {
+          void (async (): Promise<void> => {
+            if (!data.device) return;
+            try {
+              const result = await data.device.setHiResWheel(!hw.highResolution, hw.inverted);
+              hiresBtn.textContent = result.highResolution ? "on" : "off";
+              hiresBtn.classList.toggle("active", result.highResolution);
+              hw.highResolution = result.highResolution;
+            } catch (e) {
+              logError(`HiRes: ${String(e)}`);
+            }
+          })();
+        });
+      } else {
+        hiresBtn.setAttribute("disabled", "");
+      }
+      section.append(
+        el(
+          "div",
+          { class: "row" },
+          el("span", { class: "row-label" }, "High resolution"),
+          hiresBtn,
+        ),
+      );
+    }
+
+    // Thumbwheel.
+    if (data.thumbwheel) {
+      section.append(
+        el(
+          "div",
+          { class: "row" },
+          el("span", { class: "row-label" }, "Thumbwheel"),
+          el("span", { class: "row-value" }, data.thumbwheel.mode),
+        ),
+      );
+    }
+
     root.append(section);
   }
 
@@ -406,14 +485,20 @@ function renderDevicePage(data: PageData): void {
     section.append(el("div", { class: "section-label" }, "Easy-Switch"));
     for (let i = 0; i < data.hosts; i++) {
       const active = i === data.hostCurrent;
+      const slot = data.hostSlots[i];
+      const osLabel = slot && slot.osType !== "Unknown" ? ` · ${slot.osType}` : "";
       section.append(
         el(
           "div",
           { class: "row" },
-          el("span", { class: "row-label" }, `${active ? "●" : "○"} Slot ${String(i + 1)}`),
           el(
             "span",
-            { class: "row-value", style: active ? `color: var(--success)` : "" },
+            { class: "row-label" },
+            `${active ? "●" : "○"} Slot ${String(i + 1)}${osLabel}`,
+          ),
+          el(
+            "span",
+            { class: "row-value", style: active ? "color: var(--success)" : "" },
             active ? "active" : "",
           ),
         ),
@@ -444,14 +529,19 @@ function renderDevicePage(data: PageData): void {
     root.append(section);
   }
 
-  // Features.
+  // Features — only show if we have real feature data.
   if (data.features.length > 0) {
+    const known = data.features.filter(
+      (f) => f.name !== "Unknown" && f.name !== "-" && f.name !== "?",
+    );
+    const unknownCount = data.features.length - known.length;
+
     const section = el("div", { class: "section" });
     section.append(
       el("div", { class: "section-label" }, `Features · ${String(data.features.length)}`),
     );
     const wrap = el("div", {});
-    for (const f of data.features) {
+    for (const f of known) {
       wrap.append(
         el(
           "span",
@@ -460,6 +550,9 @@ function renderDevicePage(data: PageData): void {
           document.createTextNode(` ${f.name}`),
         ),
       );
+    }
+    if (unknownCount > 0) {
+      wrap.append(el("span", { class: "feature-item" }, `+${String(unknownCount)} more`));
     }
     section.append(wrap);
     root.append(section);
