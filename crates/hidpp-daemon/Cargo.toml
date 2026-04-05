@@ -21,6 +21,9 @@ serde = { workspace = true }
 toml = { workspace = true }
 anyhow = { workspace = true }
 enigo = { workspace = true }
+tao = { workspace = true }
+tray-icon = { workspace = true }
+muda = { workspace = true }
 
 [lints.rust]
 unsafe_code = "deny"

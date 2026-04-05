@@ -1,6 +1,22 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
+/// Check if the daemon service is currently installed.
+pub fn is_installed() -> bool {
+    #[cfg(target_os = "macos")]
+    {
+        macos::plist_path().exists()
+    }
+    #[cfg(target_os = "linux")]
+    {
+        linux::service_path().exists()
+    }
+    #[cfg(not(any(target_os = "macos", target_os = "linux")))]
+    {
+        false
+    }
+}
+
 /// Install the daemon as a system service.
 pub fn install() -> anyhow::Result<()> {
     let exe = std::env::current_exe()?;
@@ -24,7 +40,7 @@ pub fn install() -> anyhow::Result<()> {
         if let Some(parent) = config_path.parent() {
             std::fs::create_dir_all(parent)?;
         }
-        std::fs::write(&config_path, crate::SAMPLE_CONFIG)?;
+        std::fs::write(&config_path, crate::daemon::SAMPLE_CONFIG)?;
         println!("  config  -> {} (sample)", config_path.display());
     } else {
         println!("  config  -> {} (existing)", config_path.display());
@@ -64,7 +80,7 @@ mod macos {
 
     const PLIST_LABEL: &str = "com.hidpp.daemon";
 
-    fn plist_path() -> PathBuf {
+    pub(crate) fn plist_path() -> PathBuf {
         let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
         Path::new(&home)
             .join("Library/LaunchAgents")
@@ -178,7 +194,7 @@ mod macos {
 mod linux {
     use super::*;
 
-    fn service_path() -> PathBuf {
+    pub(crate) fn service_path() -> PathBuf {
         let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
         Path::new(&home)
             .join(".config/systemd/user")
