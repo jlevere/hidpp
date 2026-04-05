@@ -6,6 +6,7 @@ members = [
     "crates/hidpp-device",
     "crates/hidpp-cli",
     "crates/hidpp-web",
+    "crates/hidpp-daemon",
 ]
 
 [workspace.package]
@@ -45,6 +46,9 @@ hidapi = "2"
 
 # CLI
 clap = { version = "4", features = ["derive"] }
+
+# Input injection
+enigo = "0.6"
 
 # Logging
 tracing = "0.1"

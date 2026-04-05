@@ -146,11 +146,13 @@ impl HidapiTransport {
                     tokio::time::sleep(Duration::from_millis(1)).await;
                 }
                 Ok(n) if n >= 4 => {
-                    // Prepend report ID if the OS stripped it.
-                    // macOS hidapi does NOT include the report ID in read().
-                    // We always work with 20-byte long reports.
+                    // HID++ uses numbered reports (0x10, 0x11, 0x12). For numbered
+                    // reports, all platforms (macOS, Linux, Windows) include the
+                    // report ID as byte 0 in read(). We handle both 19-byte
+                    // (report ID stripped — possible on some hidapi builds) and
+                    // 20-byte (standard) reads defensively.
                     let report_bytes = if n == 19 {
-                        // macOS: report ID stripped, 19 bytes of data.
+                        // Report ID stripped — prepend it.
                         let mut full = [0u8; 20];
                         full[0] = REPORT_ID_LONG;
                         full[1..20].copy_from_slice(&buf[..19]);

@@ -1,0 +1,40 @@
+[package]
+name = "hidpp-daemon"
+description = "HID++ 2.0 background daemon — catches diverted events and maps them to actions"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "hidppd"
+path = "src/main.rs"
+
+[dependencies]
+hidpp = { workspace = true }
+hidpp-transport = { workspace = true }
+hidpp-device = { workspace = true }
+clap = { workspace = true }
+tokio = { workspace = true, features = ["signal"] }
+tracing = { workspace = true }
+tracing-subscriber = { workspace = true }
+serde = { workspace = true }
+toml = { workspace = true }
+anyhow = { workspace = true }
+enigo = { workspace = true }
+
+[lints.rust]
+unsafe_code = "deny"
+
+[lints.clippy]
+correctness = { level = "deny", priority = -1 }
+suspicious = { level = "warn", priority = -1 }
+style = { level = "warn", priority = -1 }
+complexity = { level = "warn", priority = -1 }
+perf = { level = "warn", priority = -1 }
+panic = "deny"
+unimplemented = "deny"
+todo = "deny"
+unreachable = "deny"
+# Daemon boundary: expect/unwrap OK with anyhow.
+unwrap_used = "allow"
+expect_used = "allow"

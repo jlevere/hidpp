@@ -6,6 +6,7 @@
 ///
 /// Function IDs:
 /// - 0: GetStatus
+///
 /// Event: StatusBroadcast
 use crate::error::DecodeError;
 use crate::report::LongReport;

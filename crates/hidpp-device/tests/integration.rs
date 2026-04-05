@@ -1,13 +1,12 @@
 #![allow(clippy::unwrap_used, clippy::expect_used)]
 /// Integration tests that talk to real hardware.
 ///
-/// These require a Logitech HID++ device connected via BLE.
+/// These require a Logitech HID++ device connected (BLE or via receiver).
 /// Run with: `cargo test -p hidpp-device --test integration`
 ///
 /// Skips gracefully if no device is found.
 use hidpp::feature_id;
-use hidpp::features::{smart_shift, unified_battery};
-use hidpp::types::DeviceIndex;
+use hidpp::features::smart_shift;
 use hidpp_device::Device;
 use hidpp_transport::native::HidapiEnumerator;
 
@@ -16,7 +15,8 @@ async fn open_device() -> Option<Device> {
     let devices = enumerator.enumerate();
     let info = devices.first()?;
     let transport = enumerator.open(info).ok()?;
-    Device::open(transport, DeviceIndex::BLE_DIRECT).await.ok()
+    let index = Device::probe_device_index(&transport).await.ok()?;
+    Device::open(transport, index).await.ok()
 }
 
 macro_rules! require_device {

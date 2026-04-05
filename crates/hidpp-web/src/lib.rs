@@ -43,6 +43,15 @@ struct Inner {
     device_index: DeviceIndex,
     features: BTreeMap<FeatureId, FeatureIndex>,
     name: String,
+    notification_callback: Option<js_sys::Function>,
+}
+
+/// Reverse lookup: FeatureIndex → FeatureId.
+fn reverse_feature_lookup(
+    features: &BTreeMap<FeatureId, FeatureIndex>,
+    idx: FeatureIndex,
+) -> Option<FeatureId> {
+    features.iter().find(|(_, v)| **v == idx).map(|(k, _)| *k)
 }
 
 /// A connected HID++ device in the browser via WebHID.
@@ -154,6 +163,7 @@ impl WasmDevice {
             device_index,
             features: BTreeMap::new(),
             name: String::new(),
+            notification_callback: None,
         }));
 
         // Set up input report callback.
@@ -216,6 +226,31 @@ impl WasmDevice {
                 // Serialize report bytes as JSON array for JS.
                 let bytes = js_sys::Uint8Array::from(report.as_ref());
                 let _ = pending.resolve.call1(&JsValue::NULL, &bytes);
+            } else if let Some(ref cb) = inner.notification_callback {
+                // Unmatched report = unsolicited notification.
+                // Build a JS object: { featureIndex, featureId, functionId, params }
+                let fidx = report.feature_index();
+                let feature_id = reverse_feature_lookup(&inner.features, fidx);
+                let obj = js_sys::Object::new();
+                let _ = js_sys::Reflect::set(
+                    &obj,
+                    &"featureIndex".into(),
+                    &fidx.0.into(),
+                );
+                let _ = js_sys::Reflect::set(
+                    &obj,
+                    &"featureId".into(),
+                    &feature_id.map_or(0u16, |id| id.0).into(),
+                );
+                let _ = js_sys::Reflect::set(
+                    &obj,
+                    &"functionId".into(),
+                    &report.function_id().0.into(),
+                );
+                // Send raw params as Uint8Array.
+                let params = js_sys::Uint8Array::from(report.params());
+                let _ = js_sys::Reflect::set(&obj, &"params".into(), &params);
+                let _ = cb.call1(&JsValue::NULL, &obj);
             }
         });
 
@@ -824,6 +859,18 @@ impl WasmDevice {
         };
         JsFuture::from(send_promise).await?;
         Ok(())
+    }
+
+    /// Register a callback for unsolicited HID++ notifications.
+    ///
+    /// The callback receives objects like:
+    /// `{ featureIndex: u8, featureId: u16, functionId: u8, params: Uint8Array }`
+    ///
+    /// Notifications are sent by the device for diverted buttons, diverted
+    /// scroll wheels, battery changes, wireless status, etc.
+    #[wasm_bindgen(js_name = setNotificationCallback)]
+    pub fn set_notification_callback(&self, callback: js_sys::Function) {
+        self.inner.borrow_mut().notification_callback = Some(callback);
     }
 
     /// Helper to get device context for a feature.

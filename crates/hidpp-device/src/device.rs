@@ -1,4 +1,5 @@
 use std::collections::BTreeMap;
+use std::time::Duration;
 
 use hidpp::error::DecodeError;
 use hidpp::features::{
@@ -47,6 +48,30 @@ pub struct Device {
 }
 
 impl Device {
+    /// Probe which device index responds to a ping on this transport.
+    ///
+    /// Tries BLE direct (0xFF) first, then receiver slots 1–6.
+    /// Uses a short timeout per probe (300ms) to avoid blocking.
+    /// Each probe uses a distinct sw_id so stale pending requests
+    /// from timed-out probes don't match subsequent responses.
+    pub async fn probe_device_index(
+        transport: &HidapiTransport,
+    ) -> Result<DeviceIndex, DeviceError> {
+        for (i, &index) in DeviceIndex::PROBE_ORDER.iter().enumerate() {
+            let sw_id = SoftwareId::new((i as u8 + 1).min(0x0F));
+            let ping = root::encode_ping(index, sw_id);
+            match tokio::time::timeout(Duration::from_millis(300), transport.request(&ping)).await
+            {
+                Ok(Ok(resp)) if root::decode_ping(&resp).is_ok() => {
+                    tracing::info!("probed device index 0x{:02X} — responded", index.0);
+                    return Ok(index);
+                }
+                _ => continue,
+            }
+        }
+        Err(DeviceError::PingFailed)
+    }
+
     /// Connect to a device, ping it, and discover all features.
     pub async fn open(
         transport: HidapiTransport,
@@ -224,6 +249,22 @@ impl Device {
     /// Check if the device supports a given feature.
     pub fn supports(&self, feature_id: FeatureId) -> bool {
         self.features.contains_key(&feature_id)
+    }
+
+    /// Subscribe to unsolicited HID++ notifications from this device.
+    ///
+    /// Returns a broadcast receiver that yields raw reports for diverted
+    /// button presses, scroll events, battery changes, etc.
+    pub fn subscribe(&self) -> tokio::sync::broadcast::Receiver<LongReport> {
+        self.transport.subscribe()
+    }
+
+    /// Reverse lookup: FeatureIndex → FeatureId.
+    pub fn feature_id_for_index(&self, index: FeatureIndex) -> Option<FeatureId> {
+        self.features
+            .iter()
+            .find(|(_, e)| e.index == index)
+            .map(|(id, _)| *id)
     }
 
     /// Get the runtime feature index for a feature ID.

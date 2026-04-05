@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand};
 use hidpp::types::DeviceIndex;
 use hidpp_transport::native::HidapiEnumerator;
+use tracing::info;
 
 #[derive(Parser)]
 #[command(name = "hidpp", about = "HID++ 2.0 device configuration tool")]
@@ -11,6 +12,11 @@ struct Cli {
     /// Log verbosity (set RUST_LOG for fine control).
     #[arg(short, long, global = true, default_value = "warn")]
     log_level: String,
+
+    /// Override device index (hex: FF for BLE, 01-06 for receiver slots).
+    /// Auto-detected if not specified.
+    #[arg(long, global = true, value_parser = parse_device_index)]
+    device_index: Option<DeviceIndex>,
 }
 
 #[derive(Subcommand)]
@@ -65,21 +71,28 @@ async fn main() -> anyhow::Result<()> {
         .with_level(true)
         .init();
 
+    let idx = cli.device_index;
     match cli.command {
         Command::List => cmd_list()?,
-        Command::Info => cmd_info().await?,
-        Command::Get { setting } => cmd_get(&setting).await?,
-        Command::Set { setting, value } => cmd_set(&setting, &value).await?,
-        Command::Export => cmd_export().await?,
-        Command::Import { file } => cmd_import(&file).await?,
+        Command::Info => cmd_info(idx).await?,
+        Command::Get { setting } => cmd_get(idx, &setting).await?,
+        Command::Set { setting, value } => cmd_set(idx, &setting, &value).await?,
+        Command::Export => cmd_export(idx).await?,
+        Command::Import { file } => cmd_import(idx, &file).await?,
         Command::Raw {
             feature,
             function,
             params,
-        } => cmd_raw(&feature, function, &params).await?,
+        } => cmd_raw(idx, &feature, function, &params).await?,
     }
 
     Ok(())
+}
+
+fn parse_device_index(s: &str) -> Result<DeviceIndex, String> {
+    let val = u8::from_str_radix(s.trim_start_matches("0x").trim_start_matches("0X"), 16)
+        .map_err(|e| format!("invalid hex device index: {e}"))?;
+    Ok(DeviceIndex(val))
 }
 
 fn cmd_list() -> anyhow::Result<()> {
@@ -102,22 +115,37 @@ fn cmd_list() -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Open the first available HID++ device.
-async fn open_first_device() -> anyhow::Result<hidpp_device::Device> {
+/// Open the first available HID++ device, auto-detecting the device index.
+async fn open_first_device(
+    index_override: Option<DeviceIndex>,
+) -> anyhow::Result<hidpp_device::Device> {
     let enumerator = HidapiEnumerator::new()?;
     let devices = enumerator.enumerate();
 
-    let info = devices
+    let dev_info = devices
         .first()
         .ok_or_else(|| anyhow::anyhow!("No HID++ devices found"))?;
 
-    let transport = enumerator.open(info)?;
-    let device = hidpp_device::Device::open(transport, DeviceIndex::BLE_DIRECT).await?;
+    let transport = enumerator.open(dev_info)?;
+
+    let device_index = match index_override {
+        Some(idx) => {
+            info!("using device index override: 0x{:02X}", idx.0);
+            idx
+        }
+        None => {
+            let idx = hidpp_device::Device::probe_device_index(&transport).await?;
+            info!("auto-detected device index: 0x{:02X}", idx.0);
+            idx
+        }
+    };
+
+    let device = hidpp_device::Device::open(transport, device_index).await?;
     Ok(device)
 }
 
-async fn cmd_info() -> anyhow::Result<()> {
-    let device = open_first_device().await?;
+async fn cmd_info(idx: Option<DeviceIndex>) -> anyhow::Result<()> {
+    let device = open_first_device(idx).await?;
 
     println!("Device:   {}", device.name());
     if let Some(dtype) = device.device_type() {
@@ -205,15 +233,12 @@ async fn cmd_info() -> anyhow::Result<()> {
                 // Show OS for each host slot.
                 if device.supports(hidpp::feature_id::HOSTS_INFOS) {
                     for i in 0..h.num_hosts {
-                        match device.host_os_version(i).await {
-                            Ok(os) => {
-                                let marker = if i == h.current_host { "→" } else { " " };
-                                println!(
-                                    "  {marker} Slot {}: {:?} v{}.{}",
-                                    i + 1, os.os_type, os.version_major, os.version_minor,
-                                );
-                            }
-                            Err(_) => {}
+                        if let Ok(os) = device.host_os_version(i).await {
+                            let marker = if i == h.current_host { "→" } else { " " };
+                            println!(
+                                "  {marker} Slot {}: {:?} v{}.{}",
+                                i + 1, os.os_type, os.version_major, os.version_minor,
+                            );
                         }
                     }
                 }
@@ -265,8 +290,8 @@ async fn cmd_info() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn cmd_get(setting: &str) -> anyhow::Result<()> {
-    let device = open_first_device().await?;
+async fn cmd_get(idx: Option<DeviceIndex>, setting: &str) -> anyhow::Result<()> {
+    let device = open_first_device(idx).await?;
 
     match setting {
         "battery" => {
@@ -337,8 +362,8 @@ async fn cmd_get(setting: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn cmd_set(setting: &str, value: &str) -> anyhow::Result<()> {
-    let device = open_first_device().await?;
+async fn cmd_set(idx: Option<DeviceIndex>, setting: &str, value: &str) -> anyhow::Result<()> {
+    let device = open_first_device(idx).await?;
 
     match setting {
         "dpi" => {
@@ -403,8 +428,8 @@ async fn cmd_set(setting: &str, value: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn cmd_export() -> anyhow::Result<()> {
-    let device = open_first_device().await?;
+async fn cmd_export(idx: Option<DeviceIndex>) -> anyhow::Result<()> {
+    let device = open_first_device(idx).await?;
     let config = device.export_config().await?;
     let toml_str = config
         .to_toml()
@@ -413,7 +438,7 @@ async fn cmd_export() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn cmd_import(file: &str) -> anyhow::Result<()> {
+async fn cmd_import(idx: Option<DeviceIndex>, file: &str) -> anyhow::Result<()> {
     let toml_str = if file == "-" {
         use std::io::Read;
         let mut buf = String::new();
@@ -426,14 +451,14 @@ async fn cmd_import(file: &str) -> anyhow::Result<()> {
     let config = hidpp_device::DeviceConfig::from_toml(&toml_str)
         .map_err(|e| anyhow::anyhow!("TOML parse error: {e}"))?;
 
-    let device = open_first_device().await?;
+    let device = open_first_device(idx).await?;
     device.import_config(&config).await?;
     println!("Config applied.");
     Ok(())
 }
 
-async fn cmd_raw(feature_hex: &str, function: u8, params_hex: &str) -> anyhow::Result<()> {
-    let device = open_first_device().await?;
+async fn cmd_raw(idx: Option<DeviceIndex>, feature_hex: &str, function: u8, params_hex: &str) -> anyhow::Result<()> {
+    let device = open_first_device(idx).await?;
 
     let feature_id = u16::from_str_radix(feature_hex.trim_start_matches("0x"), 16)?;
     let feature = hidpp::types::FeatureId(feature_id);

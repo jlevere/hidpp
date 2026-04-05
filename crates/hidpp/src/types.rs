@@ -12,8 +12,24 @@ impl DeviceIndex {
     /// BLE direct connection (no receiver).
     pub const BLE_DIRECT: Self = Self(0xFF);
 
-    /// Receiver device slot 1.
+    /// Receiver device slots 1–6 (Bolt/Unifying/Lightspeed).
     pub const RECEIVER_1: Self = Self(0x01);
+    pub const RECEIVER_2: Self = Self(0x02);
+    pub const RECEIVER_3: Self = Self(0x03);
+    pub const RECEIVER_4: Self = Self(0x04);
+    pub const RECEIVER_5: Self = Self(0x05);
+    pub const RECEIVER_6: Self = Self(0x06);
+
+    /// All valid device indices in probe order: BLE first, then receiver slots.
+    pub const PROBE_ORDER: &[Self] = &[
+        Self::BLE_DIRECT,
+        Self::RECEIVER_1,
+        Self::RECEIVER_2,
+        Self::RECEIVER_3,
+        Self::RECEIVER_4,
+        Self::RECEIVER_5,
+        Self::RECEIVER_6,
+    ];
 }
 
 /// A 16-bit HID++ feature identifier.

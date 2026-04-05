@@ -1,5 +1,5 @@
 import init, { WasmDevice } from "hidpp-web";
-import type { BatteryStatus, SmartShiftState, HostInfo, Feature } from "./types";
+import type { BatteryStatus, SmartShiftState, HostInfo, Feature, HidppNotification } from "./types";
 import { log, logError } from "./log";
 
 let initialized = false;
@@ -226,5 +226,15 @@ export class Device {
   async switchHost(hostIndex: number): Promise<void> {
     log(`switchHost(${String(hostIndex)})...`);
     await this.#raw.switchHost(hostIndex);
+  }
+
+  /** Register a callback for unsolicited HID++ notifications (diverted buttons, scroll, etc.) */
+  onNotification(callback: (n: HidppNotification) => void): void {
+    this.#raw.setNotificationCallback((obj: HidppNotification) => {
+      log(
+        `notification: feature=0x${obj.featureId.toString(16).padStart(4, "0")} fn=${String(obj.functionId)}`,
+      );
+      callback(obj);
+    });
   }
 }
