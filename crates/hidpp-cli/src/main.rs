@@ -191,14 +191,41 @@ async fn cmd_info() -> anyhow::Result<()> {
         }
     }
 
+    if device.supports(hidpp::feature_id::DEVICE_FRIENDLY_NAME) {
+        match device.friendly_name().await {
+            Ok(name) => println!("BT Name:     {name}"),
+            Err(e) => println!("BT Name:     error ({e})"),
+        }
+    }
+
     if device.supports(hidpp::feature_id::CHANGE_HOST) {
         match device.host_info().await {
-            Ok(h) => println!(
-                "Easy-Switch: host {} of {}",
-                h.current_host + 1,
-                h.num_hosts,
-            ),
+            Ok(h) => {
+                println!("Easy-Switch: host {} of {}", h.current_host + 1, h.num_hosts);
+                // Show OS for each host slot.
+                if device.supports(hidpp::feature_id::HOSTS_INFOS) {
+                    for i in 0..h.num_hosts {
+                        match device.host_os_version(i).await {
+                            Ok(os) => {
+                                let marker = if i == h.current_host { "→" } else { " " };
+                                println!(
+                                    "  {marker} Slot {}: {:?} v{}.{}",
+                                    i + 1, os.os_type, os.version_major, os.version_minor,
+                                );
+                            }
+                            Err(_) => {}
+                        }
+                    }
+                }
+            }
             Err(e) => println!("Easy-Switch: error ({e})"),
+        }
+    }
+
+    if device.supports(hidpp::feature_id::WIRELESS_STATUS) {
+        match device.wireless_status().await {
+            Ok(ws) => println!("Wireless:    {:?}", ws.status),
+            Err(e) => println!("Wireless:    error ({e})"),
         }
     }
 

@@ -2,8 +2,9 @@ use std::collections::BTreeMap;
 
 use hidpp::error::DecodeError;
 use hidpp::features::{
-    adjustable_dpi, change_host, device_name, feature_set, firmware_info, hires_wheel, root,
-    smart_shift, special_keys, thumbwheel, unified_battery,
+    adjustable_dpi, change_host, device_name, feature_set, firmware_info, friendly_name,
+    hires_wheel, hosts_info, root, smart_shift, special_keys, thumbwheel, unified_battery,
+    wireless_status,
 };
 use hidpp::report::LongReport;
 use hidpp::types::{DeviceIndex, FeatureFlags, FeatureId, FeatureIndex, FunctionId, SoftwareId};
@@ -473,6 +474,64 @@ impl Device {
         // SetCurrentHost causes a disconnect, so don't wait for response.
         self.transport.send(&req).await?;
         Ok(())
+    }
+
+    // --- FriendlyName (0x0007) ---
+
+    /// Read the user-settable Bluetooth name (feature 0x0007).
+    pub async fn friendly_name(&self) -> Result<String, DeviceError> {
+        let idx = self.feature_index(hidpp::feature_id::DEVICE_FRIENDLY_NAME)?;
+
+        let len_req =
+            friendly_name::encode_get_name_len(self.device_index, idx, self.sw_id);
+        let len_resp = self.transport.request(&len_req).await?;
+        let lengths = friendly_name::decode_get_name_len(&len_resp)?;
+
+        let mut name_bytes = Vec::with_capacity(lengths.name_len as usize);
+        let mut offset = 0u8;
+        while name_bytes.len() < lengths.name_len as usize {
+            let req =
+                friendly_name::encode_get_name(self.device_index, idx, offset, self.sw_id);
+            let resp = self.transport.request(&req).await?;
+            let chunk = friendly_name::decode_get_name_chunk(&resp);
+            let remaining = lengths.name_len as usize - name_bytes.len();
+            let take = remaining.min(chunk.len());
+            name_bytes.extend_from_slice(&chunk[..take]);
+            offset = name_bytes.len() as u8;
+        }
+
+        Ok(String::from_utf8(name_bytes).unwrap_or_else(|_| "?".into()))
+    }
+
+    // --- HostsInfos (0x1815) ---
+
+    /// Get OS version for a specific host slot (feature 0x1815).
+    pub async fn host_os_version(
+        &self,
+        host_index: u8,
+    ) -> Result<hosts_info::HostOSVersion, DeviceError> {
+        let idx = self.feature_index(hidpp::feature_id::HOSTS_INFOS)?;
+        let req = hosts_info::encode_get_host_os_version(
+            self.device_index,
+            idx,
+            host_index,
+            self.sw_id,
+        );
+        let resp = self.transport.request(&req).await?;
+        Ok(hosts_info::decode_get_host_os_version(&resp)?)
+    }
+
+    // --- WirelessStatus (0x1D4B) ---
+
+    /// Read wireless connection status (feature 0x1D4B).
+    pub async fn wireless_status(
+        &self,
+    ) -> Result<wireless_status::WirelessStatus, DeviceError> {
+        let idx = self.feature_index(hidpp::feature_id::WIRELESS_STATUS)?;
+        let req =
+            wireless_status::encode_get_status(self.device_index, idx, self.sw_id);
+        let resp = self.transport.request(&req).await?;
+        Ok(wireless_status::decode_get_status(&resp)?)
     }
 
     /// Read current DPI (feature 0x2201).

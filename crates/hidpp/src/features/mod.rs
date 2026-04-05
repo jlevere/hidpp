@@ -1,7 +1,9 @@
 pub mod root;
 pub mod feature_set;
 pub mod device_name;
+pub mod friendly_name;
 pub mod firmware_info;
+pub mod config_change;
 pub mod unified_battery;
 pub mod smart_shift;
 pub mod adjustable_dpi;
@@ -9,3 +11,5 @@ pub mod hires_wheel;
 pub mod thumbwheel;
 pub mod special_keys;
 pub mod change_host;
+pub mod hosts_info;
+pub mod wireless_status;
