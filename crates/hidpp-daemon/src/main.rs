@@ -1,6 +1,7 @@
 mod action;
 mod config;
 mod gesture;
+mod service;
 
 use std::path::PathBuf;
 use std::time::Duration;
@@ -45,6 +46,10 @@ enum Command {
     Run,
     /// Listen to raw HID++ notifications and print them (no action execution).
     Listen,
+    /// Install the daemon as a system service (launchd on macOS, systemd on Linux).
+    Install,
+    /// Uninstall the daemon service.
+    Uninstall,
     /// Print the default config path.
     ConfigPath,
     /// Generate a sample config file.
@@ -73,6 +78,8 @@ async fn main() -> anyhow::Result<()> {
             print!("{SAMPLE_CONFIG}");
             Ok(())
         }
+        Command::Install => service::install(),
+        Command::Uninstall => service::uninstall(),
         Command::Listen => run_daemon(&cli.config, cli.device_index, false).await,
         Command::Run => run_daemon(&cli.config, cli.device_index, true).await,
     }
