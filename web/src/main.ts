@@ -156,7 +156,7 @@ function showDemoDevice(profile: Record<string, unknown>): void {
     thumbwheel: null,
     buttons: (
       (caps?.specialKeys as { programmable?: number[] } | undefined)?.programmable ?? []
-    ).map((cid) => ({ cid, divertable: true })),
+    ).map((cid) => ({ cid, divertable: true, diverted: false })),
     hosts: (caps?.flow as { hostCount?: number } | undefined)?.hostCount ?? 0,
     hostCurrent: 0,
     hostSlots: [],
@@ -222,11 +222,21 @@ function showDevice(device: Device): void {
         .catch(() => {
           /* optional */
         }),
-      device.getButtons().then((btns) => {
-        data.buttons = (btns as { cid: number; divertable: boolean }[]).map((b) => ({
-          cid: b.cid,
-          divertable: b.divertable,
-        }));
+      device.getButtons().then(async (btns) => {
+        const buttons = btns as { cid: number; divertable: boolean }[];
+        data.buttons = [];
+        for (const b of buttons) {
+          let diverted = false;
+          if (b.divertable) {
+            try {
+              const r = await device.getButtonReporting(b.cid);
+              diverted = r.diverted;
+            } catch {
+              /* */
+            }
+          }
+          data.buttons.push({ cid: b.cid, divertable: b.divertable, diverted });
+        }
       }),
       device.getHostInfo().then(async (h) => {
         data.hosts = h.numHosts;
@@ -274,7 +284,7 @@ interface PageData {
   smartShiftAutoDisengage: number;
   hiresWheel: { highResolution: boolean; inverted: boolean } | null;
   thumbwheel: { mode: string; inverted: boolean } | null;
-  buttons: { cid: number; divertable: boolean }[];
+  buttons: { cid: number; divertable: boolean; diverted: boolean }[];
   hosts: number;
   hostCurrent: number;
   hostSlots: { osType: string; major: number; minor: number }[];
@@ -492,8 +502,32 @@ function renderDevicePage(data: PageData): void {
         ),
         el("span", { class: "name" }, name),
       );
-      if (btn.divertable) {
-        item.append(el("span", { class: "tag" }, "divertable"));
+      if (btn.divertable && !data.demo && data.device) {
+        const divertBtn = el(
+          "button",
+          { style: "font-size: 0.65rem; padding: 0.15rem 0.5rem" },
+          btn.diverted ? "diverted" : "default",
+        );
+        divertBtn.classList.toggle("active", btn.diverted);
+        const cid = btn.cid;
+        const device = data.device;
+        divertBtn.addEventListener("click", () => {
+          void (async (): Promise<void> => {
+            try {
+              const newFlags = btn.diverted ? 0x00 : 0x01;
+              const result = await device.setButtonReporting(cid, newFlags, 0);
+              btn.diverted = result.diverted;
+              divertBtn.textContent = result.diverted ? "diverted" : "default";
+              divertBtn.classList.toggle("active", result.diverted);
+              log(`Button ${String(cid)}: ${result.diverted ? "diverted" : "default"}`);
+            } catch (e) {
+              logError(`Button ${String(cid)}: ${String(e)}`);
+            }
+          })();
+        });
+        item.append(divertBtn);
+      } else if (btn.divertable) {
+        item.append(el("span", { class: "tag" }, btn.diverted ? "diverted" : "divertable"));
       }
       section.append(item);
     }

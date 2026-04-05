@@ -178,6 +178,30 @@ export class Device {
     return this.#raw.getSupportedSections();
   }
 
+  async getButtonReporting(
+    cid: number,
+  ): Promise<{ cid: number; flags: number; diverted: boolean; remappedCid: number }> {
+    return (await this.#raw.getButtonReporting(cid)) as {
+      cid: number;
+      flags: number;
+      diverted: boolean;
+      remappedCid: number;
+    };
+  }
+
+  async setButtonReporting(
+    cid: number,
+    flags: number,
+    remappedCid: number,
+  ): Promise<{ cid: number; diverted: boolean; remappedCid: number }> {
+    log(`setButtonReporting(${String(cid)}, ${String(flags)}, ${String(remappedCid)})...`);
+    return (await this.#raw.setButtonReporting(cid, flags, remappedCid)) as {
+      cid: number;
+      diverted: boolean;
+      remappedCid: number;
+    };
+  }
+
   async switchHost(hostIndex: number): Promise<void> {
     log(`switchHost(${String(hostIndex)})...`);
     await this.#raw.switchHost(hostIndex);

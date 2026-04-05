@@ -39,7 +39,7 @@ test("screenshot connected page", async ({ devicePage: page }) => {
   }
 
   // Wait for the device page to fully load.
-  await page.waitForSelector(".header, .dpi-value, .section", { timeout: 30_000 });
+  await page.waitForSelector(".header, .dpi-value, .section", { timeout: 60_000 });
   await page.waitForTimeout(2000);
 
   await page.screenshot({

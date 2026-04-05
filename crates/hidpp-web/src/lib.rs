@@ -718,6 +718,47 @@ impl WasmDevice {
         obj.into()
     }
 
+    // --- Button reporting ---
+
+    /// Get current reporting state for a button. Returns `{cid, flags, diverted, remappedCid}`.
+    #[wasm_bindgen(js_name = getButtonReporting)]
+    pub async fn get_button_reporting(&self, cid: u16) -> Result<JsValue, JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::SPECIAL_KEYS_V4)?;
+        let req = hidpp::features::special_keys::encode_get_ctrl_id_reporting(di, idx, cid, sw);
+        let resp = self.request_report(&req).await?;
+        let r = hidpp::features::special_keys::decode_get_ctrl_id_reporting(&resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+        let obj = js_sys::Object::new();
+        js_sys::Reflect::set(&obj, &"cid".into(), &r.cid.into())?;
+        js_sys::Reflect::set(&obj, &"flags".into(), &r.flags.into())?;
+        js_sys::Reflect::set(&obj, &"diverted".into(), &r.is_diverted().into())?;
+        js_sys::Reflect::set(&obj, &"remappedCid".into(), &r.remapped_cid.into())?;
+        Ok(obj.into())
+    }
+
+    /// Set button reporting. `flags`: bit0=divert, bit1=rawXY, bit2=persist.
+    #[wasm_bindgen(js_name = setButtonReporting)]
+    pub async fn set_button_reporting(
+        &self,
+        cid: u16,
+        flags: u8,
+        remapped_cid: u16,
+    ) -> Result<JsValue, JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::SPECIAL_KEYS_V4)?;
+        let req = hidpp::features::special_keys::encode_set_ctrl_id_reporting(
+            di, idx, sw, cid, flags, remapped_cid, 0,
+        );
+        let resp = self.request_report(&req).await?;
+        let r = hidpp::features::special_keys::decode_set_ctrl_id_reporting(&resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+        let obj = js_sys::Object::new();
+        js_sys::Reflect::set(&obj, &"cid".into(), &r.cid.into())?;
+        js_sys::Reflect::set(&obj, &"flags".into(), &r.flags.into())?;
+        js_sys::Reflect::set(&obj, &"diverted".into(), &r.is_diverted().into())?;
+        js_sys::Reflect::set(&obj, &"remappedCid".into(), &r.remapped_cid.into())?;
+        Ok(obj.into())
+    }
+
     // --- Switch Host ---
 
     /// Switch to a different Easy-Switch host slot. WARNING: disconnects the device.
