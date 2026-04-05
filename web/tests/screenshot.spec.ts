@@ -38,8 +38,8 @@ test("screenshot connected page", async ({ devicePage: page }) => {
     await page.click("button:has-text('Connect Device')");
   }
 
-  // Wait for the app layout to appear (sidebar).
-  await page.waitForSelector(".sidebar", { timeout: 30_000 });
+  // Wait for the app to load.
+  await page.waitForSelector(".header", { timeout: 30_000 });
   await page.waitForTimeout(3000);
 
   await page.screenshot({
