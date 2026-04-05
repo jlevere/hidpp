@@ -22,5 +22,6 @@ pub enum DaemonEvent {
 #[derive(Debug)]
 pub enum DaemonCommand {
     Reconnect,
+    ReloadConfig,
     Shutdown,
 }

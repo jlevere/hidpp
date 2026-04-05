@@ -105,6 +105,12 @@ pub fn default_config_path() -> PathBuf {
         .join("config.toml")
 }
 
+/// Validate that a TOML string is a valid daemon config.
+pub fn validate(content: &str) -> anyhow::Result<()> {
+    parse(content)?;
+    Ok(())
+}
+
 /// Parse a TOML string into a Config.
 fn parse(content: &str) -> anyhow::Result<Config> {
     let raw: RawConfig = toml::from_str(content)?;

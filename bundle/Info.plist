@@ -26,5 +26,18 @@
 	<true/>
 	<key>NSHumanReadableCopyright</key>
 	<string>MIT / Apache-2.0</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.jlevere.hidpp</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>hidpp</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>

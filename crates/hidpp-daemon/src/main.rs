@@ -14,7 +14,7 @@ use hidpp::types::DeviceIndex;
 use muda::MenuEvent;
 use tao::event::{Event, StartCause};
 use tao::event_loop::{ControlFlow, EventLoopBuilder};
-use tracing::info;
+use tracing::{info, warn};
 
 use bridge::{DaemonCommand, DaemonEvent};
 
@@ -179,6 +179,32 @@ fn run_tray_app(
             }
         }
 
+        // Handle hidpp:// URL scheme (config push from web UI).
+        if let Event::Opened { urls } = &event {
+            for url in urls {
+                if url.scheme() == "hidpp" {
+                    info!("received URL: {url}");
+                    if let Some(toml_str) = url
+                        .query_pairs()
+                        .find(|(k, _)| k == "toml")
+                        .map(|(_, v)| v.into_owned())
+                    {
+                        match handle_config_url(&toml_str) {
+                            Ok(()) => {
+                                ts.last_action_item.set_text("Config updated from web UI");
+                                let _ = cmd_tx.blocking_send(DaemonCommand::ReloadConfig);
+                                info!("config updated from web UI, reloading");
+                            }
+                            Err(e) => {
+                                warn!("invalid config from URL: {e}");
+                                ts.last_action_item.set_text(format!("Config error: {e}"));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Handle menu clicks.
         if matches!(
             &event,
@@ -211,4 +237,18 @@ fn run_tray_app(
 
         let _ = connected; // suppress unused warning from tao closure
     });
+}
+
+/// Validate and write a TOML config received from a hidpp:// URL.
+fn handle_config_url(toml_str: &str) -> anyhow::Result<()> {
+    // Validate it parses before writing.
+    config::validate(toml_str)?;
+
+    let path = config::default_config_path();
+    if let Some(parent) = path.parent() {
+        std::fs::create_dir_all(parent)?;
+    }
+    std::fs::write(&path, toml_str)?;
+    info!("wrote config to {}", path.display());
+    Ok(())
 }

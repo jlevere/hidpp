@@ -522,6 +522,68 @@ button.more-toggle:hover {
   z-index: 9999;
 }
 
+/* ── Config editor ─────────────────── */
+
+.config-hint {
+  color: var(--muted);
+  font-size: 0.7rem;
+  margin-bottom: 1rem;
+}
+
+.config-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0;
+}
+
+.config-label {
+  font-size: 0.8rem;
+  color: var(--fg);
+  min-width: 7rem;
+}
+
+.config-input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid var(--dim);
+  color: var(--fg);
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  padding: 0.25rem 0.3rem;
+  outline: none;
+  flex: 1;
+  min-width: 6rem;
+}
+
+.config-input:focus {
+  border-color: var(--accent);
+}
+
+.config-input::placeholder {
+  color: var(--dim);
+}
+
+.config-gesture {
+  padding-left: 7.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.config-gesture-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.15rem 0;
+}
+
+.config-dir {
+  font-size: 0.65rem;
+  color: var(--muted);
+  font-family: var(--mono);
+  width: 3rem;
+  text-align: right;
+}
+
 /* ── Responsive ────────────────────── */
 
 @media (max-width: 480px) {

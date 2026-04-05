@@ -246,8 +246,8 @@ async fn connect_and_listen(
             }
             cmd = cmd_rx.recv() => {
                 match cmd {
-                    Some(DaemonCommand::Reconnect) => {
-                        info!("reconnect requested");
+                    Some(DaemonCommand::Reconnect | DaemonCommand::ReloadConfig) => {
+                        info!("reconnect/reload requested");
                         return Ok(false);
                     }
                     Some(DaemonCommand::Shutdown) | None => {

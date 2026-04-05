@@ -814,6 +814,11 @@ function renderDevicePage(data: PageData): void {
     root.append(section);
   }
 
+  // Software Actions (daemon config editor).
+  if (data.buttons.length > 0) {
+    root.append(renderConfigEditor(data));
+  }
+
   // Actions.
   if (data.device) {
     const section = el("div", { class: "section" });
@@ -873,7 +878,249 @@ async function setSmartShift(mode: string): Promise<void> {
   }
 }
 
-// loadLiveData and updateHeader removed — data loaded upfront in showDevice().
+// ── Daemon config editor ──
+
+interface ButtonConfig {
+  cid: number;
+  name: string;
+  mode: "default" | "keystroke" | "gesture";
+  keystroke: string;
+  gesture: {
+    up: string;
+    down: string;
+    left: string;
+    right: string;
+    tap: string;
+  };
+}
+
+function renderConfigEditor(data: PageData): HTMLElement {
+  const section = el("div", { class: "section" });
+  section.append(el("div", { class: "section-label" }, "Software Actions"));
+  section.append(
+    el("div", { class: "config-hint" }, "Configure button actions for the HID++ daemon."),
+  );
+
+  const divertable = data.buttons.filter((b) => b.divertable);
+  const configs: ButtonConfig[] = divertable.map((b) => ({
+    cid: b.cid,
+    name: BUTTON_NAMES[b.cid] ?? `CID ${String(b.cid)}`,
+    mode: "default" as const,
+    keystroke: "",
+    gesture: { up: "", down: "", left: "", right: "", tap: "" },
+  }));
+
+  const editorDiv = el("div", { class: "config-editor" });
+
+  for (const cfg of configs) {
+    const row = el("div", { class: "config-row" });
+
+    const label = el("span", { class: "config-label" }, cfg.name);
+    const modeSelect = document.createElement("select");
+    modeSelect.className = "remap-select";
+    for (const [value, text] of [
+      ["default", "Default"],
+      ["keystroke", "Keystroke"],
+      ["gesture", "Gesture"],
+    ] as const) {
+      const opt = document.createElement("option");
+      opt.value = value;
+      opt.textContent = text;
+      modeSelect.append(opt);
+    }
+
+    const keystrokeInput = el("input", {
+      type: "text",
+      class: "config-input",
+      placeholder: "e.g. alt+left",
+    });
+    keystrokeInput.style.display = "none";
+
+    const gestureDiv = el("div", { class: "config-gesture" });
+    gestureDiv.style.display = "none";
+    const gestureInputs: Record<string, HTMLInputElement> = {};
+    for (const dir of ["up", "down", "left", "right", "tap"] as const) {
+      const gi = el("input", {
+        type: "text",
+        class: "config-input",
+        placeholder: dir === "tap" ? "tap action" : `swipe ${dir}`,
+      });
+      gestureInputs[dir] = gi;
+      gestureDiv.append(
+        el("div", { class: "config-gesture-row" }, el("span", { class: "config-dir" }, dir), gi),
+      );
+    }
+
+    modeSelect.addEventListener("change", () => {
+      cfg.mode = modeSelect.value as ButtonConfig["mode"];
+      keystrokeInput.style.display = cfg.mode === "keystroke" ? "" : "none";
+      gestureDiv.style.display = cfg.mode === "gesture" ? "" : "none";
+    });
+
+    keystrokeInput.addEventListener("input", () => {
+      cfg.keystroke = keystrokeInput.value;
+    });
+
+    for (const [dir, input] of Object.entries(gestureInputs)) {
+      input.addEventListener("input", () => {
+        cfg.gesture[dir as keyof ButtonConfig["gesture"]] = input.value;
+      });
+    }
+
+    row.append(label, modeSelect, keystrokeInput);
+    editorDiv.append(row, gestureDiv);
+  }
+
+  section.append(editorDiv);
+
+  // Action buttons.
+  const actions = el("div", { class: "actions", style: "margin-top: 1rem" });
+
+  const applyBtn = el("button", { class: "btn-sm" }, "apply to app");
+  applyBtn.addEventListener("click", () => {
+    const toml = generateToml(configs);
+    const url = `hidpp://config?toml=${encodeURIComponent(toml)}`;
+    window.location.href = url;
+  });
+
+  const copyBtn = el("button", { class: "btn-sm" }, "copy toml");
+  copyBtn.addEventListener("click", () => {
+    const toml = generateToml(configs);
+    void navigator.clipboard.writeText(toml).then(() => {
+      copyBtn.textContent = "copied";
+      setTimeout(() => {
+        copyBtn.textContent = "copy toml";
+      }, 2000);
+    });
+  });
+
+  const importBtn = el("button", { class: "btn-sm" }, "import config");
+  importBtn.addEventListener("click", () => {
+    const toml = prompt("Paste your daemon config TOML:");
+    if (toml !== null && toml.trim() !== "") {
+      parseTomlIntoEditor(toml, configs, editorDiv);
+    }
+  });
+
+  actions.append(applyBtn, copyBtn, importBtn);
+  section.append(actions);
+
+  return section;
+}
+
+function generateToml(configs: ButtonConfig[]): string {
+  const buttons = configs.filter((c) => c.mode === "keystroke");
+  const gestures = configs.filter((c) => c.mode === "gesture");
+
+  let toml = "";
+
+  if (buttons.length > 0) {
+    toml += "[buttons]\n";
+    for (const b of buttons) {
+      if (b.keystroke.trim() !== "") {
+        toml += `${String(b.cid)} = "${b.keystroke.trim()}"\n`;
+      }
+    }
+    toml += "\n";
+  }
+
+  for (const g of gestures) {
+    toml += `[gestures.${String(g.cid)}]\n`;
+    if (g.gesture.up.trim() !== "") toml += `up = "${g.gesture.up.trim()}"\n`;
+    if (g.gesture.down.trim() !== "") toml += `down = "${g.gesture.down.trim()}"\n`;
+    if (g.gesture.left.trim() !== "") toml += `left = "${g.gesture.left.trim()}"\n`;
+    if (g.gesture.right.trim() !== "") toml += `right = "${g.gesture.right.trim()}"\n`;
+    if (g.gesture.tap.trim() !== "") toml += `tap = "${g.gesture.tap.trim()}"\n`;
+    toml += "\n";
+  }
+
+  return toml;
+}
+
+function parseTomlIntoEditor(toml: string, configs: ButtonConfig[], editorDiv: HTMLElement): void {
+  // Simple TOML parser for our specific format.
+  const lines = toml.split("\n");
+  let currentSection = "";
+  let currentCid = 0;
+
+  for (const line of lines) {
+    const trimmed = line.trim();
+    if (trimmed === "" || trimmed.startsWith("#")) continue;
+
+    const sectionMatch = /^\[gestures\.(\d+)]$/.exec(trimmed);
+    if (sectionMatch !== null) {
+      currentSection = "gesture";
+      currentCid = parseInt(sectionMatch[1] ?? "0", 10);
+      const cfg = configs.find((c) => c.cid === currentCid);
+      if (cfg) cfg.mode = "gesture";
+      continue;
+    }
+    if (trimmed === "[buttons]") {
+      currentSection = "buttons";
+      continue;
+    }
+
+    const kvMatch = /^(\w+)\s*=\s*"([^"]*)"$/.exec(trimmed);
+    if (kvMatch === null) continue;
+    const key = kvMatch[1] ?? "";
+    const value = kvMatch[2] ?? "";
+
+    if (currentSection === "buttons") {
+      const cid = parseInt(key, 10);
+      if (!isNaN(cid)) {
+        const cfg = configs.find((c) => c.cid === cid);
+        if (cfg) {
+          cfg.mode = "keystroke";
+          cfg.keystroke = value;
+        }
+      }
+    } else if (currentSection === "gesture") {
+      const cfg = configs.find((c) => c.cid === currentCid);
+      if (
+        cfg !== undefined &&
+        (key === "up" || key === "down" || key === "left" || key === "right" || key === "tap")
+      ) {
+        cfg.gesture[key] = value;
+      }
+    }
+  }
+
+  // Re-render the editor with imported values.
+  refreshEditorState(configs, editorDiv);
+}
+
+function refreshEditorState(configs: ButtonConfig[], editorDiv: HTMLElement): void {
+  const rows = editorDiv.querySelectorAll(".config-row");
+  const gestureDivs = editorDiv.querySelectorAll(".config-gesture");
+
+  for (let i = 0; i < configs.length; i++) {
+    const cfg = configs[i];
+    const row = rows[i];
+    const gestureDiv = gestureDivs[i];
+    if (cfg === undefined || !row || !gestureDiv) continue;
+
+    const select = row.querySelector("select");
+    const input = row.querySelector<HTMLInputElement>("input");
+    if (select) {
+      select.value = cfg.mode;
+    }
+    if (input) {
+      input.value = cfg.keystroke;
+      input.style.display = cfg.mode === "keystroke" ? "" : "none";
+    }
+    (gestureDiv as HTMLElement).style.display = cfg.mode === "gesture" ? "" : "none";
+
+    const gInputs = gestureDiv.querySelectorAll("input");
+    const dirs = ["up", "down", "left", "right", "tap"] as const;
+    for (let j = 0; j < dirs.length && j < gInputs.length; j++) {
+      const dirInput = gInputs[j] as HTMLInputElement | undefined;
+      const dir = dirs[j];
+      if (dirInput !== undefined && dir !== undefined) {
+        dirInput.value = cfg.gesture[dir];
+      }
+    }
+  }
+}
 
 // Start.
 showConnect();
