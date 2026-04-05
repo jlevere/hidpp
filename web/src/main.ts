@@ -136,8 +136,13 @@ function showDemoDevice(profile: Record<string, unknown>): void {
   const dpiInfo = caps?.highResolutionSensorInfo as Record<string, number> | undefined;
   const defaultDpi = dpiInfo?.defaultDpiValueSensorOff ?? 1000;
 
+  // Extract thumbnail filename from pipeline:// URI.
+  const thumbUri = (profile.thumbnail as string | undefined) ?? "";
+  const thumbFile = thumbUri.includes("/") ? (thumbUri.split("/").pop() ?? "") : "";
+
   renderDevicePage({
     name,
+    thumbnail: thumbFile,
     demo: true,
     battery: null,
     dpi: dpiInfo ? defaultDpi : null,
@@ -177,6 +182,7 @@ function showDevice(device: Device): void {
   void (async (): Promise<void> => {
     const data: PageData = {
       name: device.name,
+      thumbnail: "mx_master_3s.png", // TODO: look up from profile by PID
       demo: false,
       battery: null,
       dpi: null,
@@ -320,6 +326,7 @@ async function loadButtonReporting(device: Device, data: PageData): Promise<void
 
 interface PageData {
   name: string;
+  thumbnail: string;
   demo: boolean;
   battery: { percentage: number; level: string; charging: string } | null;
   dpi: number | null;
@@ -368,39 +375,52 @@ function renderDevicePage(data: PageData): void {
   }
   root.append(el("div", { class: "header" }, el("h1", {}, data.name), meta));
 
-  // Device image with hotspots.
-  const imgSection = el("div", { class: "device-image" });
-  const imgInner = el("div", { class: "device-image-inner" });
-  imgInner.append(
-    el("img", {
-      src: "/logi-re/devices/assets/mx-master-3s/side.png",
-      alt: data.name,
-      draggable: "false",
-    }),
-  );
-  for (const h of HOTSPOTS) {
-    const dot = el("button", {
-      class: "hotspot",
-      title: h.name,
-      style: `left:${String(h.x)}%;top:${String(h.y)}%`,
+  // Device image.
+  // Use side.png from device assets if available, otherwise thumbnail, otherwise skip.
+  const isMxMaster3s = data.name.includes("MX Master 3S");
+  const imgSrc = isMxMaster3s
+    ? "/logi-re/devices/assets/mx-master-3s/side.png"
+    : data.thumbnail !== ""
+      ? `/logi-re/devices/thumbnails/${data.thumbnail}`
+      : "";
+
+  if (imgSrc !== "") {
+    const imgSection = el("div", { class: "device-image" });
+    const imgInner = el("div", { class: "device-image-inner" });
+    const img = el("img", { src: imgSrc, alt: data.name, draggable: "false" });
+    img.addEventListener("error", () => {
+      // Image not found — hide the section.
+      imgSection.style.display = "none";
     });
-    dot.addEventListener("click", () => {
-      // Scroll to and highlight the button in the list.
-      const row = document.querySelector(
-        `.button-item .cid[data-cid="${String(h.cid)}"]`,
-      )?.parentElement;
-      if (row) {
-        row.scrollIntoView({ behavior: "smooth", block: "center" });
-        row.style.background = "var(--dim)";
-        setTimeout(() => {
-          row.style.background = "";
-        }, 1500);
+    imgInner.append(img);
+
+    // Only show hotspots for MX Master 3S (we have metadata for it).
+    if (isMxMaster3s) {
+      for (const h of HOTSPOTS) {
+        const dot = el("button", {
+          class: "hotspot",
+          title: h.name,
+          style: `left:${String(h.x)}%;top:${String(h.y)}%`,
+        });
+        dot.addEventListener("click", () => {
+          const row = document.querySelector(
+            `.button-item .cid[data-cid="${String(h.cid)}"]`,
+          )?.parentElement;
+          if (row) {
+            row.scrollIntoView({ behavior: "smooth", block: "center" });
+            row.style.background = "var(--dim)";
+            setTimeout(() => {
+              row.style.background = "";
+            }, 1500);
+          }
+        });
+        imgInner.append(dot);
       }
-    });
-    imgInner.append(dot);
+    }
+
+    imgSection.append(imgInner);
+    root.append(imgSection);
   }
-  imgSection.append(imgInner);
-  root.append(imgSection);
 
   // DPI section.
   if (data.dpi !== null || data.dpiRange !== null) {
