@@ -294,13 +294,38 @@ body {
 
 .toggle button:hover {
   color: var(--fg);
+  background: none;
 }
 .toggle button.active {
   color: var(--accent);
+  background: none;
 }
 .toggle button:disabled {
   opacity: 0.3;
   cursor: not-allowed;
+  background: none;
+}
+
+/* ── Ghost buttons (all small action buttons) ── */
+.btn-sm,
+button.btn-sm {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.7rem;
+  cursor: pointer;
+  font-family: inherit;
+  padding: 0.2rem 0.6rem;
+  transition: color 150ms;
+}
+
+.btn-sm:hover {
+  color: var(--fg);
+  background: none;
+}
+
+.btn-sm.active {
+  color: var(--accent);
 }
 
 /* ── Buttons list ──────────────────── */

@@ -458,7 +458,7 @@ function renderDevicePage(data: PageData): void {
     // HiResWheel.
     if (data.hiresWheel) {
       const hw = data.hiresWheel;
-      const hiresBtn = el("button", {}, hw.highResolution ? "on" : "off");
+      const hiresBtn = el("button", { class: "btn-sm" }, hw.highResolution ? "on" : "off");
       hiresBtn.classList.toggle("active", hw.highResolution);
       if (!data.demo) {
         hiresBtn.addEventListener("click", () => {
@@ -519,10 +519,28 @@ function renderDevicePage(data: PageData): void {
         ),
         el("span", { class: "name" }, name),
       );
-      if (btn.divertable) {
-        const tag = el("span", { class: "tag" }, statusLabel);
+      if (btn.divertable && !data.demo && data.device) {
+        const tag = el("button", { class: "btn-sm" }, statusLabel);
         tag.classList.toggle("active", btn.diverted);
+        const cid = btn.cid;
+        const device = data.device;
+        tag.addEventListener("click", () => {
+          void (async (): Promise<void> => {
+            try {
+              const newFlags = btn.diverted ? 0x00 : 0x01;
+              const result = await device.setButtonReporting(cid, newFlags, 0);
+              btn.diverted = result.diverted;
+              tag.textContent = result.diverted ? "software" : "standard";
+              tag.classList.toggle("active", result.diverted);
+              log(`Button ${String(cid)}: ${result.diverted ? "software" : "standard"}`);
+            } catch (e) {
+              logError(`Button ${String(cid)}: ${String(e)}`);
+            }
+          })();
+        });
         item.append(tag);
+      } else if (btn.divertable) {
+        item.append(el("span", { class: "tag" }, statusLabel));
       }
       section.append(item);
     }
@@ -541,11 +559,7 @@ function renderDevicePage(data: PageData): void {
       if (active) {
         right.append(el("span", { style: "color: var(--success); font-size: 0.75rem" }, "active"));
       } else if (!data.demo && data.device) {
-        const switchBtn = el(
-          "button",
-          { style: "font-size: 0.7rem; padding: 0.2rem 0.6rem" },
-          "switch",
-        );
+        const switchBtn = el("button", { class: "btn-sm" }, "switch");
         const hostIdx = i;
         switchBtn.addEventListener("click", () => {
           if (confirm(`Switch to Slot ${String(hostIdx + 1)}? This will disconnect the mouse.`)) {
@@ -624,26 +638,31 @@ function renderDevicePage(data: PageData): void {
     }
 
     if (unknown.length > 0) {
-      const moreWrap = el("span", { class: "feature-item" });
       const moreBtn = el("button", { class: "more-toggle" }, `+${String(unknown.length)} unknown`);
-      const moreList = el("span", { style: "display: none" });
-      for (const f of unknown) {
-        moreList.append(
-          el(
-            "span",
-            { class: "feature-item" },
-            el("span", { class: "fid" }, f.id),
-            document.createTextNode(` ${f.name}`),
-          ),
-        );
-      }
+      let expanded = false;
       moreBtn.addEventListener("click", () => {
-        const showing = moreList.style.display !== "none";
-        moreList.style.display = showing ? "none" : "";
-        moreBtn.textContent = showing ? `+${String(unknown.length)} unknown` : "hide";
+        expanded = !expanded;
+        if (expanded) {
+          // Add unknown features inline after the button.
+          for (const f of unknown) {
+            const item = el(
+              "span",
+              { class: "feature-item", "data-unknown": "true" },
+              el("span", { class: "fid" }, f.id),
+              document.createTextNode(` ${f.name}`),
+            );
+            wrap.append(item);
+          }
+          moreBtn.textContent = "collapse";
+        } else {
+          // Remove unknown features.
+          wrap.querySelectorAll("[data-unknown]").forEach((el) => {
+            el.remove();
+          });
+          moreBtn.textContent = `+${String(unknown.length)} unknown`;
+        }
       });
-      moreWrap.append(moreBtn, moreList);
-      wrap.append(moreWrap);
+      wrap.append(moreBtn);
     }
 
     section.append(wrap);
@@ -653,7 +672,7 @@ function renderDevicePage(data: PageData): void {
   // Actions.
   if (data.device) {
     const section = el("div", { class: "section" });
-    const exportBtn = el("button", {}, "export config");
+    const exportBtn = el("button", { class: "btn-sm" }, "export config");
     exportBtn.addEventListener("click", () => {
       void (async (): Promise<void> => {
         if (!data.device) return;
