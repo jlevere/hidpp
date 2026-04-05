@@ -120,4 +120,50 @@ export class Device {
     log(`getButtons: ${btns.length} controls`);
     return btns;
   }
+
+  async getHiResWheel(): Promise<{
+    highResolution: boolean;
+    inverted: boolean;
+    diverted: boolean;
+  }> {
+    log("getHiResWheel...");
+    return (await this.#raw.getHiResWheel()) as {
+      highResolution: boolean;
+      inverted: boolean;
+      diverted: boolean;
+    };
+  }
+
+  async getThumbwheel(): Promise<{ mode: string; inverted: boolean; diverted: boolean }> {
+    log("getThumbwheel...");
+    return (await this.#raw.getThumbwheel()) as {
+      mode: string;
+      inverted: boolean;
+      diverted: boolean;
+    };
+  }
+
+  async getFriendlyName(): Promise<string> {
+    log("getFriendlyName...");
+    return this.#raw.getFriendlyName();
+  }
+
+  async getHostOsVersion(
+    hostIndex: number,
+  ): Promise<{ osType: string; major: number; minor: number }> {
+    return (await this.#raw.getHostOsVersion(hostIndex)) as {
+      osType: string;
+      major: number;
+      minor: number;
+    };
+  }
+
+  async exportConfig(): Promise<string> {
+    log("exportConfig...");
+    return this.#raw.exportConfig();
+  }
+
+  getSupportedSections(): unknown {
+    return this.#raw.getSupportedSections();
+  }
 }

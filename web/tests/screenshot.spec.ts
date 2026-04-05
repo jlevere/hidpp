@@ -14,7 +14,7 @@ const test = base.extend<{ devicePage: Page }>({
         "--enable-experimental-web-platform-features",
         "--disable-features=WebHidBlocklist",
       ],
-      viewport: { width: 800, height: 1200 },
+      viewport: { width: 1024, height: 768 },
     });
     const page = context.pages()[0] ?? (await context.newPage());
     await use(page);
@@ -25,42 +25,26 @@ const test = base.extend<{ devicePage: Page }>({
 test("screenshot connected page", async ({ devicePage: page }) => {
   await page.goto("http://localhost:5173/logi-re/");
 
-  // Try connectGranted first.
+  // Try auto-connect first.
   const connected = await page.evaluate(async () => {
     const mod = await import("/logi-re/pkg/hidpp_web.js");
     await mod.default();
     const device = await mod.WasmDevice.connectGranted();
-    if (!device) return false;
-    (window as any).__device = device;
-    return true;
+    return device !== null && device !== undefined;
   });
 
   if (!connected) {
-    // Fall back to manual connect.
+    // Manual connect.
     await page.click("button:has-text('Connect Device')");
-    await page.waitForFunction(
-      () => document.querySelector(".connection-badge") !== null,
-      { timeout: 30_000 },
-    );
-    await page.waitForTimeout(3000);
-  } else {
-    // Trigger the UI manually since we bypassed the button.
-    await page.click("button:has-text('Connect Device')");
-    await page.waitForFunction(
-      () => document.querySelector(".connection-badge") !== null,
-      { timeout: 30_000 },
-    );
-    await page.waitForTimeout(3000);
   }
 
-  // Wait for data to load.
-  await page.waitForTimeout(2000);
+  // Wait for the app layout to appear (sidebar).
+  await page.waitForSelector(".sidebar", { timeout: 30_000 });
+  await page.waitForTimeout(3000);
 
-  // Take screenshot.
   await page.screenshot({
     path: "test-results/connected-page.png",
-    fullPage: true,
+    fullPage: false,
   });
-
-  console.log("Screenshot saved to test-results/connected-page.png");
+  console.log("Screenshot saved.");
 });
