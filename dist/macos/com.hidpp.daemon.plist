@@ -6,7 +6,7 @@
     <string>com.hidpp.daemon</string>
     <key>ProgramArguments</key>
     <array>
-        <string>${HOME}/.local/bin/hidppd</string>
+        <string>${HIDPPD_PATH}</string>
     </array>
     <key>RunAtLoad</key>
     <true/>

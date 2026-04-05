@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BIN_DIR="${HOME}/.local/bin"
+APP_DIR="/Applications/HID++.app"
 PLIST_DST="${HOME}/Library/LaunchAgents/com.hidpp.daemon.plist"
+BIN_DIR="${HOME}/.local/bin"
 
 echo "hidpp uninstaller for macOS"
 echo ""
@@ -14,9 +15,14 @@ if [ -f "${PLIST_DST}" ]; then
     echo "  plist removed"
 fi
 
-# Remove binaries.
-rm -f "${BIN_DIR}/hidpp" "${BIN_DIR}/hidppd"
-echo "  binaries removed from ${BIN_DIR}/"
+# Remove .app bundle.
+if [ -d "${APP_DIR}" ]; then
+    rm -rf "${APP_DIR}"
+    echo "  app removed from ${APP_DIR}"
+fi
+
+# Remove legacy bare binaries if present.
+rm -f "${BIN_DIR}/hidpp" "${BIN_DIR}/hidppd" 2>/dev/null
 
 echo ""
 echo "done. config left in place at ~/.config/hidpp/"
