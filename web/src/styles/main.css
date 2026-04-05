@@ -360,18 +360,47 @@ button.btn-sm {
   color: var(--accent);
 }
 
-.more-toggle {
-  background: none;
-  border: none;
+.more-toggle,
+button.more-toggle {
+  background: none !important;
+  border: none !important;
   color: var(--muted);
   font-size: 0.65rem;
   cursor: pointer;
   font-family: var(--mono);
-  padding: 0;
+  padding: 0.15rem 0.4rem;
   letter-spacing: 0.03em;
 }
 
-.more-toggle:hover {
+.more-toggle:hover,
+button.more-toggle:hover {
+  color: var(--fg);
+  background: none !important;
+}
+
+/* ── Remap select ──────────────────── */
+
+.remap-select {
+  background: var(--bg);
+  border: 1px solid var(--dim);
+  color: var(--fg);
+  font-family: inherit;
+  font-size: 0.75rem;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  margin-left: auto;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.remap-select:focus {
+  border-color: var(--accent);
+}
+
+.remap-select option {
+  background: var(--bg);
   color: var(--fg);
 }
 

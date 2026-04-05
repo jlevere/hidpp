@@ -276,13 +276,15 @@ async function loadButtonReporting(device: Device, data: PageData): Promise<void
     try {
       const r = await device.getButtonReporting(btn.cid);
       btn.diverted = r.diverted;
-      // Update the button's toggle in the DOM.
-      const toggle = document
-        .querySelector(`.button-item .cid[data-cid="${String(btn.cid)}"]`)
-        ?.parentElement?.querySelector("button");
-      if (toggle) {
-        toggle.textContent = r.diverted ? "diverted" : "default";
-        toggle.classList.toggle("active", r.diverted);
+      // Update the remap dropdown value if button is remapped.
+      const parent = document.querySelector(
+        `.button-item .cid[data-cid="${String(btn.cid)}"]`,
+      )?.parentElement;
+      if (parent) {
+        const select = parent.querySelector("select");
+        if (select && r.remappedCid !== 0 && r.remappedCid !== btn.cid) {
+          select.value = String(r.remappedCid);
+        }
       }
     } catch {
       /* */
@@ -506,9 +508,14 @@ function renderDevicePage(data: PageData): void {
   if (data.buttons.length > 0) {
     const section = el("div", { class: "section" });
     section.append(el("div", { class: "section-label" }, "Buttons"));
+
+    // Build remap target options from the device's own buttons.
+    const remapTargets = data.buttons
+      .filter((b) => b.divertable)
+      .map((b) => ({ cid: b.cid, name: BUTTON_NAMES[b.cid] ?? `CID ${String(b.cid)}` }));
+
     for (const btn of data.buttons) {
       const name = BUTTON_NAMES[btn.cid] ?? `Control ${String(btn.cid)}`;
-      const statusLabel = btn.diverted ? "software" : "standard";
       const item = el(
         "div",
         { class: "button-item" },
@@ -519,28 +526,44 @@ function renderDevicePage(data: PageData): void {
         ),
         el("span", { class: "name" }, name),
       );
+
       if (btn.divertable && !data.demo && data.device) {
-        const tag = el("button", { class: "btn-sm" }, statusLabel);
-        tag.classList.toggle("active", btn.diverted);
-        const cid = btn.cid;
         const device = data.device;
-        tag.addEventListener("click", () => {
+        const cid = btn.cid;
+
+        // Remap dropdown — shows other buttons this can be remapped to.
+        const select = document.createElement("select");
+        select.className = "remap-select";
+        const defaultOpt = document.createElement("option");
+        defaultOpt.value = String(cid);
+        defaultOpt.textContent = `${name} (default)`;
+        select.append(defaultOpt);
+
+        for (const target of remapTargets) {
+          if (target.cid === cid) continue;
+          const opt = document.createElement("option");
+          opt.value = String(target.cid);
+          opt.textContent = target.name;
+          select.append(opt);
+        }
+
+        // Set current remap value (loaded lazily).
+        select.value = String(cid);
+
+        select.addEventListener("change", () => {
+          const targetCid = parseInt(select.value, 10);
           void (async (): Promise<void> => {
             try {
-              const newFlags = btn.diverted ? 0x00 : 0x01;
-              const result = await device.setButtonReporting(cid, newFlags, 0);
-              btn.diverted = result.diverted;
-              tag.textContent = result.diverted ? "software" : "standard";
-              tag.classList.toggle("active", result.diverted);
-              log(`Button ${String(cid)}: ${result.diverted ? "software" : "standard"}`);
+              const isRemap = targetCid !== cid;
+              const result = await device.setButtonReporting(cid, isRemap ? 0x00 : 0x00, targetCid);
+              log(`Button ${String(cid)} → ${String(result.remappedCid)}`);
             } catch (e) {
-              logError(`Button ${String(cid)}: ${String(e)}`);
+              logError(`Remap ${String(cid)}: ${String(e)}`);
             }
           })();
         });
-        item.append(tag);
-      } else if (btn.divertable) {
-        item.append(el("span", { class: "tag" }, statusLabel));
+
+        item.append(select);
       }
       section.append(item);
     }
