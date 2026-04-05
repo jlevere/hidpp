@@ -15,7 +15,7 @@ export function createDpiCard(): DpiCard {
     max: "8000",
     step: "50",
     value: "1000",
-  }) as HTMLInputElement;
+  });
 
   const numInput = el("input", {
     type: "number",
@@ -23,7 +23,7 @@ export function createDpiCard(): DpiCard {
     max: "8000",
     step: "50",
     value: "1000",
-  }) as HTMLInputElement;
+  });
 
   const applyBtn = el("button", {}, "Apply");
   const controls = el("div", { class: "controls" }, slider, numInput, applyBtn);
@@ -40,25 +40,29 @@ export function createDpiCard(): DpiCard {
 
   let currentDevice: Device | null = null;
 
-  applyBtn.addEventListener("click", async () => {
-    if (!currentDevice) return;
-    const dpi = parseInt(numInput.value, 10);
-    if (isNaN(dpi)) return;
+  applyBtn.addEventListener(
+    "click",
+    () =>
+      void (async (): Promise<void> => {
+        if (!currentDevice) return;
+        const dpi = parseInt(numInput.value, 10);
+        if (isNaN(dpi)) return;
 
-    applyBtn.setAttribute("disabled", "");
-    try {
-      const applied = await currentDevice.setDpi(dpi);
-      currentRow.value.textContent = String(applied);
-      slider.value = String(applied);
-      numInput.value = String(applied);
-    } finally {
-      applyBtn.removeAttribute("disabled");
-    }
-  });
+        applyBtn.setAttribute("disabled", "");
+        try {
+          const applied = await currentDevice.setDpi(dpi);
+          currentRow.value.textContent = String(applied);
+          slider.value = String(applied);
+          numInput.value = String(applied);
+        } finally {
+          applyBtn.removeAttribute("disabled");
+        }
+      })(),
+  );
 
   return {
     root,
-    async refresh(device: Device) {
+    async refresh(device: Device): Promise<void> {
       currentDevice = device;
       try {
         const dpi = await device.getDpi();
@@ -66,7 +70,7 @@ export function createDpiCard(): DpiCard {
         slider.value = String(dpi);
         numInput.value = String(dpi);
       } catch (e) {
-        currentRow.value.textContent = `Error: ${e}`;
+        currentRow.value.textContent = `Error: ${String(e)}`;
       }
     },
   };

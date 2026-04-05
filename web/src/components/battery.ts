@@ -13,21 +13,18 @@ export function createBatteryCard(): BatteryCard {
 
   return {
     root,
-    async refresh(device: Device) {
+    async refresh(device: Device): Promise<void> {
       try {
         const bat = await device.getBattery();
         levelRow.value.textContent = `${bat.percentage}%`;
 
-        const variant =
-          bat.level === "Critical" || bat.level === "Low"
-            ? "warn"
-            : "success";
+        const variant = bat.level === "Critical" || bat.level === "Low" ? "warn" : "success";
         statusRow.value.replaceChildren(
-          badge(bat.level, variant as "warn" | "success"),
+          badge(bat.level, variant),
           document.createTextNode(` ${bat.charging}`),
         );
       } catch (e) {
-        levelRow.value.textContent = `Error: ${e}`;
+        levelRow.value.textContent = `Error: ${String(e)}`;
       }
     },
   };

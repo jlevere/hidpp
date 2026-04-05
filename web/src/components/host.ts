@@ -12,12 +12,12 @@ export function createHostCard(): HostCard {
 
   return {
     root,
-    async refresh(device: Device) {
+    async refresh(device: Device): Promise<void> {
       try {
         const info = await device.getHostInfo();
         hostRow.value.textContent = `${info.currentHost + 1} of ${info.numHosts}`;
       } catch (e) {
-        hostRow.value.textContent = `Error: ${e}`;
+        hostRow.value.textContent = `Error: ${String(e)}`;
       }
     },
   };

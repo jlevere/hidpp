@@ -15,19 +15,13 @@ export function createSmartShiftCard(): SmartShiftCard {
   const freeBtn = el("button", {}, "Free Spin");
   const controls = el("div", { class: "controls" }, ratchetBtn, freeBtn);
 
-  const root = card(
-    "SmartShift",
-    modeRow.root,
-    disengage.root,
-    torqueRow.root,
-    controls,
-  );
+  const root = card("SmartShift", modeRow.root, disengage.root, torqueRow.root, controls);
 
   let currentDevice: Device | null = null;
 
   function updateDisplay(mode: string, ad: number, torque: number): void {
     const variant = mode === "Ratchet" ? "default" : "success";
-    modeRow.value.replaceChildren(badge(mode, variant as "default" | "success"));
+    modeRow.value.replaceChildren(badge(mode, variant));
     disengage.value.textContent = String(ad);
     torqueRow.value.textContent = String(torque);
   }
@@ -50,13 +44,13 @@ export function createSmartShiftCard(): SmartShiftCard {
 
   return {
     root,
-    async refresh(device: Device) {
+    async refresh(device: Device): Promise<void> {
       currentDevice = device;
       try {
         const state = await device.getSmartShift();
         updateDisplay(state.mode, state.autoDisengage, state.torque);
       } catch (e) {
-        modeRow.value.textContent = `Error: ${e}`;
+        modeRow.value.textContent = `Error: ${String(e)}`;
       }
     },
   };

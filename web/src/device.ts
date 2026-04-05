@@ -95,11 +95,7 @@ export class Device {
     torque: number,
   ): Promise<SmartShiftState> {
     log(`setSmartShift(${mode}, ${autoDisengage}, ${torque})...`);
-    const result = (await this.#raw.setSmartShift(
-      mode,
-      autoDisengage,
-      torque,
-    )) as SmartShiftState;
+    const result = (await this.#raw.setSmartShift(mode, autoDisengage, torque)) as SmartShiftState;
     log(`setSmartShift: ${result.mode}`);
     return result;
   }

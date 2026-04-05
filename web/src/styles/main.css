@@ -1,5 +1,11 @@
 /* Reset */
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
 
 /* Tokens */
 :root {
@@ -72,10 +78,25 @@ body {
 }
 
 /* Typography */
-h1 { font-size: 1.5rem; font-weight: 600; letter-spacing: -0.02em; }
-h2 { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.75rem; }
+h1 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+h2 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.75rem;
+}
 
-.subtitle { color: var(--text-muted); font-size: 0.85rem; margin-bottom: 2rem; }
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 2rem;
+}
 
 /* Cards */
 .card {
@@ -87,7 +108,9 @@ h2 { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); text-transfo
   transition: border-color 0.15s;
 }
 
-.card:hover { border-color: #333; }
+.card:hover {
+  border-color: #333;
+}
 
 /* Inline stats grid */
 .stats-grid {
@@ -129,8 +152,14 @@ h2 { font-size: 0.9rem; font-weight: 600; color: var(--text-muted); text-transfo
   padding: 0.4rem 0;
 }
 
-.row .label { color: var(--text-muted); font-size: 0.85rem; }
-.row .value { font-family: var(--mono); font-size: 0.85rem; }
+.row .label {
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+.row .value {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+}
 
 /* Buttons */
 button {
@@ -146,8 +175,14 @@ button {
   font-family: var(--sans);
 }
 
-button:hover { background: var(--accent-hover); }
-button:disabled { background: #333; color: #666; cursor: not-allowed; }
+button:hover {
+  background: var(--accent-hover);
+}
+button:disabled {
+  background: #333;
+  color: #666;
+  cursor: not-allowed;
+}
 
 button.secondary {
   background: transparent;
@@ -155,8 +190,15 @@ button.secondary {
   color: var(--text);
 }
 
-button.secondary:hover { border-color: var(--accent); color: var(--accent-text); }
-button.secondary.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent-text); }
+button.secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+button.secondary.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent-text);
+}
 
 .btn-text {
   background: transparent;
@@ -165,7 +207,10 @@ button.secondary.active { border-color: var(--accent); background: var(--accent-
   font-size: 0.8rem;
 }
 
-.btn-text:hover { background: transparent; text-decoration: underline; }
+.btn-text:hover {
+  background: transparent;
+  text-decoration: underline;
+}
 
 /* Controls */
 .controls {
@@ -176,7 +221,10 @@ button.secondary.active { border-color: var(--accent); background: var(--accent-
   align-items: center;
 }
 
-.controls button { font-size: 0.8rem; padding: 0.4rem 0.8rem; }
+.controls button {
+  font-size: 0.8rem;
+  padding: 0.4rem 0.8rem;
+}
 
 /* Inputs */
 input[type="range"] {
@@ -215,14 +263,29 @@ input[type="number"]:focus {
   color: var(--green);
 }
 
-.badge.warn { background: var(--yellow-bg); color: var(--yellow); }
-.badge.success { background: var(--green-bg); color: var(--green); }
-.badge.info { background: var(--accent-dim); color: var(--accent-text); }
+.badge.warn {
+  background: var(--yellow-bg);
+  color: var(--yellow);
+}
+.badge.success {
+  background: var(--green-bg);
+  color: var(--green);
+}
+.badge.info {
+  background: var(--accent-dim);
+  color: var(--accent-text);
+}
 
 /* Connect screen */
-.connect-screen { text-align: center; padding-top: 15vh; }
+.connect-screen {
+  text-align: center;
+  padding-top: 15vh;
+}
 
-.connect-screen h1 { font-size: 2rem; margin-bottom: 0.5rem; }
+.connect-screen h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
 
 .connect-row {
   display: flex;
@@ -232,7 +295,10 @@ input[type="number"]:focus {
   margin-top: 2rem;
 }
 
-.status { color: var(--text-dim); font-size: 0.85rem; }
+.status {
+  color: var(--text-dim);
+  font-size: 0.85rem;
+}
 
 .notice {
   color: var(--yellow);
@@ -245,7 +311,11 @@ input[type="number"]:focus {
 }
 
 /* Feature list */
-.feature-list { max-height: 300px; overflow-y: auto; margin-top: 0.5rem; }
+.feature-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 0.5rem;
+}
 
 .feature-row {
   font-size: 0.75rem;
@@ -254,7 +324,9 @@ input[type="number"]:focus {
   font-family: var(--mono);
 }
 
-.feature-row code { color: var(--text-dim); }
+.feature-row code {
+  color: var(--text-dim);
+}
 
 /* Button list */
 .button-row {
@@ -265,7 +337,9 @@ input[type="number"]:focus {
   font-size: 0.8rem;
 }
 
-.button-row:last-child { border-bottom: none; }
+.button-row:last-child {
+  border-bottom: none;
+}
 
 .button-row .cid {
   font-family: var(--mono);
@@ -274,8 +348,12 @@ input[type="number"]:focus {
   flex-shrink: 0;
 }
 
-.button-row .name { flex: 1; }
-.button-row .badge { flex-shrink: 0; }
+.button-row .name {
+  flex: 1;
+}
+.button-row .badge {
+  flex-shrink: 0;
+}
 
 /* DPI presets */
 .dpi-presets {
@@ -295,8 +373,15 @@ input[type="number"]:focus {
   font-family: var(--mono);
 }
 
-.dpi-presets button:hover { border-color: var(--accent); color: var(--accent-text); }
-.dpi-presets button.active { border-color: var(--accent); background: var(--accent-dim); color: var(--accent-text); }
+.dpi-presets button:hover {
+  border-color: var(--accent);
+  color: var(--accent-text);
+}
+.dpi-presets button.active {
+  border-color: var(--accent);
+  background: var(--accent-dim);
+  color: var(--accent-text);
+}
 
 /* Firmware list */
 .firmware-row {
@@ -313,8 +398,13 @@ input[type="number"]:focus {
   width: 40px;
 }
 
-.firmware-row .fw-type { color: var(--text-dim); width: 80px; }
-.firmware-row .fw-version { font-family: var(--mono); }
+.firmware-row .fw-type {
+  color: var(--text-dim);
+  width: 80px;
+}
+.firmware-row .fw-version {
+  font-family: var(--mono);
+}
 
 /* Debug log */
 #debug-log {
@@ -334,12 +424,22 @@ input[type="number"]:focus {
 }
 
 /* Hidden */
-.hidden { display: none; }
+.hidden {
+  display: none;
+}
 
 /* Responsive */
 @media (max-width: 480px) {
-  #app { padding: 1rem 0.75rem; }
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
-  .controls { flex-direction: column; }
-  input[type="range"] { width: 100%; }
+  #app {
+    padding: 1rem 0.75rem;
+  }
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .controls {
+    flex-direction: column;
+  }
+  input[type="range"] {
+    width: 100%;
+  }
 }

@@ -7,12 +7,22 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "lint": "eslint src/",
+    "lint:fix": "eslint src/ --fix",
+    "fmt": "prettier --write src/",
+    "fmt:check": "prettier --check src/",
+    "check": "tsc --noEmit && eslint src/ && prettier --check src/",
     "test": "bunx playwright test",
     "test:ui": "bunx playwright test --ui"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.59.1",
+    "eslint": "^10.2.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
     "typescript": "^5.7",
+    "typescript-eslint": "^8.58.0",
     "vite": "^6.2",
     "vite-plugin-top-level-await": "^1.5",
     "vite-plugin-wasm": "^3.4"

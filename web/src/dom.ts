@@ -4,7 +4,7 @@
 export function el<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   attrs?: Record<string, string>,
-  ...children: Array<string | Node>
+  ...children: (string | Node)[]
 ): HTMLElementTagNameMap[K] {
   const elem = document.createElement(tag);
   if (attrs) {
@@ -13,19 +13,14 @@ export function el<K extends keyof HTMLElementTagNameMap>(
     }
   }
   for (const child of children) {
-    elem.append(
-      typeof child === "string" ? document.createTextNode(child) : child,
-    );
+    elem.append(typeof child === "string" ? document.createTextNode(child) : child);
   }
   return elem;
 }
 
 /** Query selector — throws if not found. */
-export function qs<T extends HTMLElement>(
-  selector: string,
-  parent: ParentNode = document,
-): T {
-  const found = parent.querySelector<T>(selector);
+export function qs(selector: string, parent: ParentNode = document): HTMLElement {
+  const found = parent.querySelector<HTMLElement>(selector);
   if (!found) throw new Error(`Element not found: ${selector}`);
   return found;
 }
@@ -48,12 +43,7 @@ export function row(
   valueEl?: HTMLElement,
 ): { root: HTMLDivElement; value: HTMLSpanElement } {
   const valueSpan = valueEl ?? el("span", { class: "value" }, "-");
-  const root = el(
-    "div",
-    { class: "row" },
-    el("span", { class: "label" }, label),
-    valueSpan,
-  );
+  const root = el("div", { class: "row" }, el("span", { class: "label" }, label), valueSpan);
   return { root, value: valueSpan };
 }
 
@@ -62,7 +52,6 @@ export function badge(
   text: string,
   variant: "default" | "warn" | "success" | "info" = "default",
 ): HTMLSpanElement {
-  const cls =
-    variant === "default" ? "badge" : `badge ${variant}`;
+  const cls = variant === "default" ? "badge" : `badge ${variant}`;
   return el("span", { class: cls }, text);
 }

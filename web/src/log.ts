@@ -27,7 +27,7 @@ function timestamp(): string {
 function addLine(msg: string, color?: string): void {
   const panel = ensurePanel();
   const line = document.createElement("div");
-  if (color) line.style.color = color;
+  if (color !== undefined && color !== "") line.style.color = color;
   line.textContent = msg;
   panel.append(line);
   panel.scrollTop = panel.scrollHeight;
