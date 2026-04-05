@@ -568,6 +568,151 @@ impl WasmDevice {
         Ok(arr.into())
     }
 
+    // --- HiResWheel ---
+
+    /// Read HiResWheel mode. Returns `{highResolution, inverted, diverted}`.
+    #[wasm_bindgen(js_name = getHiResWheel)]
+    pub async fn get_hires_wheel(&self) -> Result<JsValue, JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::HIRES_WHEEL)?;
+        let req = hidpp::features::hires_wheel::encode_get_mode(di, idx, sw);
+        let resp = self.request_report(&req).await?;
+        let mode = hidpp::features::hires_wheel::decode_get_mode(&resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+        let obj = js_sys::Object::new();
+        js_sys::Reflect::set(&obj, &"highResolution".into(), &mode.high_resolution.into())?;
+        js_sys::Reflect::set(&obj, &"inverted".into(), &mode.inverted.into())?;
+        js_sys::Reflect::set(&obj, &"diverted".into(), &mode.diverted.into())?;
+        Ok(obj.into())
+    }
+
+    /// Set HiResWheel mode.
+    #[wasm_bindgen(js_name = setHiResWheel)]
+    pub async fn set_hires_wheel(&self, high_resolution: bool, inverted: bool) -> Result<JsValue, JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::HIRES_WHEEL)?;
+        // Read current to preserve other fields.
+        let get_req = hidpp::features::hires_wheel::encode_get_mode(di, idx, sw);
+        let get_resp = self.request_report(&get_req).await?;
+        let mut mode = hidpp::features::hires_wheel::decode_get_mode(&get_resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+        mode.high_resolution = high_resolution;
+        mode.inverted = inverted;
+        let req = hidpp::features::hires_wheel::encode_set_mode(di, idx, sw, &mode);
+        let resp = self.request_report(&req).await?;
+        let applied = hidpp::features::hires_wheel::decode_set_mode(&resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+        let obj = js_sys::Object::new();
+        js_sys::Reflect::set(&obj, &"highResolution".into(), &applied.high_resolution.into())?;
+        js_sys::Reflect::set(&obj, &"inverted".into(), &applied.inverted.into())?;
+        Ok(obj.into())
+    }
+
+    // --- Thumbwheel ---
+
+    /// Read thumbwheel status. Returns `{mode, inverted, diverted}`.
+    #[wasm_bindgen(js_name = getThumbwheel)]
+    pub async fn get_thumbwheel(&self) -> Result<JsValue, JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::THUMBWHEEL)?;
+        let req = hidpp::features::thumbwheel::encode_get_status(di, idx, sw);
+        let resp = self.request_report(&req).await?;
+        let status = hidpp::features::thumbwheel::decode_get_status(&resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+        let obj = js_sys::Object::new();
+        js_sys::Reflect::set(&obj, &"mode".into(), &format!("{:?}", status.reporting_mode).into())?;
+        js_sys::Reflect::set(&obj, &"inverted".into(), &status.inverted.into())?;
+        js_sys::Reflect::set(&obj, &"diverted".into(), &status.diverted.into())?;
+        Ok(obj.into())
+    }
+
+    // --- FriendlyName ---
+
+    /// Read BT friendly name.
+    #[wasm_bindgen(js_name = getFriendlyName)]
+    pub async fn get_friendly_name(&self) -> Result<String, JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::DEVICE_FRIENDLY_NAME)?;
+        let len_req = hidpp::features::friendly_name::encode_get_name_len(di, idx, sw);
+        let len_resp = self.request_report(&len_req).await?;
+        let lengths = hidpp::features::friendly_name::decode_get_name_len(&len_resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+
+        let mut name_bytes = Vec::with_capacity(lengths.name_len as usize);
+        let mut offset = 0u8;
+        while name_bytes.len() < lengths.name_len as usize {
+            let req = hidpp::features::friendly_name::encode_get_name(di, idx, offset, sw);
+            let resp = self.request_report(&req).await?;
+            let chunk = hidpp::features::friendly_name::decode_get_name_chunk(&resp);
+            let remaining = lengths.name_len as usize - name_bytes.len();
+            let take = remaining.min(chunk.len());
+            name_bytes.extend_from_slice(&chunk[..take]);
+            offset = name_bytes.len() as u8;
+        }
+        Ok(String::from_utf8(name_bytes).unwrap_or_else(|_| "?".into()))
+    }
+
+    // --- HostOsVersion ---
+
+    /// Read OS version for a host slot. Returns `{osType, major, minor}`.
+    #[wasm_bindgen(js_name = getHostOsVersion)]
+    pub async fn get_host_os_version(&self, host_index: u8) -> Result<JsValue, JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::HOSTS_INFOS)?;
+        let req = hidpp::features::hosts_info::encode_get_host_os_version(di, idx, host_index, sw);
+        let resp = self.request_report(&req).await?;
+        let os = hidpp::features::hosts_info::decode_get_host_os_version(&resp)
+            .map_err(|e| JsValue::from_str(&format!("{e}")))?;
+        let obj = js_sys::Object::new();
+        js_sys::Reflect::set(&obj, &"osType".into(), &format!("{:?}", os.os_type).into())?;
+        js_sys::Reflect::set(&obj, &"major".into(), &os.version_major.into())?;
+        js_sys::Reflect::set(&obj, &"minor".into(), &os.version_minor.into())?;
+        Ok(obj.into())
+    }
+
+    // --- Config Export/Import ---
+
+    /// Export device config as TOML string.
+    #[wasm_bindgen(js_name = exportConfig)]
+    pub async fn export_config(&self) -> Result<String, JsValue> {
+        // Build config manually from current values.
+        let mut toml = String::from("[device]\n");
+        toml.push_str(&format!("name = \"{}\"\n", self.name()));
+
+        if let Ok(dpi) = self.get_dpi().await {
+            toml.push_str(&format!("\n[dpi]\nvalue = {dpi}\n"));
+        }
+
+        if let Ok(ss) = self.get_smart_shift().await {
+            let mode: String = js_sys::Reflect::get(&ss, &"mode".into())
+                .ok()
+                .and_then(|v| v.as_string())
+                .unwrap_or_default();
+            toml.push_str(&format!("\n[smartshift]\nmode = \"{mode}\"\n"));
+        }
+
+        Ok(toml)
+    }
+
+    // --- Supported features query ---
+
+    /// Check which feature categories this device supports. Returns `{dpi, scroll, buttons, host, ...}`.
+    #[wasm_bindgen(js_name = getSupportedSections)]
+    pub fn get_supported_sections(&self) -> JsValue {
+        let inner = self.inner.borrow();
+        let f = &inner.features;
+        let obj = js_sys::Object::new();
+        let _ = js_sys::Reflect::set(&obj, &"dpi".into(), &f.contains_key(&hidpp::feature_id::ADJUSTABLE_DPI).into());
+        let _ = js_sys::Reflect::set(&obj, &"scroll".into(), &(
+            f.contains_key(&hidpp::feature_id::SMART_SHIFT) ||
+            f.contains_key(&hidpp::feature_id::SMART_SHIFT_TUNABLE_TORQUE) ||
+            f.contains_key(&hidpp::feature_id::HIRES_WHEEL)
+        ).into());
+        let _ = js_sys::Reflect::set(&obj, &"buttons".into(), &f.contains_key(&hidpp::feature_id::SPECIAL_KEYS_V4).into());
+        let _ = js_sys::Reflect::set(&obj, &"host".into(), &f.contains_key(&hidpp::feature_id::CHANGE_HOST).into());
+        let _ = js_sys::Reflect::set(&obj, &"battery".into(), &f.contains_key(&hidpp::feature_id::UNIFIED_BATTERY).into());
+        let _ = js_sys::Reflect::set(&obj, &"thumbwheel".into(), &f.contains_key(&hidpp::feature_id::THUMBWHEEL).into());
+        let _ = js_sys::Reflect::set(&obj, &"firmware".into(), &f.contains_key(&hidpp::feature_id::FIRMWARE_INFO).into());
+        let _ = js_sys::Reflect::set(&obj, &"friendlyName".into(), &f.contains_key(&hidpp::feature_id::DEVICE_FRIENDLY_NAME).into());
+        let _ = js_sys::Reflect::set(&obj, &"hostsInfo".into(), &f.contains_key(&hidpp::feature_id::HOSTS_INFOS).into());
+        obj.into()
+    }
+
     /// Helper to get device context for a feature.
     fn ctx(&self, feature_id: FeatureId) -> Result<(DeviceIndex, SoftwareId, FeatureIndex), JsValue> {
         let idx = self.feature_index(feature_id)?;
