@@ -373,7 +373,12 @@ function renderDevicePage(data: PageData): void {
     meta.textContent = "";
     meta.append(el("span", { class: "demo-tag" }, "DEMO"));
   }
-  root.append(el("div", { class: "header" }, el("h1", {}, data.name), meta));
+  const backBtn = el("button", { class: "btn-sm" }, "← back");
+  backBtn.addEventListener("click", () => {
+    showConnect();
+  });
+  const header = el("div", { class: "header" }, backBtn, el("h1", {}, data.name), meta);
+  root.append(header);
 
   // Device image.
   // Use side.png from device assets if available, otherwise thumbnail, otherwise skip.
