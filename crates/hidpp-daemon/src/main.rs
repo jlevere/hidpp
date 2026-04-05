@@ -124,9 +124,20 @@ left = "ctrl+left"
 right = "ctrl+right"
 "#;
 
-/// Divert flag constants for SetCtrlIdReporting.
-const DIVERT_FLAGS: u8 = 0x03; // divert + dvalid
-const DIVERT_RAW_XY_FLAGS: u8 = 0x33; // divert + dvalid + rawXY + rvalid
+/// Divert flag constants for SetCtrlIdReporting (0x1B04 fn3).
+///
+/// SET request flags byte layout:
+///   bit 0: divert (1 = divert to software)
+///   bit 1: dvalid (1 = this write changes the divert bit)
+///   bit 4: rawXY  (1 = enable raw XY delta reporting)
+///   bit 5: rvalid (1 = this write changes the rawXY bit)
+///
+/// GET/SET response flags byte layout (different — state bits only):
+///   bit 0: diverted
+///   bit 1: rawXY enabled
+///   bit 2: persist enabled
+const DIVERT_FLAGS: u8 = 0x03; // 0b0000_0011 = divert + dvalid
+const DIVERT_RAW_XY_FLAGS: u8 = 0x33; // 0b0011_0011 = divert + dvalid + rawXY + rvalid
 
 /// Main daemon loop: connect → subscribe → handle notifications → reconnect.
 async fn run_daemon(

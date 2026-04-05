@@ -77,7 +77,7 @@ fn execute_keystroke(keystroke: &str) {
     info!("keystroke: {keystroke}");
 }
 
-/// Run a shell command in the background.
+/// Run a shell command in the background. Reaps the child on a separate thread.
 fn execute_command(cmd: &str) {
     info!("command: {cmd}");
 
@@ -91,8 +91,14 @@ fn execute_command(cmd: &str) {
         .args(["/C", cmd])
         .spawn();
 
-    if let Err(e) = result {
-        error!("command failed: {e}");
+    match result {
+        Ok(mut child) => {
+            // Reap the child process to avoid zombies.
+            std::thread::spawn(move || {
+                let _ = child.wait();
+            });
+        }
+        Err(e) => error!("command failed: {e}"),
     }
 }
 
