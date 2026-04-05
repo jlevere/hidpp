@@ -222,21 +222,12 @@ function showDevice(device: Device): void {
         .catch(() => {
           /* optional */
         }),
-      device.getButtons().then(async (btns) => {
-        const buttons = btns as { cid: number; divertable: boolean }[];
-        data.buttons = [];
-        for (const b of buttons) {
-          let diverted = false;
-          if (b.divertable) {
-            try {
-              const r = await device.getButtonReporting(b.cid);
-              diverted = r.diverted;
-            } catch {
-              /* */
-            }
-          }
-          data.buttons.push({ cid: b.cid, divertable: b.divertable, diverted });
-        }
+      device.getButtons().then((btns) => {
+        data.buttons = (btns as { cid: number; divertable: boolean }[]).map((b) => ({
+          cid: b.cid,
+          divertable: b.divertable,
+          diverted: false,
+        }));
       }),
       device.getHostInfo().then(async (h) => {
         data.hosts = h.numHosts;
@@ -271,7 +262,32 @@ function showDevice(device: Device): void {
     }
 
     renderDevicePage(data);
+
+    // Lazy-load button divert status after page is visible.
+    if (data.buttons.length > 0) {
+      void loadButtonReporting(device, data);
+    }
   })();
+}
+
+async function loadButtonReporting(device: Device, data: PageData): Promise<void> {
+  for (const btn of data.buttons) {
+    if (!btn.divertable) continue;
+    try {
+      const r = await device.getButtonReporting(btn.cid);
+      btn.diverted = r.diverted;
+      // Update the button's toggle in the DOM.
+      const toggle = document
+        .querySelector(`.button-item .cid[data-cid="${String(btn.cid)}"]`)
+        ?.parentElement?.querySelector("button");
+      if (toggle) {
+        toggle.textContent = r.diverted ? "diverted" : "default";
+        toggle.classList.toggle("active", r.diverted);
+      }
+    } catch {
+      /* */
+    }
+  }
 }
 
 interface PageData {
