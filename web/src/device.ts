@@ -175,6 +175,11 @@ export class Device {
     return this.#raw.getHostName(hostIndex);
   }
 
+  async setHostName(hostIndex: number, name: string): Promise<void> {
+    log(`setHostName(${String(hostIndex)}, "${name}")...`);
+    await this.#raw.setHostName(hostIndex, name);
+  }
+
   async getHostOsVersion(
     hostIndex: number,
   ): Promise<{ osType: string; major: number; minor: number }> {

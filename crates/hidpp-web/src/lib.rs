@@ -690,20 +690,35 @@ impl WasmDevice {
         Ok(obj.into())
     }
 
-    /// Read the hostname for a host slot via raw HID++ request.
-    /// Uses function 3 of HostsInfos which returns the friendly name.
+    /// Read the hostname for a host slot.
+    /// Uses function 3 of HostsInfos (GetHostFriendlyName).
     #[wasm_bindgen(js_name = getHostName)]
     pub async fn get_host_name(&self, host_index: u8) -> Result<String, JsValue> {
         let (di, sw, idx) = self.ctx(hidpp::feature_id::HOSTS_INFOS)?;
-        // Function 3, param = hostIndex. Response: [hostIndex, offset, ...name bytes]
         let req = hidpp::report::LongReport::request(
             di, idx, hidpp::types::FunctionId(3), sw, &[host_index, 0],
         );
         let resp = self.request_report(&req).await?;
         let params = resp.params();
-        // Skip first 2 bytes (hostIndex echo + offset), rest is UTF-8 name.
         let name_bytes: Vec<u8> = params[2..].iter().copied().take_while(|&b| b != 0).collect();
         Ok(String::from_utf8(name_bytes).unwrap_or_default())
+    }
+
+    /// Set the hostname for the current host slot.
+    /// Uses function 4 of HostsInfos (SetHostFriendlyName).
+    #[wasm_bindgen(js_name = setHostName)]
+    pub async fn set_host_name(&self, host_index: u8, name: &str) -> Result<(), JsValue> {
+        let (di, sw, idx) = self.ctx(hidpp::feature_id::HOSTS_INFOS)?;
+        // Max 12 name bytes per write (14 byte payload - 2 byte header).
+        let name_bytes = name.as_bytes();
+        let chunk = &name_bytes[..name_bytes.len().min(12)];
+        let mut params = vec![host_index, 0]; // hostIndex, charOffset=0
+        params.extend_from_slice(chunk);
+        let req = hidpp::report::LongReport::request(
+            di, idx, hidpp::types::FunctionId(4), sw, &params,
+        );
+        self.request_report(&req).await?;
+        Ok(())
     }
 
     // --- Config Export/Import ---

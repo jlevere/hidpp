@@ -249,6 +249,15 @@ function showDevice(device: Device): void {
           }
           try {
             name = await device.getHostName(i);
+            // If current slot has no name, set it to our identifier.
+            if (name === "" && i === h.currentHost) {
+              try {
+                await device.setHostName(i, "HID++ Web");
+                name = await device.getHostName(i);
+              } catch {
+                /* setHostName might not be supported */
+              }
+            }
           } catch {
             /* */
           }
