@@ -38,13 +38,13 @@ test("screenshot connected page", async ({ devicePage: page }) => {
     await page.click("button:has-text('Connect Device')");
   }
 
-  // Wait for the app to load.
-  await page.waitForSelector(".header", { timeout: 30_000 });
-  await page.waitForTimeout(3000);
+  // Wait for the device page to fully load (DPI section appears after data loads).
+  await page.waitForSelector(".dpi-value", { timeout: 30_000 });
+  await page.waitForTimeout(1000);
 
   await page.screenshot({
     path: "test-results/connected-page.png",
-    fullPage: false,
+    fullPage: true,
   });
   console.log("Screenshot saved.");
 });

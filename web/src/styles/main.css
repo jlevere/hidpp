@@ -131,7 +131,7 @@ body {
 /* ── Sections ──────────────────────── */
 
 .section {
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
 }
 
 .section-label {
@@ -147,7 +147,7 @@ body {
 .device-image {
   display: flex;
   justify-content: center;
-  margin-bottom: 3rem;
+  margin-bottom: 2rem;
   position: relative;
 }
 

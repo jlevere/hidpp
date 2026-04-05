@@ -37,10 +37,7 @@ const DPI_PRESETS = [400, 800, 1200, 1600, 2400, 3200] as const;
 
 function showConnect(): void {
   const root = el("div", { class: "connect" });
-  root.append(
-    el("h1", {}, "間 HID++"),
-    el("p", {}, "Configure Logitech devices from your browser."),
-  );
+  root.append(el("h1", {}, "HID++"), el("p", {}, "Configure Logitech devices from your browser."));
 
   if (!isSupported()) {
     root.append(
@@ -154,8 +151,10 @@ function showDemoDevice(profile: Record<string, unknown>): void {
     smartShift: (caps?.scroll_wheel_capabilities as Record<string, boolean> | undefined)?.smartshift
       ? "Ratchet"
       : null,
+    smartShiftAutoDisengage: 10,
     buttons: (caps?.specialKeys as { programmable?: number[] } | undefined)?.programmable ?? [],
     hosts: (caps?.flow as { hostCount?: number } | undefined)?.hostCount ?? 0,
+    hostCurrent: 0,
     firmware: [],
     features: [],
     friendlyName: null,
@@ -166,23 +165,67 @@ function showDemoDevice(profile: Record<string, unknown>): void {
 // ── Live device view ──
 
 function showDevice(device: Device): void {
-  renderDevicePage({
-    name: device.name,
-    demo: false,
-    battery: null,
-    dpi: null,
-    dpiRange: null,
-    smartShift: null,
-    buttons: [],
-    hosts: 0,
-    firmware: [],
-    features: device.getFeatures() as { id: string; name: string }[],
-    friendlyName: null,
-    device,
-  });
+  // Show loading state briefly, then load ALL data before rendering.
+  app.replaceChildren(el("div", { class: "connect" }, el("p", {}, "Loading...")));
 
-  // Load all data asynchronously.
-  void loadLiveData(device);
+  void (async (): Promise<void> => {
+    const data: PageData = {
+      name: device.name,
+      demo: false,
+      battery: null,
+      dpi: null,
+      dpiRange: null,
+      smartShift: null,
+      smartShiftAutoDisengage: 0,
+      buttons: [],
+      hosts: 0,
+      hostCurrent: 0,
+      firmware: [],
+      features: device.getFeatures() as { id: string; name: string }[],
+      friendlyName: null,
+      device,
+    };
+
+    // Load all data in parallel.
+    const results = await Promise.allSettled([
+      device.getBattery().then((b) => {
+        data.battery = b;
+      }),
+      device.getDpi().then((d) => {
+        data.dpi = d;
+      }),
+      device.getSmartShift().then((s) => {
+        data.smartShift = s.mode;
+        data.smartShiftAutoDisengage = s.autoDisengage;
+      }),
+      device.getButtons().then((btns) => {
+        data.buttons = (btns as { cid: number }[]).map((b) => b.cid);
+      }),
+      device.getHostInfo().then((h) => {
+        data.hosts = h.numHosts;
+        data.hostCurrent = h.currentHost;
+      }),
+      device.getFirmware().then((fw) => {
+        data.firmware = fw as typeof data.firmware;
+      }),
+      device
+        .getFriendlyName()
+        .then((n) => {
+          data.friendlyName = n;
+        })
+        .catch(() => {
+          /* optional */
+        }),
+    ]);
+
+    for (const r of results) {
+      if (r.status === "rejected") {
+        log(`Load warning: ${String(r.reason)}`);
+      }
+    }
+
+    renderDevicePage(data);
+  })();
 }
 
 interface PageData {
@@ -192,8 +235,10 @@ interface PageData {
   dpi: number | null;
   dpiRange: { min: number; max: number; step: number } | null;
   smartShift: string | null;
+  smartShiftAutoDisengage: number;
   buttons: number[];
   hosts: number;
+  hostCurrent: number;
   firmware: {
     name: string;
     type: string;
@@ -220,12 +265,13 @@ function renderDevicePage(data: PageData): void {
   const root = el("div", {});
 
   // Header.
-  const meta = el("span", { class: "meta" });
+  const metaParts: string[] = [];
+  if (data.battery) metaParts.push(`${String(data.battery.percentage)}%`);
+  if (data.friendlyName) metaParts.push(data.friendlyName);
+  const meta = el("span", { class: "meta" }, metaParts.join(" · "));
   if (data.demo) {
+    meta.textContent = "";
     meta.append(el("span", { class: "demo-tag" }, "DEMO"));
-  }
-  if (data.battery) {
-    meta.textContent = `${String(data.battery.percentage)}%`;
   }
   root.append(el("div", { class: "header" }, el("h1", {}, data.name), meta));
 
@@ -359,12 +405,17 @@ function renderDevicePage(data: PageData): void {
     const section = el("div", { class: "section", id: "host-section" });
     section.append(el("div", { class: "section-label" }, "Easy-Switch"));
     for (let i = 0; i < data.hosts; i++) {
+      const active = i === data.hostCurrent;
       section.append(
         el(
           "div",
           { class: "row" },
-          el("span", { class: "row-label" }, `Slot ${String(i + 1)}`),
-          el("span", { class: "row-value" }, "—"),
+          el("span", { class: "row-label" }, `${active ? "●" : "○"} Slot ${String(i + 1)}`),
+          el(
+            "span",
+            { class: "row-value", style: active ? `color: var(--success)` : "" },
+            active ? "active" : "",
+          ),
         ),
       );
     }
@@ -462,7 +513,8 @@ async function applyDpi(preset?: number): Promise<void> {
 async function setSmartShift(mode: string): Promise<void> {
   if (!currentData?.device) return;
   try {
-    const result = await currentData.device.setSmartShift(mode, 0, 0);
+    const ad = currentData.smartShiftAutoDisengage;
+    const result = await currentData.device.setSmartShift(mode, ad, 0);
     if (smartShiftLabel) smartShiftLabel.textContent = result.mode;
     ratchetBtn?.classList.toggle("active", result.mode === "Ratchet");
     freeBtn?.classList.toggle("active", result.mode === "FreeScroll");
@@ -472,79 +524,7 @@ async function setSmartShift(mode: string): Promise<void> {
   }
 }
 
-async function loadLiveData(device: Device): Promise<void> {
-  const data = currentData;
-  if (!data) return;
-
-  try {
-    const b = await device.getBattery();
-    data.battery = b;
-    updateHeader();
-  } catch {
-    /* */
-  }
-  try {
-    const d = await device.getDpi();
-    data.dpi = d;
-    updateDpiDisplay(d);
-  } catch {
-    /* */
-  }
-  try {
-    const ss = await device.getSmartShift();
-    data.smartShift = ss.mode;
-    if (smartShiftLabel) smartShiftLabel.textContent = ss.mode;
-    ratchetBtn?.classList.toggle("active", ss.mode === "Ratchet");
-    freeBtn?.classList.toggle("active", ss.mode === "FreeScroll");
-  } catch {
-    /* */
-  }
-  try {
-    const btns = await device.getButtons();
-    data.buttons = (btns as { cid: number }[]).map((b) => b.cid);
-    // Re-render buttons section.
-    const section = document.querySelector("#app .section:has(.button-item)")?.parentElement;
-    if (section) {
-      /* buttons already rendered from features */
-    }
-  } catch {
-    /* */
-  }
-  try {
-    const fw = await device.getFirmware();
-    data.firmware = fw as typeof data.firmware;
-    // Need to re-render to show firmware — for now just log.
-    log(
-      `Firmware: ${data.firmware.map((f) => `${f.name} v${String(f.versionMajor)}.${String(f.versionMinor)}`).join(", ")}`,
-    );
-  } catch {
-    /* */
-  }
-  try {
-    const host = await device.getHostInfo();
-    data.hosts = host.numHosts;
-    // Update host slots.
-    const hostSection = document.getElementById("host-section");
-    if (hostSection) {
-      const rows = hostSection.querySelectorAll(".row-value");
-      for (let i = 0; i < rows.length; i++) {
-        rows[i]!.textContent = i === host.currentHost ? "● active" : "○";
-      }
-    }
-  } catch {
-    /* */
-  }
-
-  // Full re-render with all data loaded.
-  renderDevicePage(data);
-}
-
-function updateHeader(): void {
-  const meta = document.querySelector(".header .meta");
-  if (meta && currentData?.battery) {
-    meta.textContent = `${String(currentData.battery.percentage)}%`;
-  }
-}
+// loadLiveData and updateHeader removed — data loaded upfront in showDevice().
 
 // Start.
 showConnect();
