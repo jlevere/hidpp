@@ -182,7 +182,7 @@ impl WasmDevice {
             }
 
             let data_view = event.data();
-            let len = data_view.byte_length() as usize;
+            let len = data_view.byte_length();
             let mut buf = vec![0u8; len];
             for (i, byte) in buf.iter_mut().enumerate() {
                 *byte = data_view.get_uint8(i);
@@ -487,13 +487,14 @@ impl WasmDevice {
     pub async fn get_smart_shift(&self) -> Result<JsValue, JsValue> {
         let idx = self.smart_shift_index()?;
         let enhanced = self.has_enhanced_smart_shift();
-        let inner = self.inner.borrow();
-        let req = if enhanced {
-            smart_shift::encode_get_mode_v1(inner.device_index, idx, inner.sw_id)
-        } else {
-            smart_shift::encode_get_mode_v0(inner.device_index, idx, inner.sw_id)
+        let req = {
+            let inner = self.inner.borrow();
+            if enhanced {
+                smart_shift::encode_get_mode_v1(inner.device_index, idx, inner.sw_id)
+            } else {
+                smart_shift::encode_get_mode_v0(inner.device_index, idx, inner.sw_id)
+            }
         };
-        drop(inner);
         let resp = self.request_report(&req).await?;
         let state = smart_shift::decode_get_mode(&resp)
             .map_err(|e| JsValue::from_str(&format!("{e}")))?;
@@ -523,13 +524,14 @@ impl WasmDevice {
             auto_disengage,
             tunable_torque: torque,
         };
-        let inner = self.inner.borrow();
-        let req = if enhanced {
-            smart_shift::encode_set_mode_v1(inner.device_index, idx, inner.sw_id, &state)
-        } else {
-            smart_shift::encode_set_mode_v0(inner.device_index, idx, inner.sw_id, &state)
+        let req = {
+            let inner = self.inner.borrow();
+            if enhanced {
+                smart_shift::encode_set_mode_v1(inner.device_index, idx, inner.sw_id, &state)
+            } else {
+                smart_shift::encode_set_mode_v0(inner.device_index, idx, inner.sw_id, &state)
+            }
         };
-        drop(inner);
         let resp = self.request_report(&req).await?;
         let applied = smart_shift::decode_set_mode(&resp)
             .map_err(|e| JsValue::from_str(&format!("{e}")))?;
