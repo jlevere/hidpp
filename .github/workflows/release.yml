@@ -21,9 +21,6 @@ jobs:
           - target: aarch64-apple-darwin
             runner: macos-14
             os: macos
-          - target: x86_64-apple-darwin
-            runner: macos-13
-            os: macos
           - target: x86_64-unknown-linux-gnu
             runner: ubuntu-latest
             os: linux
@@ -105,28 +102,23 @@ jobs:
           path: ${{ env.ASSET }}
 
   dmg:
-    name: macOS Universal DMG
+    name: macOS DMG
     needs: build
     runs-on: macos-14
     steps:
       - uses: actions/checkout@v4
 
-      - name: Download arm64 build
+      - name: Download macOS build
         uses: actions/download-artifact@v4
         with:
           name: aarch64-apple-darwin
-
-      - name: Download x86_64 build
-        uses: actions/download-artifact@v4
-        with:
-          name: x86_64-apple-darwin
 
       - name: Determine version
         id: version
         shell: bash
         run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
 
-      - name: Create universal DMG
+      - name: Create DMG
         shell: bash
         run: |
           VERSION="${{ steps.version.outputs.version }}"
@@ -134,24 +126,17 @@ jobs:
           mkdir -p "${DMG_DIR}"
 
           tar xzf "hidpp-${VERSION}-aarch64-apple-darwin.tar.gz"
-          tar xzf "hidpp-${VERSION}-x86_64-apple-darwin.tar.gz"
+          SRC_DIR="hidpp-${VERSION}-aarch64-apple-darwin"
 
-          ARM_DIR="hidpp-${VERSION}-aarch64-apple-darwin"
-          X86_DIR="hidpp-${VERSION}-x86_64-apple-darwin"
+          cp "${SRC_DIR}/hidpp" "${DMG_DIR}/"
+          cp "${SRC_DIR}/hidppd" "${DMG_DIR}/"
+          cp "${SRC_DIR}/com.hidpp.daemon.plist" "${DMG_DIR}/"
+          cp "${SRC_DIR}/install.sh" "${DMG_DIR}/"
+          cp "${SRC_DIR}/uninstall.sh" "${DMG_DIR}/"
+          cp "${SRC_DIR}/config.toml.sample" "${DMG_DIR}/" 2>/dev/null || true
+          chmod +x "${DMG_DIR}/hidpp" "${DMG_DIR}/hidppd" "${DMG_DIR}/install.sh" "${DMG_DIR}/uninstall.sh"
 
-          # Universal binaries via lipo.
-          lipo -create "${ARM_DIR}/hidpp" "${X86_DIR}/hidpp" -output "${DMG_DIR}/hidpp"
-          lipo -create "${ARM_DIR}/hidppd" "${X86_DIR}/hidppd" -output "${DMG_DIR}/hidppd"
-          chmod +x "${DMG_DIR}/hidpp" "${DMG_DIR}/hidppd"
-
-          # Copy supporting files.
-          cp "${ARM_DIR}/com.hidpp.daemon.plist" "${DMG_DIR}/"
-          cp "${ARM_DIR}/install.sh" "${DMG_DIR}/"
-          cp "${ARM_DIR}/uninstall.sh" "${DMG_DIR}/"
-          cp "${ARM_DIR}/config.toml.sample" "${DMG_DIR}/" 2>/dev/null || true
-          chmod +x "${DMG_DIR}/install.sh" "${DMG_DIR}/uninstall.sh"
-
-          DMG_NAME="hidpp-${VERSION}-macos-universal.dmg"
+          DMG_NAME="hidpp-${VERSION}-macos-arm64.dmg"
           hdiutil create -volname "hidpp ${VERSION}" \
             -srcfolder "${DMG_DIR}" \
             -ov -format UDZO \
@@ -162,12 +147,12 @@ jobs:
       - name: Upload DMG
         uses: actions/upload-artifact@v4
         with:
-          name: macos-universal-dmg
+          name: macos-dmg
           path: ${{ env.DMG_ASSET }}
 
   release:
     name: GitHub Release
-    needs: [build, dmg]
+    needs: [ build, dmg ]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
