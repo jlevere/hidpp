@@ -671,7 +671,13 @@ function renderDevicePage(data: PageData): void {
       const slotDetail = parts.length > 0 ? ` · ${parts.join(" ")}` : "";
       const right = el("span", { class: "row-value" });
       if (active) {
-        right.append(el("span", { style: "color: var(--success)" }, "active"));
+        right.append(
+          el(
+            "span",
+            { class: "btn-sm active", style: "color: var(--success); cursor: default" },
+            "active",
+          ),
+        );
       } else if (!data.demo && data.device) {
         const switchBtn = el("button", { class: "btn-sm" }, "switch");
         const hostIdx = i;
