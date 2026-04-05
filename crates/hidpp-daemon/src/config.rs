@@ -3,17 +3,55 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
-/// Top-level daemon config.
+/// Raw config as deserialized from TOML (string keys).
 #[derive(Debug, Deserialize, Default)]
-pub struct Config {
-    /// Map of CID → action string.
-    /// e.g. `83 = "alt+left"` means Back button sends Alt+Left.
+struct RawConfig {
     #[serde(default)]
-    pub buttons: HashMap<u16, Action>,
+    buttons: HashMap<String, Action>,
+    #[serde(default)]
+    gestures: HashMap<String, GestureConfig>,
 }
 
-/// An action triggered by a diverted button.
-#[derive(Debug, Deserialize)]
+/// Top-level daemon config with parsed CID keys.
+#[derive(Debug, Default)]
+pub struct Config {
+    /// Map of CID → action for simple button diversion.
+    pub buttons: HashMap<u16, Action>,
+    /// Map of CID → gesture config for gesture buttons.
+    pub gestures: HashMap<u16, GestureConfig>,
+}
+
+impl Config {
+    /// All CIDs that need to be diverted (buttons + gestures).
+    pub fn all_diverted_cids(&self) -> impl Iterator<Item = u16> + '_ {
+        self.buttons.keys().copied().chain(self.gestures.keys().copied())
+    }
+
+    /// Whether this CID is a gesture button (needs rawXY).
+    pub fn is_gesture_cid(&self, cid: u16) -> bool {
+        self.gestures.contains_key(&cid)
+    }
+}
+
+/// Gesture configuration for a single button.
+#[derive(Debug, Deserialize, Clone)]
+pub struct GestureConfig {
+    pub up: Option<Action>,
+    pub down: Option<Action>,
+    pub left: Option<Action>,
+    pub right: Option<Action>,
+    pub tap: Option<Action>,
+    /// Minimum accumulated displacement to trigger a directional gesture.
+    #[serde(default = "default_threshold")]
+    pub threshold: i32,
+}
+
+fn default_threshold() -> i32 {
+    50
+}
+
+/// An action triggered by a diverted button or gesture.
+#[derive(Debug, Deserialize, Clone)]
 #[serde(untagged)]
 pub enum Action {
     /// Shorthand: just a keystroke string like "ctrl+left".
@@ -23,7 +61,7 @@ pub enum Action {
 }
 
 /// Explicit action definition.
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone)]
 #[serde(tag = "type")]
 pub enum ExplicitAction {
     /// Send a keystroke combination.
@@ -61,6 +99,40 @@ pub fn default_config_path() -> PathBuf {
     Path::new(&home).join(".config").join("hidpp").join("config.toml")
 }
 
+/// Parse a TOML string into a Config.
+fn parse(content: &str) -> anyhow::Result<Config> {
+    let raw: RawConfig = toml::from_str(content)?;
+
+    let buttons: HashMap<u16, Action> = raw
+        .buttons
+        .into_iter()
+        .map(|(k, v)| {
+            let cid: u16 = k.parse().map_err(|_| anyhow::anyhow!("invalid button CID: {k}"))?;
+            Ok((cid, v))
+        })
+        .collect::<anyhow::Result<_>>()?;
+
+    let gestures: HashMap<u16, GestureConfig> = raw
+        .gestures
+        .into_iter()
+        .map(|(k, v)| {
+            let cid: u16 = k.parse().map_err(|_| anyhow::anyhow!("invalid gesture CID: {k}"))?;
+            Ok((cid, v))
+        })
+        .collect::<anyhow::Result<_>>()?;
+
+    // Validate: no CID in both buttons and gestures.
+    for cid in buttons.keys() {
+        if gestures.contains_key(cid) {
+            anyhow::bail!(
+                "CID {cid} appears in both [buttons] and [gestures] — use one or the other"
+            );
+        }
+    }
+
+    Ok(Config { buttons, gestures })
+}
+
 /// Load config from a TOML file. Returns default config if file doesn't exist.
 pub fn load(path: &Path) -> anyhow::Result<Config> {
     if !path.exists() {
@@ -69,11 +141,76 @@ pub fn load(path: &Path) -> anyhow::Result<Config> {
     }
 
     let content = std::fs::read_to_string(path)?;
-    let config: Config = toml::from_str(&content)?;
+    let config = parse(&content)?;
+
     tracing::info!(
-        "loaded config from {} ({} button mappings)",
+        "loaded config from {} ({} buttons, {} gestures)",
         path.display(),
         config.buttons.len(),
+        config.gestures.len(),
     );
     Ok(config)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_buttons_and_gestures() {
+        let config = parse(
+            r#"
+[buttons]
+83 = "alt+left"
+86 = "alt+right"
+
+[gestures.195]
+up = "ctrl+up"
+down = "ctrl+down"
+left = "ctrl+left"
+right = "ctrl+right"
+tap = "playpause"
+threshold = 75
+"#,
+        )
+        .unwrap();
+        assert_eq!(config.buttons.len(), 2);
+        assert_eq!(config.gestures.len(), 1);
+        assert!(config.is_gesture_cid(195));
+        assert!(!config.is_gesture_cid(83));
+
+        let g = &config.gestures[&195];
+        assert_eq!(g.threshold, 75);
+        assert!(g.up.is_some());
+        assert!(g.tap.is_some());
+    }
+
+    #[test]
+    fn default_threshold() {
+        let config = parse(
+            r#"
+[gestures.195]
+up = "ctrl+up"
+"#,
+        )
+        .unwrap();
+        assert_eq!(config.gestures[&195].threshold, 50);
+    }
+
+    #[test]
+    fn all_diverted_cids_combines() {
+        let config = parse(
+            r#"
+[buttons]
+83 = "alt+left"
+
+[gestures.195]
+up = "ctrl+up"
+"#,
+        )
+        .unwrap();
+        let cids: Vec<u16> = config.all_diverted_cids().collect();
+        assert!(cids.contains(&83));
+        assert!(cids.contains(&195));
+    }
 }
