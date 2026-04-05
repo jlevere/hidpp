@@ -334,8 +334,12 @@ button.btn-sm {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  padding: 0.4rem 0;
+  padding: 0.35rem 0;
   font-size: 0.8rem;
+}
+
+.button-item .remap-select {
+  margin-left: auto;
 }
 
 .button-item .cid {

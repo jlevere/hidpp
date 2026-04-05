@@ -106,7 +106,7 @@ async function showDemoPicker(): Promise<void> {
 
   for (const type of order) {
     const devs = groups.get(type);
-    if (!devs?.length) continue;
+    if (devs === undefined || devs.length === 0) continue;
     root.append(el("div", { class: "demo-group-label" }, labels[type] ?? type));
     const grid = el("div", { class: "demo-grid" });
     for (const dev of devs) {
@@ -148,9 +148,10 @@ function showDemoDevice(profile: Record<string, unknown>): void {
           step: dpiInfo.stepsSensorOff ?? 50,
         }
       : null,
-    smartShift: (caps?.scroll_wheel_capabilities as Record<string, boolean> | undefined)?.smartshift
-      ? "Ratchet"
-      : null,
+    smartShift:
+      (caps?.scroll_wheel_capabilities as Record<string, boolean> | undefined)?.smartshift === true
+        ? "Ratchet"
+        : null,
     smartShiftAutoDisengage: 10,
     hiresWheel: null,
     thumbwheel: null,
@@ -350,7 +351,7 @@ function renderDevicePage(data: PageData): void {
   // Header.
   const metaParts: string[] = [];
   if (data.battery) metaParts.push(`${String(data.battery.percentage)}%`);
-  if (data.friendlyName) metaParts.push(data.friendlyName);
+  if (data.friendlyName !== null && data.friendlyName !== "") metaParts.push(data.friendlyName);
   const meta = el("span", { class: "meta" }, metaParts.join(" · "));
   if (data.demo) {
     meta.textContent = "";
@@ -656,8 +657,8 @@ function renderDevicePage(data: PageData): void {
       const active = i === data.hostCurrent;
       const slot = data.hostSlots[i];
       const parts: string[] = [];
-      if (slot?.name) parts.push(slot.name);
-      else if (slot && slot.osType !== "Unknown") parts.push(slot.osType);
+      if (slot !== undefined && slot.name !== "") parts.push(slot.name);
+      else if (slot !== undefined && slot.osType !== "Unknown") parts.push(slot.osType);
       const slotDetail = parts.length > 0 ? ` · ${parts.join(" ")}` : "";
       const right = el("span", { class: "row-value" });
       if (active) {
