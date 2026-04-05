@@ -110,7 +110,6 @@ fn run_tray_app(
     // Build the menu bar.
     let menu = muda::Menu::new();
     let ts = tray::build(&menu)?;
-    let mut connected = false;
 
     // Capture menu item IDs.
     let quit_id = ts.quit_item.id().clone();
@@ -139,7 +138,6 @@ fn run_tray_app(
                     battery_pct,
                     dpi,
                 } => {
-                    connected = true;
                     ts.device_item.set_text(name);
                     if let Some(pct) = battery_pct {
                         ts.battery_item.set_text(format!("Battery: {pct}%"));
@@ -154,7 +152,6 @@ fn run_tray_app(
                     let _ = ts.tray.set_icon(Some(ts.icon_connected.clone()));
                 }
                 DaemonEvent::Disconnected | DaemonEvent::Reconnecting => {
-                    connected = false;
                     ts.device_item.set_text("Searching...");
                     ts.battery_item.set_text("Battery: --");
                     ts.dpi_item.set_text("DPI: --");
@@ -192,7 +189,7 @@ fn run_tray_app(
                         match handle_config_url(&toml_str) {
                             Ok(()) => {
                                 ts.last_action_item.set_text("Config updated from web UI");
-                                let _ = cmd_tx.blocking_send(DaemonCommand::ReloadConfig);
+                                let _ = cmd_tx.try_send(DaemonCommand::ReloadConfig);
                                 info!("config updated from web UI, reloading");
                             }
                             Err(e) => {
@@ -214,10 +211,10 @@ fn run_tray_app(
         ) {
             while let Ok(ev) = menu_channel.try_recv() {
                 if ev.id == quit_id {
-                    let _ = cmd_tx.blocking_send(DaemonCommand::Shutdown);
+                    let _ = cmd_tx.try_send(DaemonCommand::Shutdown);
                     *control_flow = ControlFlow::Exit;
                 } else if ev.id == reconnect_id {
-                    let _ = cmd_tx.blocking_send(DaemonCommand::Reconnect);
+                    let _ = cmd_tx.try_send(DaemonCommand::Reconnect);
                 } else if ev.id == edit_config_id {
                     let _ = std::process::Command::new("open")
                         .arg(config::default_config_path())
@@ -234,13 +231,19 @@ fn run_tray_app(
                 }
             }
         }
-
-        let _ = connected; // suppress unused warning from tao closure
     });
 }
 
 /// Validate and write a TOML config received from a hidpp:// URL.
+///
+/// Security: rejects configs containing `command` actions to prevent
+/// arbitrary code execution from malicious websites opening hidpp:// URLs.
 fn handle_config_url(toml_str: &str) -> anyhow::Result<()> {
+    // Reject command actions — only allow keystroke strings from URL handler.
+    if toml_str.contains("type") && toml_str.contains("command") {
+        anyhow::bail!("command actions are not allowed via URL — edit config.toml directly");
+    }
+
     // Validate it parses before writing.
     config::validate(toml_str)?;
 

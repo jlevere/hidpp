@@ -84,17 +84,19 @@ pub async fn run(
         .clone()
         .unwrap_or_else(crate::config::default_config_path);
 
-    let cfg = match crate::config::load(&path) {
-        Ok(c) => c,
-        Err(e) => {
-            let _ = proxy.send_event(DaemonEvent::Error(format!("config: {e}")));
-            return;
-        }
-    };
-
     info!("hidppd starting");
 
     loop {
+        // Reload config on every iteration so ReloadConfig picks up changes.
+        let cfg = match crate::config::load(&path) {
+            Ok(c) => c,
+            Err(e) => {
+                let _ = proxy.send_event(DaemonEvent::Error(format!("config: {e}")));
+                tokio::time::sleep(Duration::from_secs(5)).await;
+                continue;
+            }
+        };
+
         let _ = proxy.send_event(DaemonEvent::Reconnecting);
 
         match connect_and_listen(&cfg, index_override, &proxy, &mut cmd_rx).await {

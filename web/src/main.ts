@@ -454,6 +454,9 @@ function renderDevicePage(data: PageData): void {
     dpiSlider.addEventListener("input", () => {
       if (dpiInput) dpiInput.value = dpiSlider!.value;
     });
+    dpiSlider.addEventListener("change", () => {
+      void applyDpi();
+    });
     dpiInput.addEventListener("input", () => {
       if (dpiSlider) dpiSlider.value = dpiInput!.value;
     });
@@ -996,16 +999,51 @@ function renderConfigEditor(data: PageData): HTMLElement {
 
   const importBtn = el("button", { class: "btn-sm" }, "import config");
   importBtn.addEventListener("click", () => {
-    const toml = prompt("Paste your daemon config TOML:");
-    if (toml !== null && toml.trim() !== "") {
-      parseTomlIntoEditor(toml, configs, editorDiv);
-    }
+    // Show a textarea modal instead of prompt() for multi-line TOML.
+    const overlay = el("div", {
+      style:
+        "position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10000;display:flex;align-items:center;justify-content:center",
+    });
+    const modal = el("div", {
+      style:
+        "background:var(--bg);border:1px solid var(--dim);border-radius:6px;padding:1.5rem;width:90%;max-width:400px",
+    });
+    modal.append(
+      el("div", { style: "font-size:0.85rem;margin-bottom:0.75rem" }, "Paste daemon config TOML:"),
+    );
+    const textarea = el("textarea", {
+      style:
+        "width:100%;height:150px;background:transparent;border:1px solid var(--dim);color:var(--fg);font-family:var(--mono);font-size:0.7rem;padding:0.5rem;resize:vertical",
+    });
+    const btnRow = el("div", { style: "display:flex;gap:0.5rem;margin-top:0.75rem" });
+    const okBtn = el("button", { class: "btn-sm" }, "import");
+    const cancelBtn = el("button", { class: "btn-sm" }, "cancel");
+    okBtn.addEventListener("click", () => {
+      const toml = textarea.value;
+      if (toml.trim() !== "") {
+        parseTomlIntoEditor(toml, configs, editorDiv);
+      }
+      overlay.remove();
+    });
+    cancelBtn.addEventListener("click", () => {
+      overlay.remove();
+    });
+    btnRow.append(okBtn, cancelBtn);
+    modal.append(textarea, btnRow);
+    overlay.append(modal);
+    document.body.append(overlay);
+    textarea.focus();
   });
 
   actions.append(applyBtn, copyBtn, importBtn);
   section.append(actions);
 
   return section;
+}
+
+/** Escape a string for TOML double-quoted value. */
+function escapeToml(s: string): string {
+  return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
 function generateToml(configs: ButtonConfig[]): string {
@@ -1018,7 +1056,7 @@ function generateToml(configs: ButtonConfig[]): string {
     toml += "[buttons]\n";
     for (const b of buttons) {
       if (b.keystroke.trim() !== "") {
-        toml += `${String(b.cid)} = "${b.keystroke.trim()}"\n`;
+        toml += `${String(b.cid)} = "${escapeToml(b.keystroke.trim())}"\n`;
       }
     }
     toml += "\n";
@@ -1026,11 +1064,10 @@ function generateToml(configs: ButtonConfig[]): string {
 
   for (const g of gestures) {
     toml += `[gestures.${String(g.cid)}]\n`;
-    if (g.gesture.up.trim() !== "") toml += `up = "${g.gesture.up.trim()}"\n`;
-    if (g.gesture.down.trim() !== "") toml += `down = "${g.gesture.down.trim()}"\n`;
-    if (g.gesture.left.trim() !== "") toml += `left = "${g.gesture.left.trim()}"\n`;
-    if (g.gesture.right.trim() !== "") toml += `right = "${g.gesture.right.trim()}"\n`;
-    if (g.gesture.tap.trim() !== "") toml += `tap = "${g.gesture.tap.trim()}"\n`;
+    for (const dir of ["up", "down", "left", "right", "tap"] as const) {
+      const val = g.gesture[dir].trim();
+      if (val !== "") toml += `${dir} = "${escapeToml(val)}"\n`;
+    }
     toml += "\n";
   }
 
