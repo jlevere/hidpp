@@ -3,31 +3,33 @@ import { el } from "../dom";
 import { log, logError } from "../log";
 import { state } from "../state";
 
-export function createInfoSection(device: Device): HTMLElement {
+export function createInfoSection(device: Device | null): HTMLElement {
   const root = el("div", {});
   root.append(el("div", { class: "section-title" }, "Device Info"));
 
   // Device info card.
   const infoCard = el("div", { class: "card" });
+  const devName = device?.name ?? state.demoName;
+  const featCount = device ? String(device.featureCount) : "—";
   infoCard.append(
     el("div", { class: "card-title" }, "Device"),
     el(
       "div",
       { class: "row" },
       el("span", { class: "row-label" }, "Name"),
-      el("span", { class: "row-value" }, device.name),
+      el("span", { class: "row-value" }, devName),
     ),
     el(
       "div",
       { class: "row" },
       el("span", { class: "row-label" }, "Features"),
-      el("span", { class: "row-value" }, String(device.featureCount)),
+      el("span", { class: "row-value" }, featCount),
     ),
   );
   root.append(infoCard);
 
   // Firmware card.
-  if (state.sections.firmware) {
+  if (state.sections.firmware && device) {
     const fwCard = el("div", { class: "card" });
     fwCard.append(el("div", { class: "card-title" }, "Firmware"));
     const fwList = el("div", {});
@@ -69,7 +71,10 @@ export function createInfoSection(device: Device): HTMLElement {
   configCard.append(configControls);
   root.append(configCard);
 
+  if (!device) exportBtn.setAttribute("disabled", "");
+
   exportBtn.addEventListener("click", () => {
+    if (!device) return;
     void (async (): Promise<void> => {
       try {
         const toml = await device.exportConfig();
@@ -93,7 +98,7 @@ export function createInfoSection(device: Device): HTMLElement {
   featCard.append(featList);
   root.append(featCard);
 
-  const features = device.getFeatures();
+  const features = device?.getFeatures() ?? [];
   for (const f of features) {
     featList.append(
       el(

@@ -551,6 +551,67 @@ input[type="number"]:focus {
   z-index: 9999;
 }
 
+/* ── Demo mode ─────────────────────────────────────────────── */
+.demo-picker {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.demo-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.demo-card {
+  background: var(--s1);
+  border: 1px solid var(--border);
+  border-radius: var(--r1);
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  color: var(--t1);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.1s,
+    background 0.1s;
+}
+
+.demo-card:hover {
+  border-color: var(--accent);
+  background: var(--s2);
+}
+
+.demo-badge {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: var(--warn-bg);
+  color: var(--warn);
+  margin-left: 8px;
+}
+
+.browse-link {
+  background: none;
+  border: none;
+  color: var(--t3);
+  font-size: 0.8rem;
+  cursor: pointer;
+  padding: 8px;
+  font-family: var(--sans);
+}
+
+.browse-link:hover {
+  color: var(--t2);
+  background: none;
+  text-decoration: underline;
+}
+
 /* ── Responsive ────────────────────────────────────────────── */
 @media (max-width: 640px) {
   .app {

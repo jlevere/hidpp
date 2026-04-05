@@ -60,6 +60,14 @@ impl WasmDevice {
         webhid::get_hid().is_some()
     }
 
+    /// Get the full device catalog for demo/browse mode.
+    /// Returns the raw JSON string of all 170 devices.
+    /// Parsed on the JS side for flexibility.
+    #[wasm_bindgen(js_name = getDeviceCatalog)]
+    pub fn get_device_catalog() -> String {
+        include_str!("../../hidpp-device/data/devices_full.json").to_string()
+    }
+
     /// Connect to an already-granted device (no picker dialog).
     ///
     /// Uses `navigator.hid.getDevices()` which returns previously-authorized devices.

@@ -3,7 +3,7 @@ import { el } from "../dom";
 import { log, logError } from "../log";
 import { state } from "../state";
 
-export function createScrollSection(device: Device): HTMLElement {
+export function createScrollSection(device: Device | null): HTMLElement {
   const root = el("div", {});
   root.append(el("div", { class: "section-title" }, "Scroll"));
 
@@ -22,6 +22,7 @@ export function createScrollSection(device: Device): HTMLElement {
   root.append(ssCard);
 
   async function setMode(mode: string): Promise<void> {
+    if (!device) return;
     ratchetBtn.setAttribute("disabled", "");
     freeBtn.setAttribute("disabled", "");
     try {
@@ -50,7 +51,7 @@ export function createScrollSection(device: Device): HTMLElement {
   });
 
   // HiResWheel card (if supported).
-  if (state.sections.scroll) {
+  if (state.sections.scroll && device) {
     const hiresLabel = el("span", { class: "row-value" }, "—");
     const invertLabel = el("span", { class: "row-value" }, "—");
 
@@ -79,7 +80,7 @@ export function createScrollSection(device: Device): HTMLElement {
   }
 
   // Thumbwheel card (if supported).
-  if (state.sections.thumbwheel) {
+  if (state.sections.thumbwheel && device) {
     const twMode = el("span", { class: "row-value" }, "—");
     const twInvert = el("span", { class: "row-value" }, "—");
 
@@ -103,15 +104,22 @@ export function createScrollSection(device: Device): HTMLElement {
   }
 
   // Initial SmartShift read.
-  void (async (): Promise<void> => {
-    try {
-      const ss = await device.getSmartShift();
-      updateSmartShift(ss.mode);
-    } catch (e) {
-      modeLabel.textContent = "?";
-      logError(`SmartShift read: ${String(e)}`);
-    }
-  })();
+  if (device) {
+    void (async (): Promise<void> => {
+      try {
+        const ss = await device.getSmartShift();
+        updateSmartShift(ss.mode);
+      } catch (e) {
+        modeLabel.textContent = "?";
+        logError(`SmartShift read: ${String(e)}`);
+      }
+    })();
+  } else {
+    // Demo mode.
+    updateSmartShift("Ratchet");
+    ratchetBtn.setAttribute("disabled", "");
+    freeBtn.setAttribute("disabled", "");
+  }
 
   return root;
 }

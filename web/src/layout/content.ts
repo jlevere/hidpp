@@ -8,21 +8,19 @@ import { createInfoSection } from "../sections/info";
 
 export function createContent(): HTMLElement {
   const content = el("div", { class: "content" });
-
-  // Cache rendered sections.
   const cache = new Map<string, HTMLElement>();
 
   function render(): void {
     const dev = state.device;
-    if (!dev) {
+    const key = `${state.section}-${state.demo ? "demo" : "live"}`;
+
+    if (!dev && !state.demo) {
       content.replaceChildren(el("div", {}, "No device connected."));
       return;
     }
 
-    const key = state.section;
-
     if (!cache.has(key)) {
-      switch (key) {
+      switch (state.section) {
         case "dpi":
           cache.set(key, createDpiSection(dev));
           break;
@@ -49,6 +47,5 @@ export function createContent(): HTMLElement {
 
   render();
   subscribe(render);
-
   return content;
 }

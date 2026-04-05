@@ -4,7 +4,7 @@ import { log, logError } from "../log";
 
 const PRESETS = [400, 800, 1200, 1600, 2400, 3200] as const;
 
-export function createDpiSection(device: Device): HTMLElement {
+export function createDpiSection(device: Device | null): HTMLElement {
   const root = el("div", {});
   const title = el("div", { class: "section-title" }, "DPI");
   const currentVal = el("span", { class: "stat-val" }, "—");
@@ -52,6 +52,7 @@ export function createDpiSection(device: Device): HTMLElement {
   });
 
   async function applyDpi(dpi: number): Promise<void> {
+    if (!device) return;
     applyBtn.setAttribute("disabled", "");
     try {
       const applied = await device.setDpi(dpi);
@@ -79,15 +80,22 @@ export function createDpiSection(device: Device): HTMLElement {
   });
 
   // Initial read.
-  void (async (): Promise<void> => {
-    try {
-      const dpi = await device.getDpi();
-      updateDisplay(dpi);
-    } catch (e) {
-      currentVal.textContent = "?";
-      logError(`DPI read: ${String(e)}`);
-    }
-  })();
+  if (device) {
+    void (async (): Promise<void> => {
+      try {
+        const dpi = await device.getDpi();
+        updateDisplay(dpi);
+      } catch (e) {
+        currentVal.textContent = "?";
+        logError(`DPI read: ${String(e)}`);
+      }
+    })();
+  } else {
+    // Demo mode — show default.
+    updateDisplay(1000);
+    applyBtn.textContent = "Connect to apply";
+    applyBtn.setAttribute("disabled", "");
+  }
 
   return root;
 }

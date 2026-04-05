@@ -3,7 +3,7 @@ import { el } from "../dom";
 import { logError } from "../log";
 import { state } from "../state";
 
-export function createHostSection(device: Device): HTMLElement {
+export function createHostSection(device: Device | null): HTMLElement {
   const root = el("div", {});
   root.append(el("div", { class: "section-title" }, "Easy-Switch"));
 
@@ -13,6 +13,10 @@ export function createHostSection(device: Device): HTMLElement {
   card.append(slotsEl);
   root.append(card);
 
+  if (!device) {
+    slotsEl.textContent = "Connect a device to see host info.";
+    return root;
+  }
   void (async (): Promise<void> => {
     try {
       const info = await device.getHostInfo();

@@ -5,6 +5,8 @@ export type Section = "dpi" | "scroll" | "buttons" | "host" | "info";
 export interface AppState {
   section: Section;
   device: Device | null;
+  demo: boolean;
+  demoName: string;
   sections: SupportedSections;
 }
 
@@ -27,6 +29,8 @@ const listeners: Listener[] = [];
 export const state: AppState = {
   section: "dpi",
   device: null,
+  demo: false,
+  demoName: "",
   sections: {
     dpi: false,
     scroll: false,
@@ -45,8 +49,21 @@ export function setSection(section: Section): void {
   notify();
 }
 
+export function setDemoMode(name: string, sections: SupportedSections): void {
+  state.device = null;
+  state.demo = true;
+  state.demoName = name;
+  state.sections = sections;
+  if (sections.dpi) state.section = "dpi";
+  else if (sections.scroll) state.section = "scroll";
+  else state.section = "info";
+  notify();
+}
+
 export function setDevice(device: Device, sections: SupportedSections): void {
   state.device = device;
+  state.demo = false;
+  state.demoName = "";
   state.sections = sections;
   // Default to first available section.
   if (sections.dpi) state.section = "dpi";

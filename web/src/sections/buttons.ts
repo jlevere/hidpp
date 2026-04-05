@@ -18,7 +18,7 @@ const BUTTON_NAMES: Record<number, string> = {
   110: "Screen Capture",
 };
 
-export function createButtonsSection(device: Device): HTMLElement {
+export function createButtonsSection(device: Device | null): HTMLElement {
   const root = el("div", {});
   root.append(el("div", { class: "section-title" }, "Buttons"));
 
@@ -43,6 +43,10 @@ export function createButtonsSection(device: Device): HTMLElement {
   root.append(card);
 
   // Load buttons.
+  if (!device) {
+    listEl.textContent = "Connect a device to see buttons.";
+    return root;
+  }
   void (async (): Promise<void> => {
     try {
       const buttons = await device.getButtons();
