@@ -4,6 +4,10 @@ Configure Logitech devices without Logitech Options+. Open source, runs on macOS
 
 Supports 170+ Logitech devices over Bluetooth LE and USB receivers (Bolt, Unifying, Lightspeed).
 
+<p align="center">
+  <img src="docs/device.png" width="500" alt="MX Master 3S configuration" />
+</p>
+
 ## Install
 
 ### Homebrew (macOS)
@@ -50,7 +54,7 @@ Configure DPI, scroll mode, button remaps, and Easy-Switch hosts from the browse
 
 https://jlevere.github.io/hidpp/
 
-Works in Chrome and Edge (WebHID).
+Works in Chrome and Edge (WebHID). Demo mode works in any browser.
 
 ## CLI
 
