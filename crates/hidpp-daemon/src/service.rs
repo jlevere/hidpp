@@ -67,7 +67,7 @@ mod macos {
             .join(format!("{PLIST_LABEL}.plist"))
     }
 
-    fn generate_plist(exe_path: &Path, log_path: &Path) -> String {
+    fn generate_plist(exe_path: &Path) -> String {
         format!(
             r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -86,10 +86,6 @@ mod macos {
         <key>SuccessfulExit</key>
         <false/>
     </dict>
-    <key>StandardOutPath</key>
-    <string>{log}</string>
-    <key>StandardErrorPath</key>
-    <string>{log}</string>
     <key>ProcessType</key>
     <string>Background</string>
     <key>ThrottleInterval</key>
@@ -97,23 +93,18 @@ mod macos {
 </dict>
 </plist>"#,
             exe = exe_path.display(),
-            log = log_path.display(),
         )
     }
 
     /// Write the launchd plist without loading it.
     pub fn register(exe: &Path) -> anyhow::Result<()> {
-        let home = std::env::var("HOME")?;
-        let log_path = Path::new(&home).join("Library/Logs/hidppd.log");
         let plist = plist_path();
 
         if let Some(parent) = plist.parent() {
             std::fs::create_dir_all(parent)?;
         }
-        std::fs::create_dir_all(log_path.parent().unwrap_or(Path::new("/tmp")))?;
 
-        let content = generate_plist(exe, &log_path);
-        std::fs::write(&plist, content)?;
+        std::fs::write(&plist, generate_plist(exe))?;
         Ok(())
     }
 

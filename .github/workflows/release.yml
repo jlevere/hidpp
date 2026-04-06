@@ -123,6 +123,7 @@ jobs:
           cp "${SRC_DIR}/hidppd" "${APP}/MacOS/"
           chmod +x "${APP}/MacOS/hidpp" "${APP}/MacOS/hidppd"
           cp bundle/Info.plist "${APP}/Info.plist"
+          cp bundle/AppIcon.icns "${APP}/Resources/AppIcon.icns"
           echo 'APPL????' > "${APP}/PkgInfo"
 
           # Applications alias for drag-to-install.

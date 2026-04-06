@@ -70,6 +70,7 @@
             mkdir -p "$out/Applications/HID++.app/Contents/Resources"
 
             cp ${./bundle/Info.plist} "$out/Applications/HID++.app/Contents/Info.plist"
+            cp ${./bundle/AppIcon.icns} "$out/Applications/HID++.app/Contents/Resources/AppIcon.icns"
             echo 'APPL????' > "$out/Applications/HID++.app/Contents/PkgInfo"
 
             # Both binaries in the .app bundle.
