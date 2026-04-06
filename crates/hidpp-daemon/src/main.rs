@@ -4,6 +4,7 @@ mod config;
 mod daemon;
 mod gesture;
 mod icon;
+mod platform;
 mod service;
 mod tray;
 

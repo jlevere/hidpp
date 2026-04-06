@@ -88,6 +88,11 @@ pub async fn run(
     #[cfg(target_os = "macos")]
     let mut permission_prompt_shown = false;
 
+    // Spawn a wake watcher that fires when the system power state changes.
+    // This lets us re-divert buttons after the mouse wakes from sleep.
+    let (wake_tx, mut wake_rx) = tokio::sync::mpsc::channel(4);
+    crate::platform::spawn_wake_watcher(wake_tx);
+
     loop {
         // Reload config on every iteration so ReloadConfig picks up changes.
         let cfg = match crate::config::load(&path) {
@@ -101,7 +106,7 @@ pub async fn run(
 
         let _ = proxy.send_event(DaemonEvent::Reconnecting);
 
-        match connect_and_listen(&cfg, index_override, &proxy, &mut cmd_rx).await {
+        match connect_and_listen(&cfg, index_override, &proxy, &mut cmd_rx, &mut wake_rx).await {
             Ok(true) => {
                 info!("shutdown requested");
                 return;
@@ -172,6 +177,7 @@ async fn connect_and_listen(
     index_override: Option<DeviceIndex>,
     proxy: &EventLoopProxy<DaemonEvent>,
     cmd_rx: &mut tokio::sync::mpsc::Receiver<DaemonCommand>,
+    wake_rx: &mut tokio::sync::mpsc::Receiver<()>,
 ) -> anyhow::Result<bool> {
     let enumerator = HidapiEnumerator::new()?;
     let devices = enumerator.enumerate();
@@ -279,6 +285,12 @@ async fn connect_and_listen(
                         return Ok(true);
                     }
                 }
+            }
+            _ = wake_rx.recv() => {
+                // Drain any extra queued notifications (sleep fires one, wake fires another).
+                while wake_rx.try_recv().is_ok() {}
+                info!("system wake detected, reconnecting to re-divert buttons");
+                return Ok(false);
             }
         }
     }

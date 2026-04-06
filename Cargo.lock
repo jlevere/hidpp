@@ -861,7 +861,7 @@ dependencies = [
 
 [[package]]
 name = "hidpp"
-version = "0.1.0"
+version = "0.3.1"
 dependencies = [
  "bitflags 2.11.0",
  "serde",
@@ -870,7 +870,7 @@ dependencies = [
 
 [[package]]
 name = "hidpp-cli"
-version = "0.1.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -886,7 +886,7 @@ dependencies = [
 
 [[package]]
 name = "hidpp-daemon"
-version = "0.1.0"
+version = "0.3.1"
 dependencies = [
  "anyhow",
  "clap",
@@ -906,7 +906,7 @@ dependencies = [
 
 [[package]]
 name = "hidpp-device"
-version = "0.1.0"
+version = "0.3.1"
 dependencies = [
  "hidpp",
  "hidpp-transport",
@@ -920,7 +920,7 @@ dependencies = [
 
 [[package]]
 name = "hidpp-transport"
-version = "0.1.0"
+version = "0.3.1"
 dependencies = [
  "async-trait",
  "futures-core",
@@ -932,7 +932,7 @@ dependencies = [
 
 [[package]]
 name = "hidpp-web"
-version = "0.1.0"
+version = "0.3.1"
 dependencies = [
  "hidpp",
  "js-sys",
