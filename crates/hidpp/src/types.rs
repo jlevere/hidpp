@@ -97,6 +97,30 @@ impl SoftwareId {
     }
 }
 
+/// A 16-bit Control ID identifying a physical button or control.
+///
+/// CIDs are device-specific. Common ones for MX Master 3S:
+/// - 82 (0x0052): Middle Click
+/// - 83 (0x0053): Back
+/// - 86 (0x0056): Forward
+/// - 195 (0x00C3): Gesture Button
+/// - 196 (0x00C4): Mode Shift
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
+pub struct ControlId(pub u16);
+
+impl core::fmt::Display for ControlId {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "CID {} (0x{:04X})", self.0, self.0)
+    }
+}
+
+impl core::fmt::UpperHex for ControlId {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        core::fmt::UpperHex::fmt(&self.0, f)
+    }
+}
+
 bitflags! {
     /// Feature flags returned by FeatureSet::GetFeatureID.
     #[derive(Debug, Clone, Copy, PartialEq, Eq)]

@@ -12,16 +12,16 @@
 /// - 5: ResetAllCidReportSettings
 use crate::error::DecodeError;
 use crate::report::LongReport;
-use crate::types::{DeviceIndex, FeatureIndex, FunctionId, SoftwareId};
+use crate::types::{ControlId, DeviceIndex, FeatureIndex, FunctionId, SoftwareId};
 
 /// Information about a remappable control.
 #[derive(Debug, Clone, PartialEq, Eq)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ControlInfo {
     /// Control ID — identifies the physical button.
-    pub cid: u16,
+    pub cid: ControlId,
     /// Task ID — the default action for this control.
-    pub tid: u16,
+    pub tid: ControlId,
     /// Capability flags.
     pub flags: u8,
     /// Position in the device layout.
@@ -56,11 +56,11 @@ impl ControlInfo {
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct ControlReporting {
     /// The control ID.
-    pub cid: u16,
+    pub cid: ControlId,
     /// Reporting flags (divert, rawXY, persist, etc.).
     pub flags: u8,
     /// Remapped control ID (0 = not remapped).
-    pub remapped_cid: u16,
+    pub remapped_cid: ControlId,
     /// Additional flags.
     pub additional_flags: u8,
 }
@@ -110,8 +110,8 @@ pub fn decode_get_ctrl_id_info(report: &LongReport) -> Result<ControlInfo, Decod
     report.check_error()?;
     let p = report.params();
     Ok(ControlInfo {
-        cid: u16::from_be_bytes([p[0], p[1]]),
-        tid: u16::from_be_bytes([p[2], p[3]]),
+        cid: ControlId(u16::from_be_bytes([p[0], p[1]])),
+        tid: ControlId(u16::from_be_bytes([p[2], p[3]])),
         flags: p[4],
         position: p[5],
         group: p[6],
@@ -124,10 +124,10 @@ pub fn decode_get_ctrl_id_info(report: &LongReport) -> Result<ControlInfo, Decod
 pub fn encode_get_ctrl_id_reporting(
     device: DeviceIndex,
     feature_index: FeatureIndex,
-    cid: u16,
+    cid: ControlId,
     sw_id: SoftwareId,
 ) -> LongReport {
-    let cid_bytes = cid.to_be_bytes();
+    let cid_bytes = cid.0.to_be_bytes();
     LongReport::request(device, feature_index, FunctionId(2), sw_id, &cid_bytes)
 }
 
@@ -135,9 +135,9 @@ pub fn decode_get_ctrl_id_reporting(report: &LongReport) -> Result<ControlReport
     report.check_error()?;
     let p = report.params();
     Ok(ControlReporting {
-        cid: u16::from_be_bytes([p[0], p[1]]),
+        cid: ControlId(u16::from_be_bytes([p[0], p[1]])),
         flags: p[2],
-        remapped_cid: u16::from_be_bytes([p[3], p[4]]),
+        remapped_cid: ControlId(u16::from_be_bytes([p[3], p[4]])),
         additional_flags: p[5],
     })
 }
@@ -147,13 +147,13 @@ pub fn encode_set_ctrl_id_reporting(
     device: DeviceIndex,
     feature_index: FeatureIndex,
     sw_id: SoftwareId,
-    cid: u16,
+    cid: ControlId,
     flags: u8,
-    remapped_cid: u16,
+    remapped_cid: ControlId,
     additional_flags: u8,
 ) -> LongReport {
-    let cid_bytes = cid.to_be_bytes();
-    let remap_bytes = remapped_cid.to_be_bytes();
+    let cid_bytes = cid.0.to_be_bytes();
+    let remap_bytes = remapped_cid.0.to_be_bytes();
     LongReport::request(
         device,
         feature_index,
@@ -196,8 +196,8 @@ mod tests {
         report.as_bytes_mut()[12] = 0x00; // additional
 
         let info = decode_get_ctrl_id_info(&report).unwrap();
-        assert_eq!(info.cid, 82);
-        assert_eq!(info.tid, 58);
+        assert_eq!(info.cid, ControlId(82));
+        assert_eq!(info.tid, ControlId(58));
         assert!(info.is_divertable());
         assert!(info.is_persistently_divertable());
         assert!(!info.is_virtual());
@@ -209,9 +209,9 @@ mod tests {
             DeviceIndex::BLE_DIRECT,
             FeatureIndex(0x09),
             SoftwareId::DEFAULT,
-            82,   // CID
-            0x01, // flags: divert
-            0,    // no remap
+            ControlId(82), // CID
+            0x01,          // flags: divert
+            ControlId(0),  // no remap
             0,
         );
 

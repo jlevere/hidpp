@@ -1,5 +1,5 @@
 use clap::{Parser, Subcommand};
-use hidpp::types::DeviceIndex;
+use hidpp::types::{ControlId, DeviceIndex};
 use hidpp_transport::native::HidapiEnumerator;
 use tracing::info;
 
@@ -282,12 +282,12 @@ async fn cmd_info(idx: Option<DeviceIndex>) -> anyhow::Result<()> {
                 println!("Buttons:     {} remappable", controls.len());
                 for c in &controls {
                     let name = hidpp_device::DeviceProfile::by_pid("b034")
-                        .and_then(|p| p.button_name(c.cid))
+                        .and_then(|p| p.button_name(c.cid.0))
                         .unwrap_or("?");
                     let flags = if c.is_divertable() { "divertable" } else { "" };
                     println!(
                         "  CID {:>3} (0x{:04X}) → TID {:>3}  {:<15} {}",
-                        c.cid, c.cid, c.tid, name, flags,
+                        c.cid.0, c.cid.0, c.tid.0, name, flags,
                     );
                 }
             }
@@ -350,7 +350,7 @@ async fn cmd_get(idx: Option<DeviceIndex>, setting: &str) -> anyhow::Result<()> 
             let controls = device.special_keys_list().await?;
             for c in &controls {
                 let name = hidpp_device::DeviceProfile::by_pid("b034")
-                    .and_then(|p| p.button_name(c.cid))
+                    .and_then(|p| p.button_name(c.cid.0))
                     .unwrap_or("?");
                 // Also read current reporting state.
                 let reporting = device.special_key_reporting(c.cid).await;
@@ -366,7 +366,7 @@ async fn cmd_get(idx: Option<DeviceIndex>, setting: &str) -> anyhow::Result<()> 
                         if r.persist_enabled() {
                             parts.push("persist");
                         }
-                        if r.remapped_cid != c.cid && r.remapped_cid != 0 {
+                        if r.remapped_cid != c.cid && r.remapped_cid != ControlId(0) {
                             parts.push("remapped");
                         }
                         if parts.is_empty() {
@@ -379,9 +379,9 @@ async fn cmd_get(idx: Option<DeviceIndex>, setting: &str) -> anyhow::Result<()> 
                 };
                 println!(
                     "CID {:>3} (0x{:04X}) → TID {:>3}  {:<15} [{}]  caps: divert={} persist={}",
-                    c.cid,
-                    c.cid,
-                    c.tid,
+                    c.cid.0,
+                    c.cid.0,
+                    c.tid.0,
                     name,
                     status,
                     c.is_divertable(),
@@ -436,11 +436,15 @@ async fn cmd_set(idx: Option<DeviceIndex>, setting: &str, value: &str) -> anyhow
 
             match action {
                 "divert" => {
-                    let result = device.special_key_set_reporting(cid, 0x01, 0, 0).await?;
+                    let result = device
+                        .special_key_set_reporting(ControlId(cid), 0x01, ControlId(0), 0)
+                        .await?;
                     println!("CID {cid}: diverted={}", result.is_diverted());
                 }
                 "undivide" | "default" => {
-                    let result = device.special_key_set_reporting(cid, 0x00, 0, 0).await?;
+                    let result = device
+                        .special_key_set_reporting(ControlId(cid), 0x00, ControlId(0), 0)
+                        .await?;
                     println!("CID {cid}: diverted={}", result.is_diverted());
                 }
                 "remap" => {
@@ -449,9 +453,9 @@ async fn cmd_set(idx: Option<DeviceIndex>, setting: &str, value: &str) -> anyhow
                         .ok_or_else(|| anyhow::anyhow!("usage: button CID:remap:TARGET_CID"))?
                         .parse()?;
                     let result = device
-                        .special_key_set_reporting(cid, 0x00, target, 0)
+                        .special_key_set_reporting(ControlId(cid), 0x00, ControlId(target), 0)
                         .await?;
-                    println!("CID {cid}: remapped to CID {}", result.remapped_cid);
+                    println!("CID {cid}: remapped to CID {}", result.remapped_cid.0);
                 }
                 _ => anyhow::bail!("button actions: divert, default, remap:CID"),
             }

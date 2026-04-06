@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::fmt;
 
 /// Direction resolved from accumulated XY displacement.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -7,6 +8,17 @@ pub enum GestureDirection {
     Down,
     Left,
     Right,
+}
+
+impl fmt::Display for GestureDirection {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(match self {
+            Self::Up => "up",
+            Self::Down => "down",
+            Self::Left => "left",
+            Self::Right => "right",
+        })
+    }
 }
 
 /// Result of completing a gesture (button release).
@@ -33,15 +45,14 @@ struct ActiveGesture {
 /// Tracks gesture state for all active (held) gesture buttons.
 ///
 /// Created per-connection. Dropped on disconnect, naturally resetting state.
+#[derive(Default)]
 pub struct GestureTracker {
     active: HashMap<u16, ActiveGesture>,
 }
 
 impl GestureTracker {
     pub fn new() -> Self {
-        Self {
-            active: HashMap::new(),
-        }
+        Self::default()
     }
 
     /// Called when a gesture-configured button is pressed.

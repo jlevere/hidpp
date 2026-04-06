@@ -3,7 +3,7 @@ use std::time::Duration;
 
 use hidpp::feature_id;
 use hidpp::report::LongReport;
-use hidpp::types::DeviceIndex;
+use hidpp::types::{ControlId, DeviceIndex};
 use hidpp_transport::native::HidapiEnumerator;
 use tao::event_loop::EventLoopProxy;
 use tokio::sync::broadcast;
@@ -110,7 +110,7 @@ pub async fn run(
             }
             Err(e) => {
                 warn!("error: {e}");
-                let _ = proxy.send_event(DaemonEvent::Error(format!("{e}")));
+                let _ = proxy.send_event(DaemonEvent::Error(e.to_string()));
             }
         }
 
@@ -207,7 +207,10 @@ async fn connect_and_listen(
             } else {
                 DIVERT_FLAGS
             };
-            match device.special_key_set_reporting(cid, flags, 0, 0).await {
+            match device
+                .special_key_set_reporting(ControlId(cid), flags, ControlId(0), 0)
+                .await
+            {
                 Ok(r) => {
                     let mode = if cfg.is_gesture_cid(cid) {
                         if r.is_diverted() && r.raw_xy_enabled() {
@@ -328,7 +331,7 @@ fn handle_notification(
                     if let Some(result) = gestures.button_released(cid, gesture_cfg.threshold) {
                         let (desc, action) = match &result {
                             gesture::GestureResult::Direction(d) => {
-                                let dir_name = format!("{d:?}").to_lowercase();
+                                let dir_name = d.to_string();
                                 let a = match d {
                                     gesture::GestureDirection::Up => gesture_cfg.up.as_ref(),
                                     gesture::GestureDirection::Down => gesture_cfg.down.as_ref(),

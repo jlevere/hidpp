@@ -616,8 +616,8 @@ impl WasmDevice {
             let info = hidpp::features::special_keys::decode_get_ctrl_id_info(&resp)
                 .map_err(|e| JsValue::from_str(&format!("{e}")))?;
             let obj = js_sys::Object::new();
-            js_sys::Reflect::set(&obj, &"cid".into(), &info.cid.into())?;
-            js_sys::Reflect::set(&obj, &"tid".into(), &info.tid.into())?;
+            js_sys::Reflect::set(&obj, &"cid".into(), &info.cid.0.into())?;
+            js_sys::Reflect::set(&obj, &"tid".into(), &info.tid.0.into())?;
             js_sys::Reflect::set(&obj, &"flags".into(), &info.flags.into())?;
             js_sys::Reflect::set(&obj, &"divertable".into(), &info.is_divertable().into())?;
             js_sys::Reflect::set(&obj, &"position".into(), &info.position.into())?;
@@ -887,15 +887,20 @@ impl WasmDevice {
     #[wasm_bindgen(js_name = getButtonReporting)]
     pub async fn get_button_reporting(&self, cid: u16) -> Result<JsValue, JsValue> {
         let (di, sw, idx) = self.ctx(hidpp::feature_id::SPECIAL_KEYS_V4)?;
-        let req = hidpp::features::special_keys::encode_get_ctrl_id_reporting(di, idx, cid, sw);
+        let req = hidpp::features::special_keys::encode_get_ctrl_id_reporting(
+            di,
+            idx,
+            hidpp::types::ControlId(cid),
+            sw,
+        );
         let resp = self.request_report(&req).await?;
         let r = hidpp::features::special_keys::decode_get_ctrl_id_reporting(&resp)
             .map_err(|e| JsValue::from_str(&format!("{e}")))?;
         let obj = js_sys::Object::new();
-        js_sys::Reflect::set(&obj, &"cid".into(), &r.cid.into())?;
+        js_sys::Reflect::set(&obj, &"cid".into(), &r.cid.0.into())?;
         js_sys::Reflect::set(&obj, &"flags".into(), &r.flags.into())?;
         js_sys::Reflect::set(&obj, &"diverted".into(), &r.is_diverted().into())?;
-        js_sys::Reflect::set(&obj, &"remappedCid".into(), &r.remapped_cid.into())?;
+        js_sys::Reflect::set(&obj, &"remappedCid".into(), &r.remapped_cid.0.into())?;
         Ok(obj.into())
     }
 
@@ -912,19 +917,19 @@ impl WasmDevice {
             di,
             idx,
             sw,
-            cid,
+            hidpp::types::ControlId(cid),
             flags,
-            remapped_cid,
+            hidpp::types::ControlId(remapped_cid),
             0,
         );
         let resp = self.request_report(&req).await?;
         let r = hidpp::features::special_keys::decode_set_ctrl_id_reporting(&resp)
             .map_err(|e| JsValue::from_str(&format!("{e}")))?;
         let obj = js_sys::Object::new();
-        js_sys::Reflect::set(&obj, &"cid".into(), &r.cid.into())?;
+        js_sys::Reflect::set(&obj, &"cid".into(), &r.cid.0.into())?;
         js_sys::Reflect::set(&obj, &"flags".into(), &r.flags.into())?;
         js_sys::Reflect::set(&obj, &"diverted".into(), &r.is_diverted().into())?;
-        js_sys::Reflect::set(&obj, &"remappedCid".into(), &r.remapped_cid.into())?;
+        js_sys::Reflect::set(&obj, &"remappedCid".into(), &r.remapped_cid.0.into())?;
         Ok(obj.into())
     }
 

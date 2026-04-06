@@ -3,7 +3,7 @@ use std::sync::Mutex;
 use enigo::{Direction, Enigo, Key, Keyboard as _, Settings};
 use tracing::{error, info};
 
-use crate::config::Action;
+use crate::config::{Action, ExplicitAction};
 
 /// Global enigo instance. Must be created once and reused (platform resources).
 static ENIGO: Mutex<Option<Enigo>> = Mutex::new(None);
@@ -23,10 +23,10 @@ pub fn init() -> anyhow::Result<()> {
 
 /// Execute an action.
 pub fn execute(action: &Action) {
-    if let Some(keys) = action.keystroke() {
-        execute_keystroke(keys);
-    } else if let Some(cmd) = action.command() {
-        execute_command(cmd);
+    match action {
+        Action::Keystroke(keys) => execute_keystroke(keys),
+        Action::Explicit(ExplicitAction::Keystroke { keys }) => execute_keystroke(keys),
+        Action::Explicit(ExplicitAction::Command { run }) => execute_command(run),
     }
 }
 

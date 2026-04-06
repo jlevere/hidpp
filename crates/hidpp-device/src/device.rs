@@ -437,7 +437,7 @@ impl Device {
     /// Get current reporting config for a button (feature 0x1B04).
     pub async fn special_key_reporting(
         &self,
-        cid: u16,
+        cid: hidpp::types::ControlId,
     ) -> Result<special_keys::ControlReporting, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::SPECIAL_KEYS_V4)?;
         let req =
@@ -449,9 +449,9 @@ impl Device {
     /// Set reporting config for a button (feature 0x1B04).
     pub async fn special_key_set_reporting(
         &self,
-        cid: u16,
+        cid: hidpp::types::ControlId,
         flags: u8,
-        remapped_cid: u16,
+        remapped_cid: hidpp::types::ControlId,
         additional_flags: u8,
     ) -> Result<special_keys::ControlReporting, DeviceError> {
         let idx = self.feature_index(hidpp::feature_id::SPECIAL_KEYS_V4)?;
