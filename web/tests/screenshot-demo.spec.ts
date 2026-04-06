@@ -20,7 +20,7 @@ const testWithBrowser = test.extend<{ devicePage: Page }>({
 });
 
 testWithBrowser("screenshot demo picker", async ({ devicePage: page }) => {
-  await page.goto("http://localhost:5173/logi-re/");
+  await page.goto("http://localhost:5173/hidpp/");
   await page.waitForSelector(".browse-link", { timeout: 5000 });
   await page.click(".browse-link");
   await page.waitForSelector(".demo-grid", { timeout: 10000 });
@@ -30,7 +30,7 @@ testWithBrowser("screenshot demo picker", async ({ devicePage: page }) => {
 });
 
 testWithBrowser("screenshot demo mode DPI", async ({ devicePage: page }) => {
-  await page.goto("http://localhost:5173/logi-re/");
+  await page.goto("http://localhost:5173/hidpp/");
   await page.waitForSelector(".browse-link", { timeout: 5000 });
   await page.click(".browse-link");
   await page.waitForSelector(".demo-grid", { timeout: 10000 });

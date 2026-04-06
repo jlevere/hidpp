@@ -384,9 +384,9 @@ function renderDevicePage(data: PageData): void {
   // Use side.png from device assets if available, otherwise thumbnail, otherwise skip.
   const isMxMaster3s = data.name.includes("MX Master 3S");
   const imgSrc = isMxMaster3s
-    ? "/logi-re/devices/assets/mx-master-3s/side.png"
+    ? "/hidpp/devices/assets/mx-master-3s/side.png"
     : data.thumbnail !== ""
-      ? `/logi-re/devices/thumbnails/${data.thumbnail}`
+      ? `/hidpp/devices/thumbnails/${data.thumbnail}`
       : "";
 
   if (imgSrc !== "") {

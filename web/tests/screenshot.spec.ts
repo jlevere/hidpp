@@ -23,11 +23,11 @@ const test = base.extend<{ devicePage: Page }>({
 });
 
 test("screenshot connected page", async ({ devicePage: page }) => {
-  await page.goto("http://localhost:5173/logi-re/");
+  await page.goto("http://localhost:5173/hidpp/");
 
   // Try auto-connect first.
   const connected = await page.evaluate(async () => {
-    const mod = await import("/logi-re/pkg/hidpp_web.js");
+    const mod = await import("/hidpp/pkg/hidpp_web.js");
     await mod.default();
     const device = await mod.WasmDevice.connectGranted();
     return device !== null && device !== undefined;

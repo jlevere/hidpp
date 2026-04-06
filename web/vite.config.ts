@@ -4,7 +4,7 @@ import topLevelAwait from "vite-plugin-top-level-await";
 import { resolve } from "node:path";
 
 export default defineConfig({
-  base: "/logi-re/",
+  base: "/hidpp/",
   plugins: [wasm(), topLevelAwait()],
   resolve: {
     alias: {

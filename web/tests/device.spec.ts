@@ -26,7 +26,7 @@ const test = base.extend<{ devicePage: Page }>({
 /** Try connectGranted first, fall back to connect (shows picker on first run). */
 async function connectDevice(page: Page): Promise<boolean> {
   return page.evaluate(async () => {
-    const mod = await import("/logi-re/pkg/hidpp_web.js");
+    const mod = await import("/hidpp/pkg/hidpp_web.js");
     await mod.default(); // init WASM
 
     // Try already-granted device first (no gesture needed).
@@ -41,7 +41,7 @@ async function connectDevice(page: Page): Promise<boolean> {
 
 test.describe("HID++ Device Tests", () => {
   test("connect and read device info", async ({ devicePage: page }) => {
-    await page.goto("http://localhost:5173/logi-re/");
+    await page.goto("http://localhost:5173/hidpp/");
 
     let connected = await connectDevice(page);
 
@@ -74,7 +74,7 @@ test.describe("HID++ Device Tests", () => {
   });
 
   test("read battery status", async ({ devicePage: page }) => {
-    await page.goto("http://localhost:5173/logi-re/");
+    await page.goto("http://localhost:5173/hidpp/");
     const connected = await connectDevice(page);
     test.skip(!connected, "No granted device — run the connect test first");
 
@@ -90,7 +90,7 @@ test.describe("HID++ Device Tests", () => {
   });
 
   test("read and verify DPI", async ({ devicePage: page }) => {
-    await page.goto("http://localhost:5173/logi-re/");
+    await page.goto("http://localhost:5173/hidpp/");
     const connected = await connectDevice(page);
     test.skip(!connected, "No granted device");
 
@@ -104,7 +104,7 @@ test.describe("HID++ Device Tests", () => {
   });
 
   test("set DPI to 1600 and restore", async ({ devicePage: page }) => {
-    await page.goto("http://localhost:5173/logi-re/");
+    await page.goto("http://localhost:5173/hidpp/");
     const connected = await connectDevice(page);
     test.skip(!connected, "No granted device");
 
@@ -125,7 +125,7 @@ test.describe("HID++ Device Tests", () => {
   });
 
   test("read SmartShift state", async ({ devicePage: page }) => {
-    await page.goto("http://localhost:5173/logi-re/");
+    await page.goto("http://localhost:5173/hidpp/");
     const connected = await connectDevice(page);
     test.skip(!connected, "No granted device");
 
@@ -139,7 +139,7 @@ test.describe("HID++ Device Tests", () => {
   });
 
   test("toggle SmartShift free/ratchet and restore", async ({ devicePage: page }) => {
-    await page.goto("http://localhost:5173/logi-re/");
+    await page.goto("http://localhost:5173/hidpp/");
     const connected = await connectDevice(page);
     test.skip(!connected, "No granted device");
 
@@ -169,7 +169,7 @@ test.describe("HID++ Device Tests", () => {
   });
 
   test("read Easy-Switch host info", async ({ devicePage: page }) => {
-    await page.goto("http://localhost:5173/logi-re/");
+    await page.goto("http://localhost:5173/hidpp/");
     const connected = await connectDevice(page);
     test.skip(!connected, "No granted device");
 
