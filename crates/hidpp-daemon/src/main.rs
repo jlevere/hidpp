@@ -209,7 +209,9 @@ fn run_tray_app(
                     ts.last_action_item.set_text(format!("Last: {description}"));
                 }
                 DaemonEvent::Error(msg) => {
-                    ts.device_item.set_text(format!("Error: {msg}"));
+                    // Truncate long error messages so the menu doesn't stretch.
+                    let short = if msg.len() > 40 { &msg[..40] } else { msg };
+                    ts.device_item.set_text(format!("Error: {short}"));
                 }
             }
         }

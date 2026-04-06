@@ -110,7 +110,13 @@ pub async fn run(
             }
             Err(e) => {
                 warn!("error: {e}");
-                let _ = proxy.send_event(DaemonEvent::Error(e.to_string()));
+                // Show a short user-friendly message, not the raw hidapi error.
+                let user_msg = if e.to_string().contains("no HID++") {
+                    "No device found"
+                } else {
+                    "Connection failed"
+                };
+                let _ = proxy.send_event(DaemonEvent::Error(user_msg.to_string()));
             }
         }
 
