@@ -272,6 +272,7 @@ async fn connect_and_listen(
                 match cmd {
                     Some(DaemonCommand::Reconnect | DaemonCommand::ReloadConfig) => {
                         info!("reconnect/reload requested");
+                        action::retry_init(); // Reset so enigo retries after permission grant.
                         return Ok(false);
                     }
                     Some(DaemonCommand::Shutdown) | None => {

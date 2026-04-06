@@ -8,16 +8,27 @@ use crate::config::{Action, ExplicitAction};
 /// Global enigo instance. Initialized lazily on first use.
 static ENIGO: Mutex<Option<Enigo>> = Mutex::new(None);
 
-/// Try to initialize enigo. Returns false if Accessibility isn't granted yet.
-/// Safe to call multiple times — no-ops if already initialized.
+/// Whether init has been attempted and failed (don't retry automatically).
+static INIT_FAILED: Mutex<bool> = Mutex::new(false);
+
+/// Try to initialize enigo. Returns false if Accessibility isn't granted.
+/// Only attempts initialization once — if it fails, stops retrying to avoid
+/// spamming the macOS permission prompt. Call `retry_init()` to try again
+/// after the user grants permission.
 pub fn ensure_init() -> bool {
     let mut guard = ENIGO.lock().unwrap();
     if guard.is_some() {
         return true;
     }
 
+    // Don't retry if we already failed — avoids spamming the permission dialog.
+    if *INIT_FAILED.lock().unwrap() {
+        return false;
+    }
+
     match Enigo::new(&Settings {
         release_keys_when_dropped: true,
+        open_prompt_to_get_permissions: false, // Don't trigger macOS prompt repeatedly.
         ..Settings::default()
     }) {
         Ok(enigo) => {
@@ -27,9 +38,16 @@ pub fn ensure_init() -> bool {
         }
         Err(e) => {
             warn!("input backend not ready: {e}");
+            *INIT_FAILED.lock().unwrap() = true;
             false
         }
     }
+}
+
+/// Reset the init-failed flag so the next action will retry.
+/// Called when the user clicks Reconnect or grants permission.
+pub fn retry_init() {
+    *INIT_FAILED.lock().unwrap() = false;
 }
 
 /// Execute an action. Initializes enigo lazily if needed.
