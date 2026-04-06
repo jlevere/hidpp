@@ -61,19 +61,8 @@ jobs:
           cp "target/${{ matrix.target }}/release/hidpp" "${STAGING}/"
           cp "target/${{ matrix.target }}/release/hidppd" "${STAGING}/"
 
-          if [ "${{ matrix.os }}" = "macos" ]; then
-            cp dist/macos/com.hidpp.daemon.plist "${STAGING}/"
-            cp dist/macos/install.sh "${STAGING}/"
-            cp dist/macos/uninstall.sh "${STAGING}/"
-            chmod +x "${STAGING}/install.sh" "${STAGING}/uninstall.sh"
-          fi
-
           if [ "${{ matrix.os }}" = "linux" ]; then
-            cp dist/linux/hidppd.service "${STAGING}/"
-            cp dist/linux/install.sh "${STAGING}/"
-            cp dist/linux/uninstall.sh "${STAGING}/"
             cp udev/99-hidpp.rules "${STAGING}/"
-            chmod +x "${STAGING}/install.sh" "${STAGING}/uninstall.sh"
           fi
 
           "target/${{ matrix.target }}/release/hidppd" sample-config > "${STAGING}/config.toml.sample" 2>/dev/null || true
