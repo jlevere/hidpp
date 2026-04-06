@@ -101,7 +101,15 @@ fn run_tray_app(
     action::init()?;
 
     // Create tao event loop with our custom user event type.
-    let event_loop = EventLoopBuilder::<DaemonEvent>::with_user_event().build();
+    let mut event_loop = EventLoopBuilder::<DaemonEvent>::with_user_event().build();
+
+    // Hide dock icon — works both from .app bundle and bare cargo run.
+    #[cfg(target_os = "macos")]
+    {
+        use tao::platform::macos::EventLoopExtMacOS;
+        event_loop.set_activation_policy(tao::platform::macos::ActivationPolicy::Accessory);
+    }
+
     let proxy = event_loop.create_proxy();
 
     // Command channel: tray UI → background daemon.
