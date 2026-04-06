@@ -27,7 +27,7 @@ jobs:
       - uses: Swatinem/rust-cache@v2
 
       - name: Install system deps
-        run: sudo apt-get update && sudo apt-get install -y libudev-dev libxkbcommon-dev libglib2.0-dev libgtk-3-dev
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev libxkbcommon-dev libglib2.0-dev libgtk-3-dev libxdo-dev
 
       - name: cargo test
         if: matrix.check == 'test'

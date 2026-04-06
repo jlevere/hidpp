@@ -41,7 +41,7 @@ jobs:
 
       - name: Install Linux deps
         if: matrix.os == 'linux'
-        run: sudo apt-get update && sudo apt-get install -y libudev-dev libxkbcommon-dev libglib2.0-dev libgtk-3-dev
+        run: sudo apt-get update && sudo apt-get install -y libudev-dev libxkbcommon-dev libglib2.0-dev libgtk-3-dev libxdo-dev
 
       - name: Build release binaries
         run: cargo build --release --target ${{ matrix.target }} -p hidpp-cli -p hidpp-daemon
