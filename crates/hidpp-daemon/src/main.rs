@@ -233,7 +233,8 @@ fn run_tray_app(
                         let _ = service::uninstall();
                         ts.start_at_login_item.set_checked(false);
                     } else {
-                        let _ = service::install();
+                        // Register for next login — don't load now (we're already running).
+                        let _ = service::register_login_item();
                         ts.start_at_login_item.set_checked(true);
                     }
                 }

@@ -25,6 +25,11 @@ open result/HID++.dmg
 /Applications/HID++.app/Contents/MacOS/hidppd install
 ```
 
+**Note:** macOS quarantines downloaded apps. After dragging to Applications:
+```sh
+xattr -cr /Applications/HID++.app
+```
+
 Or from source:
 ```sh
 nix develop

@@ -17,6 +17,24 @@ pub fn is_installed() -> bool {
     }
 }
 
+/// Register for login without starting (used by tray "Start at Login" toggle).
+pub fn register_login_item() -> anyhow::Result<()> {
+    let exe = std::env::current_exe()?;
+
+    #[cfg(target_os = "macos")]
+    macos::register(&exe)?;
+
+    #[cfg(target_os = "linux")]
+    linux::install(&exe)?;
+
+    #[cfg(target_os = "windows")]
+    {
+        anyhow::bail!("Windows service not yet supported.");
+    }
+
+    Ok(())
+}
+
 /// Install the daemon as a system service.
 pub fn install() -> anyhow::Result<()> {
     let exe = std::env::current_exe()?;
@@ -24,7 +42,10 @@ pub fn install() -> anyhow::Result<()> {
     println!();
 
     #[cfg(target_os = "macos")]
-    macos::install(&exe)?;
+    {
+        macos::install(&exe)?;
+        macos::print_hints(&exe);
+    }
 
     #[cfg(target_os = "linux")]
     linux::install(&exe)?;
@@ -121,30 +142,10 @@ mod macos {
         )
     }
 
+    /// Write the plist and load it immediately. Used by `hidppd install`.
     pub fn install(exe: &Path) -> anyhow::Result<()> {
-        let home = std::env::var("HOME")?;
-        let log_path = Path::new(&home).join("Library/Logs/hidppd.log");
-        let plist = plist_path();
+        let plist = write_plist(exe)?;
 
-        // Unload existing if present.
-        if plist.exists() {
-            let _ = Command::new("launchctl")
-                .args(["unload", &plist.to_string_lossy()])
-                .output();
-        }
-
-        // Ensure directories exist.
-        if let Some(parent) = plist.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-        std::fs::create_dir_all(log_path.parent().unwrap_or(Path::new("/tmp")))?;
-
-        // Write the plist with the actual binary path baked in.
-        let content = generate_plist(exe, &log_path);
-        std::fs::write(&plist, content)?;
-        println!("  plist   -> {}", plist.display());
-
-        // Load.
         let output = Command::new("launchctl")
             .args(["load", &plist.to_string_lossy()])
             .output()?;
@@ -156,6 +157,45 @@ mod macos {
             println!("  service -> load failed: {stderr}");
         }
 
+        Ok(())
+    }
+
+    /// Write the plist without loading. Used by the tray "Start at Login" toggle
+    /// (the app is already running — just register for next login).
+    pub fn register(exe: &Path) -> anyhow::Result<()> {
+        write_plist(exe)?;
+        println!("  service -> registered (starts on next login)");
+        Ok(())
+    }
+
+    fn write_plist(exe: &Path) -> anyhow::Result<PathBuf> {
+        let home = std::env::var("HOME")?;
+        let log_path = Path::new(&home).join("Library/Logs/hidppd.log");
+        let plist = plist_path();
+
+        // Unload existing if present.
+        if plist.exists() {
+            let _ = Command::new("launchctl")
+                .args(["unload", &plist.to_string_lossy()])
+                .output();
+        }
+
+        if let Some(parent) = plist.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::create_dir_all(log_path.parent().unwrap_or(Path::new("/tmp")))?;
+
+        let content = generate_plist(exe, &log_path);
+        std::fs::write(&plist, content)?;
+        println!("  plist   -> {}", plist.display());
+
+        Ok(plist)
+    }
+
+    /// Print post-install hints (used by CLI install).
+    pub fn print_hints(exe: &Path) {
+        let home = std::env::var("HOME").unwrap_or_default();
+        let log_path = Path::new(&home).join("Library/Logs/hidppd.log");
         println!();
         println!("  logs: tail -f {}", log_path.display());
 
@@ -167,8 +207,6 @@ mod macos {
             println!("  Grant Accessibility to hidppd:");
         }
         println!("    System Settings -> Privacy & Security -> Accessibility");
-
-        Ok(())
     }
 
     pub fn uninstall() -> anyhow::Result<()> {
