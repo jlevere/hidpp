@@ -1,0 +1,45 @@
+name: Update Homebrew Cask
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  update-cask:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get release info
+        id: release
+        run: |
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Download DMG and compute SHA256
+        id: sha
+        run: |
+          curl -L -o asset.dmg \
+            "https://github.com/jlevere/hidpp/releases/download/${GITHUB_REF_NAME}/hidpp-${{ steps.release.outputs.version }}-macos-arm64.dmg"
+          SHA=$(sha256sum asset.dmg | awk '{print $1}')
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tap repo
+        uses: actions/checkout@v4
+        with:
+          repository: jlevere/homebrew-cask
+          token: ${{ secrets.TAP_REPO_PAT }}
+          path: tap
+
+      - name: Update cask file
+        run: |
+          cd tap
+          sed -i "s/version \".*\"/version \"${{ steps.release.outputs.version }}\"/" Casks/hidpp.rb
+          sed -i "s/sha256 \".*\"/sha256 \"${{ steps.sha.outputs.sha256 }}\"/" Casks/hidpp.rb
+
+      - name: Commit and push
+        run: |
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Casks/hidpp.rb
+          git commit -m "Update hidpp to ${{ steps.release.outputs.version }}"
+          git push
