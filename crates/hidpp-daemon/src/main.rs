@@ -19,10 +19,7 @@ use tracing::{info, warn};
 use bridge::{DaemonCommand, DaemonEvent};
 
 #[derive(Parser)]
-#[command(
-    name = "hidppd",
-    about = "HID++ 2.0 — Logitech device daemon with menu bar UI"
-)]
+#[command(name = "hidppd", about = "HID++ — Logitech device configurator")]
 struct Cli {
     #[command(subcommand)]
     command: Option<Command>,
@@ -42,16 +39,10 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Command {
-    /// Run with menu bar UI (default).
+    /// Run the app (default).
     Run,
-    /// Listen to raw HID++ notifications (headless, no actions).
+    /// Headless mode — log notifications, no UI, no actions.
     Listen,
-    /// Install as login item (launchd/systemd).
-    Install,
-    /// Uninstall login item.
-    Uninstall,
-    /// Print config file path.
-    ConfigPath,
     /// Print sample config.
     SampleConfig,
 }
@@ -69,16 +60,10 @@ fn main() -> anyhow::Result<()> {
         .init();
 
     match cli.command.unwrap_or(Command::Run) {
-        Command::ConfigPath => {
-            println!("{}", config::default_config_path().display());
-            Ok(())
-        }
         Command::SampleConfig => {
             print!("{}", daemon::SAMPLE_CONFIG);
             Ok(())
         }
-        Command::Install => service::install(),
-        Command::Uninstall => service::uninstall(),
         Command::Listen => {
             let rt = tokio::runtime::Runtime::new()?;
             rt.block_on(daemon::run_listen_only(&cli.config, cli.device_index))
@@ -100,10 +85,22 @@ fn run_tray_app(
     // Initialize enigo on main thread (needs NSApplication context on macOS).
     action::init()?;
 
-    // Create tao event loop with our custom user event type.
+    // Create config on first launch if needed.
+    let cfg_path = config_path
+        .clone()
+        .unwrap_or_else(config::default_config_path);
+    if !cfg_path.exists() {
+        if let Some(parent) = cfg_path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+        let _ = std::fs::write(&cfg_path, daemon::SAMPLE_CONFIG);
+        info!("created default config at {}", cfg_path.display());
+    }
+
+    // Create tao event loop.
     let mut event_loop = EventLoopBuilder::<DaemonEvent>::with_user_event().build();
 
-    // Hide dock icon — works both from .app bundle and bare cargo run.
+    // Hide dock icon.
     #[cfg(target_os = "macos")]
     {
         use tao::platform::macos::EventLoopExtMacOS;
@@ -126,13 +123,13 @@ fn run_tray_app(
     let login_id = ts.start_at_login_item.id().clone();
     let menu_channel = MenuEvent::receiver();
 
-    // Spawn background daemon thread with tokio runtime.
+    // Spawn background daemon thread.
     std::thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
         rt.block_on(daemon::run(&config_path, device_index, proxy, cmd_rx));
     });
 
-    info!("menu bar app running");
+    info!("HID++ running");
 
     // Main event loop.
     event_loop.run(move |event, _, control_flow| {
@@ -224,16 +221,19 @@ fn run_tray_app(
                 } else if ev.id == reconnect_id {
                     let _ = cmd_tx.try_send(DaemonCommand::Reconnect);
                 } else if ev.id == edit_config_id {
+                    #[cfg(target_os = "macos")]
                     let _ = std::process::Command::new("open")
                         .arg(config::default_config_path())
                         .spawn();
+                    #[cfg(target_os = "linux")]
+                    let _ = std::process::Command::new("xdg-open")
+                        .arg(config::default_config_path())
+                        .spawn();
                 } else if ev.id == login_id {
-                    let currently_installed = service::is_installed();
-                    if currently_installed {
+                    if service::is_installed() {
                         let _ = service::uninstall();
                         ts.start_at_login_item.set_checked(false);
                     } else {
-                        // Register for next login — don't load now (we're already running).
                         let _ = service::register_login_item();
                         ts.start_at_login_item.set_checked(true);
                     }
@@ -248,12 +248,10 @@ fn run_tray_app(
 /// Security: rejects configs containing `command` actions to prevent
 /// arbitrary code execution from malicious websites opening hidpp:// URLs.
 fn handle_config_url(toml_str: &str) -> anyhow::Result<()> {
-    // Reject command actions — only allow keystroke strings from URL handler.
     if toml_str.contains("type") && toml_str.contains("command") {
         anyhow::bail!("command actions are not allowed via URL — edit config.toml directly");
     }
 
-    // Validate it parses before writing.
     config::validate(toml_str)?;
 
     let path = config::default_config_path();

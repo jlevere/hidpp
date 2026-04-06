@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Check if the daemon service is currently installed.
+/// Check if the login item is currently registered.
 pub fn is_installed() -> bool {
     #[cfg(target_os = "macos")]
     {
@@ -17,7 +17,7 @@ pub fn is_installed() -> bool {
     }
 }
 
-/// Register for login without starting (used by tray "Start at Login" toggle).
+/// Register the app to start on login (writes plist/unit, does NOT launch).
 pub fn register_login_item() -> anyhow::Result<()> {
     let exe = std::env::current_exe()?;
 
@@ -25,58 +25,19 @@ pub fn register_login_item() -> anyhow::Result<()> {
     macos::register(&exe)?;
 
     #[cfg(target_os = "linux")]
-    linux::install(&exe)?;
+    linux::register(&exe)?;
 
     #[cfg(target_os = "windows")]
     {
-        anyhow::bail!("Windows service not yet supported.");
+        let _ = exe;
+        anyhow::bail!("not yet supported on Windows");
     }
 
     Ok(())
 }
 
-/// Install the daemon as a system service.
-pub fn install() -> anyhow::Result<()> {
-    let exe = std::env::current_exe()?;
-    println!("hidppd install");
-    println!();
-
-    #[cfg(target_os = "macos")]
-    {
-        macos::install(&exe)?;
-        macos::print_hints(&exe);
-    }
-
-    #[cfg(target_os = "linux")]
-    linux::install(&exe)?;
-
-    #[cfg(target_os = "windows")]
-    {
-        anyhow::bail!("Windows service installation not yet supported. Run hidppd manually.");
-    }
-
-    // Create default config if none exists.
-    let config_path = crate::config::default_config_path();
-    if !config_path.exists() {
-        if let Some(parent) = config_path.parent() {
-            std::fs::create_dir_all(parent)?;
-        }
-        std::fs::write(&config_path, crate::daemon::SAMPLE_CONFIG)?;
-        println!("  config  -> {} (sample)", config_path.display());
-    } else {
-        println!("  config  -> {} (existing)", config_path.display());
-    }
-
-    println!();
-    println!("done.");
-    Ok(())
-}
-
-/// Uninstall the daemon service.
+/// Unregister the login item.
 pub fn uninstall() -> anyhow::Result<()> {
-    println!("hidppd uninstall");
-    println!();
-
     #[cfg(target_os = "macos")]
     macos::uninstall()?;
 
@@ -85,11 +46,9 @@ pub fn uninstall() -> anyhow::Result<()> {
 
     #[cfg(target_os = "windows")]
     {
-        anyhow::bail!("Windows service uninstallation not yet supported.");
+        anyhow::bail!("not yet supported on Windows");
     }
 
-    println!();
-    println!("done. config left at ~/.config/hidpp/");
     Ok(())
 }
 
@@ -142,43 +101,11 @@ mod macos {
         )
     }
 
-    /// Write the plist and load it immediately. Used by `hidppd install`.
-    pub fn install(exe: &Path) -> anyhow::Result<()> {
-        let plist = write_plist(exe)?;
-
-        let output = Command::new("launchctl")
-            .args(["load", &plist.to_string_lossy()])
-            .output()?;
-
-        if output.status.success() {
-            println!("  service -> loaded");
-        } else {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            println!("  service -> load failed: {stderr}");
-        }
-
-        Ok(())
-    }
-
-    /// Write the plist without loading. Used by the tray "Start at Login" toggle
-    /// (the app is already running — just register for next login).
+    /// Write the launchd plist without loading it.
     pub fn register(exe: &Path) -> anyhow::Result<()> {
-        write_plist(exe)?;
-        println!("  service -> registered (starts on next login)");
-        Ok(())
-    }
-
-    fn write_plist(exe: &Path) -> anyhow::Result<PathBuf> {
         let home = std::env::var("HOME")?;
         let log_path = Path::new(&home).join("Library/Logs/hidppd.log");
         let plist = plist_path();
-
-        // Unload existing if present.
-        if plist.exists() {
-            let _ = Command::new("launchctl")
-                .args(["unload", &plist.to_string_lossy()])
-                .output();
-        }
 
         if let Some(parent) = plist.parent() {
             std::fs::create_dir_all(parent)?;
@@ -187,41 +114,17 @@ mod macos {
 
         let content = generate_plist(exe, &log_path);
         std::fs::write(&plist, content)?;
-        println!("  plist   -> {}", plist.display());
-
-        Ok(plist)
-    }
-
-    /// Print post-install hints (used by CLI install).
-    pub fn print_hints(exe: &Path) {
-        let home = std::env::var("HOME").unwrap_or_default();
-        let log_path = Path::new(&home).join("Library/Logs/hidppd.log");
-        println!();
-        println!("  logs: tail -f {}", log_path.display());
-
-        // Remind about Accessibility.
-        println!();
-        if exe.to_string_lossy().contains(".app/") {
-            println!("  Grant Accessibility to the .app bundle:");
-        } else {
-            println!("  Grant Accessibility to hidppd:");
-        }
-        println!("    System Settings -> Privacy & Security -> Accessibility");
+        Ok(())
     }
 
     pub fn uninstall() -> anyhow::Result<()> {
         let plist = plist_path();
-
         if plist.exists() {
             let _ = Command::new("launchctl")
                 .args(["unload", &plist.to_string_lossy()])
                 .output();
             std::fs::remove_file(&plist)?;
-            println!("  plist   -> removed");
-        } else {
-            println!("  plist   -> not installed");
         }
-
         Ok(())
     }
 }
@@ -242,8 +145,8 @@ mod linux {
     fn generate_unit(exe_path: &Path) -> String {
         format!(
             r#"[Unit]
-Description=HID++ 2.0 device daemon
-Documentation=https://github.com/jlevere/logi-re
+Description=HID++ device daemon
+Documentation=https://github.com/jlevere/hidpp
 After=graphical-session.target
 
 [Service]
@@ -259,71 +162,35 @@ WantedBy=default.target"#,
         )
     }
 
-    pub fn install(exe: &Path) -> anyhow::Result<()> {
+    pub fn register(exe: &Path) -> anyhow::Result<()> {
         let unit = service_path();
-
-        // Stop existing.
-        let _ = Command::new("systemctl")
-            .args(["--user", "stop", "hidppd.service"])
-            .output();
-
-        // Write unit file.
         if let Some(parent) = unit.parent() {
             std::fs::create_dir_all(parent)?;
         }
         std::fs::write(&unit, generate_unit(exe))?;
-        println!("  unit    -> {}", unit.display());
-
-        // Reload, enable, start.
         let _ = Command::new("systemctl")
             .args(["--user", "daemon-reload"])
             .output();
         let _ = Command::new("systemctl")
             .args(["--user", "enable", "hidppd.service"])
             .output();
-        let output = Command::new("systemctl")
-            .args(["--user", "start", "hidppd.service"])
-            .output()?;
-
-        if output.status.success() {
-            println!("  service -> started");
-        } else {
-            let stderr = String::from_utf8_lossy(&output.stderr);
-            println!("  service -> start failed: {stderr}");
-        }
-
-        println!();
-        println!("  logs: journalctl --user -u hidppd -f");
-
-        // Remind about udev rules.
-        println!();
-        println!("  For HID access without root, install udev rules:");
-        println!("    sudo cp udev/99-hidpp.rules /etc/udev/rules.d/");
-        println!("    sudo udevadm control --reload-rules");
-
         Ok(())
     }
 
     pub fn uninstall() -> anyhow::Result<()> {
         let unit = service_path();
-
         let _ = Command::new("systemctl")
             .args(["--user", "stop", "hidppd.service"])
             .output();
         let _ = Command::new("systemctl")
             .args(["--user", "disable", "hidppd.service"])
             .output();
-
         if unit.exists() {
             std::fs::remove_file(&unit)?;
             let _ = Command::new("systemctl")
                 .args(["--user", "daemon-reload"])
                 .output();
-            println!("  unit    -> removed");
-        } else {
-            println!("  unit    -> not installed");
         }
-
         Ok(())
     }
 }

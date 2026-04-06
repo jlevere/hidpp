@@ -1,52 +1,28 @@
 # HID++
 
-Open-source replacement for Logitech Options+ — configure Logitech mice, keyboards, and trackballs from Rust, the browser, or a native menu bar app.
+Open-source replacement for Logitech Options+ — configure Logitech mice, keyboards, and trackballs from the browser or a native macOS menu bar app.
 
-## What it does
+## Install (macOS)
 
-- **Web UI** — connect to any Logitech HID++ device from Chrome/Edge via WebHID. Configure DPI, scroll mode, button remaps, Easy-Switch hosts. Supports 170+ devices in demo/browse mode.
-- **Menu bar app** (macOS) — background daemon with gesture support. Hold a button + swipe to trigger keystrokes. Shows battery %, DPI, and last action in the menu bar.
-- **CLI** — one-shot commands for scripting: `hidpp info`, `hidpp get dpi`, `hidpp set dpi 1600`, `hidpp export`.
-- **Rust library** — full HID++ 2.0 protocol implementation with 15 features, 70+ unit tests.
+1. Download `hidpp-x.x.x-macos-arm64.dmg` from [Releases](https://github.com/jlevere/hidpp/releases)
+2. Open the DMG, drag **HID++** to Applications
+3. Open **HID++** from Applications
+4. Grant Accessibility permission when prompted (System Settings → Privacy & Security → Accessibility)
+5. Click the mouse icon in the menu bar → **Start at Login**
 
-## Quick start
+That's it. Battery %, DPI, and gesture actions show in the menu bar.
 
-### Web UI (no install)
+## Web UI
 
-Visit the [web configurator](https://jlevere.github.io/logi-re/) in Chrome or Edge. Click Connect, pick your device.
+Configure any Logitech HID++ device from Chrome or Edge — no install needed:
 
-### macOS app
+**[Open Web Configurator →](https://jlevere.github.io/hidpp/)**
 
-```sh
-# Build with Nix
-nix build .#dmg
-open result/HID++.dmg
-# Drag to Applications, then:
-/Applications/HID++.app/Contents/MacOS/hidppd install
-```
+Supports DPI, scroll mode, button remaps, Easy-Switch hosts. 170+ devices in browse/demo mode.
 
-**Note:** macOS quarantines downloaded apps. After dragging to Applications:
-```sh
-xattr -cr /Applications/HID++.app
-```
+## Config
 
-Or from source:
-```sh
-nix develop
-cargo run -p hidpp-daemon
-```
-
-### CLI
-
-```sh
-cargo run -p hidpp-cli -- info
-cargo run -p hidpp-cli -- get battery
-cargo run -p hidpp-cli -- set dpi 1600
-```
-
-## Daemon config
-
-Edit `~/.config/hidpp/config.toml`:
+Edit `~/.config/hidpp/config.toml` (created on first launch):
 
 ```toml
 [buttons]
@@ -61,56 +37,62 @@ right = "ctrl+right"  # Swipe right → next desktop
 tap = "playpause"     # Quick tap → play/pause
 ```
 
-Generate a sample: `hidppd sample-config`
+Or use the web UI's config editor and click **Apply to App** to push changes.
 
-## Project structure
+## CLI
 
-```
-crates/
-  hidpp/            — HID++ 2.0 protocol codec (pure Rust, no I/O)
-  hidpp-transport/  — HID I/O via hidapi (macOS/Linux/Windows)
-  hidpp-device/     — device session, feature discovery, typed API
-  hidpp-cli/        — CLI tool (hidpp)
-  hidpp-daemon/     — menu bar app with gesture support (hidppd)
-  hidpp-web/        — WASM module for WebHID browser access
-web/                — web UI (TypeScript + Vite)
+For scripting and one-shot configuration:
+
+```sh
+hidpp info                    # device info + all settings
+hidpp get battery             # battery percentage
+hidpp set dpi 1600            # set DPI
+hidpp export                  # export config as TOML
 ```
 
 ## Supported devices
 
-Any Logitech device speaking HID++ 2.0 over BLE or USB receiver (Bolt/Unifying/Lightspeed). Tested on MX Master 3S. The device database includes 170+ devices.
+Any Logitech device speaking HID++ 2.0 over BLE or USB receiver (Bolt / Unifying / Lightspeed). Tested on MX Master 3S. Device database includes 170+ devices.
 
-## Building
+## Building from source
 
-Requires [Nix](https://nixos.org/) with flakes enabled:
+Requires [Nix](https://nixos.org/) with flakes:
 
 ```sh
-nix develop                          # dev shell with all tools
-nix build .#app                      # macOS .app bundle
-nix build .#dmg                      # macOS DMG
-nix build .#daemon                   # daemon binary only
-nix build .#cli                      # CLI binary only
-nix flake check                      # build + clippy + tests
+nix build .#dmg               # macOS DMG with .app bundle
+nix build .#app               # just the .app
+nix build .#cli               # CLI binary
+nix flake check               # build + clippy + tests
 ```
 
-Or with plain cargo (needs hidapi system library):
+Or with cargo (needs system hidapi):
+
 ```sh
 cargo build --workspace --exclude hidpp-web
 cargo test --workspace --exclude hidpp-web
 ```
 
-## Cross-platform
+## Platform support
 
-| Platform | CLI | Daemon | Web UI |
-|----------|-----|--------|--------|
-| macOS    | ✓   | ✓ (menu bar app) | ✓ |
-| Linux    | ✓   | ✓ (systemd service) | ✓ |
-| Windows  | ✓   | ✓ (headless) | ✓ |
+| | macOS | Linux | Windows |
+|---|---|---|---|
+| Menu bar app | ✓ | planned | — |
+| CLI | ✓ | ✓ | ✓ |
+| Web UI | ✓ | ✓ | ✓ |
 
-Linux users: install udev rules for non-root HID access:
-```sh
-sudo cp udev/99-hidpp.rules /etc/udev/rules.d/
-sudo udevadm control --reload-rules
+Linux: install `udev/99-hidpp.rules` for non-root HID access.
+
+## Project structure
+
+```
+crates/
+  hidpp/            — HID++ 2.0 protocol (pure Rust, no I/O)
+  hidpp-transport/  — HID I/O via hidapi
+  hidpp-device/     — device session + feature discovery
+  hidpp-cli/        — CLI tool
+  hidpp-daemon/     — menu bar app
+  hidpp-web/        — WASM module for WebHID
+web/                — web UI (TypeScript + Vite)
 ```
 
 ## License
