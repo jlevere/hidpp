@@ -119,11 +119,8 @@ jobs:
 
           cp "${SRC_DIR}/hidpp" "${DMG_DIR}/"
           cp "${SRC_DIR}/hidppd" "${DMG_DIR}/"
-          cp "${SRC_DIR}/com.hidpp.daemon.plist" "${DMG_DIR}/"
-          cp "${SRC_DIR}/install.sh" "${DMG_DIR}/"
-          cp "${SRC_DIR}/uninstall.sh" "${DMG_DIR}/"
           cp "${SRC_DIR}/config.toml.sample" "${DMG_DIR}/" 2>/dev/null || true
-          chmod +x "${DMG_DIR}/hidpp" "${DMG_DIR}/hidppd" "${DMG_DIR}/install.sh" "${DMG_DIR}/uninstall.sh"
+          chmod +x "${DMG_DIR}/hidpp" "${DMG_DIR}/hidppd"
 
           DMG_NAME="hidpp-${VERSION}-macos-arm64.dmg"
           hdiutil create -volname "hidpp ${VERSION}" \
