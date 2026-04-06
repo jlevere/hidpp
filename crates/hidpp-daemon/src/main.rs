@@ -82,9 +82,6 @@ fn run_tray_app(
     config_path: Option<PathBuf>,
     device_index: Option<DeviceIndex>,
 ) -> anyhow::Result<()> {
-    // Initialize enigo on main thread (needs NSApplication context on macOS).
-    action::init()?;
-
     // Create config on first launch if needed.
     let cfg_path = config_path
         .clone()

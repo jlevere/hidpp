@@ -1,27 +1,38 @@
 use std::sync::Mutex;
 
 use enigo::{Direction, Enigo, Key, Keyboard as _, Settings};
-use tracing::{error, info};
+use tracing::{error, info, warn};
 
 use crate::config::{Action, ExplicitAction};
 
-/// Global enigo instance. Must be created once and reused (platform resources).
+/// Global enigo instance. Initialized lazily on first use.
 static ENIGO: Mutex<Option<Enigo>> = Mutex::new(None);
 
-/// Initialize the input injection backend. Call once at startup.
-pub fn init() -> anyhow::Result<()> {
-    let enigo = Enigo::new(&Settings {
+/// Try to initialize enigo. Returns false if Accessibility isn't granted yet.
+/// Safe to call multiple times — no-ops if already initialized.
+pub fn ensure_init() -> bool {
+    let mut guard = ENIGO.lock().unwrap();
+    if guard.is_some() {
+        return true;
+    }
+
+    match Enigo::new(&Settings {
         release_keys_when_dropped: true,
         ..Settings::default()
-    })
-    .map_err(|e| anyhow::anyhow!("failed to initialize input backend: {e}"))?;
-
-    *ENIGO.lock().unwrap() = Some(enigo);
-    info!("input injection initialized");
-    Ok(())
+    }) {
+        Ok(enigo) => {
+            *guard = Some(enigo);
+            info!("input injection initialized");
+            true
+        }
+        Err(e) => {
+            warn!("input backend not ready: {e}");
+            false
+        }
+    }
 }
 
-/// Execute an action.
+/// Execute an action. Initializes enigo lazily if needed.
 pub fn execute(action: &Action) {
     match action {
         Action::Keystroke(keys) => execute_keystroke(keys),
@@ -47,9 +58,14 @@ fn execute_keystroke(keystroke: &str) {
         return;
     };
 
+    // Lazy init — if Accessibility isn't granted yet, skip silently.
+    if !ensure_init() {
+        error!("cannot inject keystroke — grant Accessibility permission to HID++");
+        return;
+    }
+
     let mut guard = ENIGO.lock().unwrap();
     let Some(enigo) = guard.as_mut() else {
-        error!("input backend not initialized");
         return;
     };
 
@@ -86,7 +102,6 @@ fn execute_command(cmd: &str) {
 
     match result {
         Ok(mut child) => {
-            // Reap the child process to avoid zombies.
             std::thread::spawn(move || {
                 let _ = child.wait();
             });
