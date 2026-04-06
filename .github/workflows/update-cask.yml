@@ -25,7 +25,7 @@ jobs:
       - name: Checkout tap repo
         uses: actions/checkout@v4
         with:
-          repository: jlevere/homebrew-cask
+          repository: jlevere/homebrew-tap
           token: ${{ secrets.TAP_REPO_PAT }}
           path: tap
 
