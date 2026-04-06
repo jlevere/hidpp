@@ -110,9 +110,13 @@ pub async fn run(
             }
             Err(e) => {
                 warn!("error: {e}");
-                // Show a short user-friendly message, not the raw hidapi error.
-                let user_msg = if e.to_string().contains("no HID++") {
+                let err_str = e.to_string();
+                let user_msg = if err_str.contains("no HID++") {
                     "No device found"
+                } else if err_str.contains("not permitted") || err_str.contains("IOHIDDevice") {
+                    "Grant Input Monitoring in System Settings"
+                } else if err_str.contains("PingFailed") {
+                    "Device not responding"
                 } else {
                     "Connection failed"
                 };
