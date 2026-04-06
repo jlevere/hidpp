@@ -13,7 +13,7 @@ Supports 170+ Logitech devices over Bluetooth LE and USB receivers (Bolt, Unifyi
 ### Homebrew (macOS)
 
 ```
-brew install jlevere/cask/hidpp
+brew install jlevere/tap/hidpp
 brew services start hidpp
 ```
 
@@ -68,7 +68,7 @@ hidpp export
 ## Building
 
 ```
-brew install jlevere/cask/hidpp          # from tap
+brew install jlevere/tap/hidpp          # from tap
 nix build .#dmg                          # Nix DMG
 cargo build --workspace --exclude hidpp-web  # cargo
 ```
