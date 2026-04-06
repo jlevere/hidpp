@@ -12,7 +12,7 @@ Download the DMG from [Releases](https://github.com/jlevere/hidpp/releases), dra
 xattr -cr /Applications/HID++.app
 ```
 
-Open the app. Grant Accessibility when prompted. The mouse icon appears in the menu bar showing battery percentage and device status.
+Open the app. Grant **Input Monitoring** and **Accessibility** when prompted (System Settings, Privacy & Security). The mouse icon appears in the menu bar showing battery percentage and device status.
 
 To configure button actions and gestures, edit `~/.config/hidpp/config.toml`:
 

@@ -85,6 +85,8 @@ pub async fn run(
         .unwrap_or_else(crate::config::default_config_path);
 
     info!("hidppd starting");
+    #[cfg(target_os = "macos")]
+    let mut permission_prompt_shown = false;
 
     loop {
         // Reload config on every iteration so ReloadConfig picks up changes.
@@ -114,6 +116,13 @@ pub async fn run(
                 let user_msg = if err_str.contains("no HID++") {
                     "No device found"
                 } else if err_str.contains("not permitted") || err_str.contains("IOHIDDevice") {
+                    #[cfg(target_os = "macos")]
+                    if !permission_prompt_shown {
+                        permission_prompt_shown = true;
+                        let _ = std::process::Command::new("open")
+                            .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")
+                            .spawn();
+                    }
                     "Grant Input Monitoring in System Settings"
                 } else if err_str.contains("PingFailed") {
                     "Device not responding"
