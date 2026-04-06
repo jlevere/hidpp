@@ -112,18 +112,24 @@ jobs:
         run: |
           VERSION="${{ steps.version.outputs.version }}"
           DMG_DIR="dmg-staging"
-          mkdir -p "${DMG_DIR}"
 
           tar xzf "hidpp-${VERSION}-aarch64-apple-darwin.tar.gz"
           SRC_DIR="hidpp-${VERSION}-aarch64-apple-darwin"
 
-          cp "${SRC_DIR}/hidpp" "${DMG_DIR}/"
-          cp "${SRC_DIR}/hidppd" "${DMG_DIR}/"
-          cp "${SRC_DIR}/config.toml.sample" "${DMG_DIR}/" 2>/dev/null || true
-          chmod +x "${DMG_DIR}/hidpp" "${DMG_DIR}/hidppd"
+          # Assemble .app bundle.
+          APP="${DMG_DIR}/HID++.app/Contents"
+          mkdir -p "${APP}/MacOS" "${APP}/Resources"
+          cp "${SRC_DIR}/hidpp" "${APP}/MacOS/"
+          cp "${SRC_DIR}/hidppd" "${APP}/MacOS/"
+          chmod +x "${APP}/MacOS/hidpp" "${APP}/MacOS/hidppd"
+          cp bundle/Info.plist "${APP}/Info.plist"
+          echo 'APPL????' > "${APP}/PkgInfo"
+
+          # Applications alias for drag-to-install.
+          ln -s /Applications "${DMG_DIR}/Applications"
 
           DMG_NAME="hidpp-${VERSION}-macos-arm64.dmg"
-          hdiutil create -volname "hidpp ${VERSION}" \
+          hdiutil create -volname "HID++ ${VERSION}" \
             -srcfolder "${DMG_DIR}" \
             -ov -format UDZO \
             "${DMG_NAME}"
