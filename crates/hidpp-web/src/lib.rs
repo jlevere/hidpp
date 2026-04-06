@@ -7,14 +7,9 @@ use std::rc::Rc;
 use wasm_bindgen::prelude::*;
 use wasm_bindgen_futures::JsFuture;
 
-/// Log to browser console AND to our log server via fetch.
+/// Log to browser console.
 fn wlog(msg: &str) {
     web_sys::console::log_1(&JsValue::from_str(msg));
-    // Also fire-and-forget POST to log server.
-    let _ = js_sys::eval(&format!(
-        "fetch('http://localhost:5555/log',{{method:'POST',body:{}}}).catch(()=>{{}})",
-        serde_json::json!(msg),
-    ));
 }
 
 use hidpp::features::{
