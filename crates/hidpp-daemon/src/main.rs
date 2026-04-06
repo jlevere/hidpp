@@ -90,8 +90,10 @@ fn run_tray_app(
         if let Some(parent) = cfg_path.parent() {
             let _ = std::fs::create_dir_all(parent);
         }
-        let _ = std::fs::write(&cfg_path, daemon::SAMPLE_CONFIG);
-        info!("created default config at {}", cfg_path.display());
+        match std::fs::write(&cfg_path, daemon::SAMPLE_CONFIG) {
+            Ok(()) => info!("created default config at {}", cfg_path.display()),
+            Err(e) => warn!("failed to create config at {}: {e}", cfg_path.display()),
+        }
     }
 
     // Create tao event loop.
@@ -228,10 +230,10 @@ fn run_tray_app(
                         .spawn();
                 } else if ev.id == login_id {
                     if service::is_installed() {
-                        let _ = service::uninstall();
-                        ts.start_at_login_item.set_checked(false);
-                    } else {
-                        let _ = service::register_login_item();
+                        if service::uninstall().is_ok() {
+                            ts.start_at_login_item.set_checked(false);
+                        }
+                    } else if service::register_login_item().is_ok() {
                         ts.start_at_login_item.set_checked(true);
                     }
                 }

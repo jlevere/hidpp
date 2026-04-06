@@ -350,10 +350,15 @@ fn handle_notification(
                                 .keystroke()
                                 .unwrap_or_else(|| action.command().unwrap_or("?"));
                             let full_desc = format!("{desc} → {action_desc}");
-                            action::execute(action);
-                            let _ = proxy.send_event(DaemonEvent::ActionExecuted {
-                                description: full_desc,
-                            });
+                            if action::execute(action) {
+                                let _ = proxy.send_event(DaemonEvent::ActionExecuted {
+                                    description: full_desc,
+                                });
+                            } else {
+                                let _ = proxy.send_event(DaemonEvent::Error(
+                                    "Grant Accessibility permission in System Settings".to_string(),
+                                ));
+                            }
                         }
                     }
                 }
@@ -369,10 +374,15 @@ fn handle_notification(
                         .keystroke()
                         .unwrap_or_else(|| action.command().unwrap_or("?"));
                     info!("button CID {cid}: {action_desc}");
-                    action::execute(action);
-                    let _ = proxy.send_event(DaemonEvent::ActionExecuted {
-                        description: action_desc.to_string(),
-                    });
+                    if action::execute(action) {
+                        let _ = proxy.send_event(DaemonEvent::ActionExecuted {
+                            description: action_desc.to_string(),
+                        });
+                    } else {
+                        let _ = proxy.send_event(DaemonEvent::Error(
+                            "Grant Accessibility permission in System Settings".to_string(),
+                        ));
+                    }
                 }
             }
         }

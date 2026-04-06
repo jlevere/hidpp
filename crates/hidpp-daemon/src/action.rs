@@ -33,47 +33,51 @@ pub fn ensure_init() -> bool {
 }
 
 /// Execute an action. Initializes enigo lazily if needed.
-pub fn execute(action: &Action) {
+/// Returns false if Accessibility permission is missing.
+pub fn execute(action: &Action) -> bool {
     match action {
         Action::Keystroke(keys) => execute_keystroke(keys),
         Action::Explicit(ExplicitAction::Keystroke { keys }) => execute_keystroke(keys),
-        Action::Explicit(ExplicitAction::Command { run }) => execute_command(run),
+        Action::Explicit(ExplicitAction::Command { run }) => {
+            execute_command(run);
+            true
+        }
     }
 }
 
 /// Parse and execute a keystroke string like "ctrl+shift+left".
-fn execute_keystroke(keystroke: &str) {
+/// Returns false if Accessibility permission is missing.
+fn execute_keystroke(keystroke: &str) -> bool {
     let parts: Vec<&str> = keystroke.split('+').map(str::trim).collect();
     if parts.is_empty() {
-        return;
+        return true;
     }
 
-    // Everything except the last part is a modifier, last part is the main key.
     let (modifier_strs, main_str) = parts.split_at(parts.len() - 1);
-
     let modifiers: Vec<Key> = modifier_strs.iter().filter_map(|s| parse_key(s)).collect();
 
     let Some(main_key) = main_str.first().and_then(|s| parse_key(s)) else {
         error!("unknown key in keystroke: {keystroke}");
-        return;
+        return true;
     };
 
-    // Lazy init — if Accessibility isn't granted yet, skip silently.
     if !ensure_init() {
-        error!("cannot inject keystroke — grant Accessibility permission to HID++");
-        return;
+        error!(
+            "grant Accessibility permission: System Settings → Privacy & Security → Accessibility"
+        );
+        return false;
     }
 
     let mut guard = ENIGO.lock().unwrap();
     let Some(enigo) = guard.as_mut() else {
-        return;
+        return true;
     };
 
     // Press modifiers, click main key, release modifiers in reverse.
     for m in &modifiers {
         if let Err(e) = enigo.key(*m, Direction::Press) {
             error!("key press failed: {e}");
-            return;
+            return true;
         }
     }
 
@@ -88,6 +92,7 @@ fn execute_keystroke(keystroke: &str) {
     }
 
     info!("keystroke: {keystroke}");
+    true
 }
 
 /// Run a shell command in the background. Reaps the child on a separate thread.

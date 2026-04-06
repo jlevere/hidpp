@@ -127,6 +127,8 @@ impl HidapiTransport {
     ) {
         let mut buf = [0u8; 64];
         let mut pending: Vec<PendingRequest> = Vec::new();
+        let mut consecutive_errors: u32 = 0;
+        const MAX_CONSECUTIVE_ERRORS: u32 = 50; // ~2.5s of continuous errors
 
         loop {
             // Drain any newly registered pending requests.
@@ -143,9 +145,11 @@ impl HidapiTransport {
             match read_result {
                 Ok(0) => {
                     // No data available. Yield to avoid busy-spinning.
+                    consecutive_errors = 0;
                     tokio::time::sleep(Duration::from_millis(1)).await;
                 }
                 Ok(n) if n >= 4 => {
+                    consecutive_errors = 0;
                     // HID++ uses numbered reports (0x10, 0x11, 0x12). For numbered
                     // reports, all platforms (macOS, Linux, Windows) include the
                     // report ID as byte 0 in read(). We handle both 19-byte
@@ -197,7 +201,12 @@ impl HidapiTransport {
                     // Too short to be a valid report.
                 }
                 Err(_) => {
-                    // Read error. Brief pause before retry.
+                    consecutive_errors += 1;
+                    if consecutive_errors >= MAX_CONSECUTIVE_ERRORS {
+                        // Device likely disconnected. Exit the reader loop
+                        // so the broadcast channel closes and the daemon reconnects.
+                        break;
+                    }
                     tokio::time::sleep(Duration::from_millis(50)).await;
                 }
             }
