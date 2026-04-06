@@ -6,9 +6,10 @@ Open-source replacement for Logitech Options+ — configure Logitech mice, keybo
 
 1. Download `hidpp-x.x.x-macos-arm64.dmg` from [Releases](https://github.com/jlevere/hidpp/releases)
 2. Open the DMG, drag **HID++** to Applications
-3. Open **HID++** from Applications
-4. Grant Accessibility permission when prompted (System Settings → Privacy & Security → Accessibility)
-5. Click the mouse icon in the menu bar → **Start at Login**
+3. Remove the quarantine flag: `xattr -cr /Applications/HID++.app`
+4. Open **HID++** from Applications
+5. Grant Accessibility permission when prompted (System Settings → Privacy & Security → Accessibility)
+6. Click the mouse icon in the menu bar → **Start at Login**
 
 That's it. Battery %, DPI, and gesture actions show in the menu bar.
 
