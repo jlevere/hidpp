@@ -167,3 +167,43 @@ jobs:
             hidpp-*.tar.gz
             hidpp-*.zip
             hidpp-*.dmg
+
+  update-tap:
+    name: Update Homebrew Tap
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Determine version
+        id: version
+        run: echo "version=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Compute source tarball SHA256
+        id: sha
+        run: |
+          curl -sL -o source.tar.gz \
+            "https://github.com/jlevere/hidpp/archive/refs/tags/${GITHUB_REF_NAME}.tar.gz"
+          SHA=$(sha256sum source.tar.gz | awk '{print $1}')
+          echo "sha256=$SHA" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout tap repo
+        uses: actions/checkout@v4
+        with:
+          repository: jlevere/homebrew-tap
+          token: ${{ secrets.TAP_REPO_PAT }}
+          path: tap
+
+      - name: Update formula
+        run: |
+          cd tap
+          sed -i 's|url "https://github.com/jlevere/hidpp/archive/refs/tags/v.*\.tar\.gz"|url "https://github.com/jlevere/hidpp/archive/refs/tags/${{ github.ref_name }}.tar.gz"|' Formula/hidpp.rb
+          sed -i 's|sha256 ".*"|sha256 "${{ steps.sha.outputs.sha256 }}"|' Formula/hidpp.rb
+
+      - name: Commit and push
+        run: |
+          cd tap
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add Formula/hidpp.rb
+          git diff --cached --quiet && echo "No changes" && exit 0
+          git commit -m "bump hidpp to ${{ steps.version.outputs.version }}"
+          git push
