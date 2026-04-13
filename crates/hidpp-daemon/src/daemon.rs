@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use std::time::{Duration, Instant};
+use std::time::Duration;
 
 use hidpp::feature_id;
 use hidpp::report::LongReport;
@@ -93,6 +93,9 @@ pub async fn run(
 
     // Track last error to avoid spamming the log with repeated identical errors.
     let mut last_error: Option<String> = None;
+    let mut retry_delay = Duration::from_secs(2);
+    const MIN_RETRY_DELAY: Duration = Duration::from_secs(2);
+    const MAX_RETRY_DELAY: Duration = Duration::from_secs(30);
 
     loop {
         // Reload config on every iteration so ReloadConfig picks up changes.
@@ -120,6 +123,7 @@ pub async fn run(
             Ok(false) => {
                 info!("device disconnected, reconnecting...");
                 last_error = None;
+                retry_delay = MIN_RETRY_DELAY;
                 let _ = proxy.send_event(DaemonEvent::Disconnected);
             }
             Err(e) => {
@@ -142,13 +146,17 @@ pub async fn run(
             }
         }
 
-        // Wait before reconnect. Check for shutdown command.
+        // Wait before reconnect with exponential backoff (2s → 30s).
         tokio::select! {
-            _ = tokio::time::sleep(Duration::from_secs(2)) => {}
+            _ = tokio::time::sleep(retry_delay) => {
+                retry_delay = (retry_delay * 2).min(MAX_RETRY_DELAY);
+            }
             cmd = cmd_rx.recv() => {
                 if matches!(cmd, Some(DaemonCommand::Shutdown) | None) {
                     return;
                 }
+                // User requested reconnect/reload — reset backoff.
+                retry_delay = MIN_RETRY_DELAY;
             }
         }
     }
@@ -269,27 +277,10 @@ async fn connect_and_listen(
     // Battery updates come via push notifications (0x1004 events) in handle_notification.
     let mut rx = device.subscribe();
     let mut gestures = GestureTracker::new();
-    let mut last_notification = Instant::now();
-
-    // After this idle period, start re-diverting to catch device wake.
-    const IDLE_THRESHOLD: Duration = Duration::from_secs(30);
-    // How often to re-divert while idle.
-    const REDIVERT_INTERVAL: Duration = Duration::from_secs(5);
 
     loop {
-        // Compute when the next re-divert should fire:
-        // - Active: sleep until idle threshold is reached (never fires).
-        // - Idle >30s: fire every 5s to re-divert and catch device wake.
-        let idle = last_notification.elapsed();
-        let redivert_delay = if idle > IDLE_THRESHOLD {
-            REDIVERT_INTERVAL
-        } else {
-            IDLE_THRESHOLD - idle + REDIVERT_INTERVAL
-        };
-
         tokio::select! {
             result = rx.recv() => {
-                last_notification = Instant::now();
                 match result {
                     Ok(report) => {
                         handle_notification(&device, &report, cfg, &mut gestures, proxy);
@@ -319,40 +310,6 @@ async fn connect_and_listen(
                 while wake_rx.try_recv().is_ok() {}
                 info!("system wake detected, reconnecting to re-divert buttons");
                 return Ok(false);
-            }
-            _ = tokio::time::sleep(redivert_delay) => {
-                // Mouse has been idle — re-divert to restore after device sleep/wake.
-                // Idempotent: if diversions are active, device just confirms.
-                // If the handle is dead, the write fails and we reconnect.
-                if device.supports(feature_id::SPECIAL_KEYS_V4) {
-                    for cid in cfg.all_diverted_cids() {
-                        let flags = if cfg.is_gesture_cid(cid) {
-                            DIVERT_RAW_XY_FLAGS
-                        } else {
-                            DIVERT_FLAGS
-                        };
-                        match device
-                            .special_key_set_reporting(ControlId(cid), flags, ControlId(0), 0)
-                            .await
-                        {
-                            Ok(r) => {
-                                // Only log if the divert state is wrong.
-                                let ok = if cfg.is_gesture_cid(cid) {
-                                    r.is_diverted() && r.raw_xy_enabled()
-                                } else {
-                                    r.is_diverted()
-                                };
-                                if !ok {
-                                    warn!("re-divert CID {cid} (0x{cid:04X}): device rejected divert flags");
-                                }
-                            }
-                            Err(_) => {
-                                info!("re-divert failed, reconnecting");
-                                return Ok(false);
-                            }
-                        }
-                    }
-                }
             }
         }
     }
