@@ -1,8 +1,8 @@
-/// Platform-specific system wake detection.
-///
-/// On macOS, uses the `notify(3)` API to get a file descriptor that fires
-/// on power state changes. A background thread blocks on `read()` and
-/// signals through an mpsc channel — zero polling, pure fd-based events.
+//! Platform-specific system wake detection.
+//!
+//! On macOS, uses the `notify(3)` API to get a file descriptor that fires
+//! on power state changes. A background thread blocks on `read()` and
+//! signals through an mpsc channel — zero polling, pure fd-based events.
 
 #[cfg(target_os = "macos")]
 #[allow(unsafe_code)]
@@ -48,14 +48,9 @@ mod imp {
             .spawn(move || {
                 // Each notification writes a 4-byte token to the fd.
                 let mut buf = [0u8; 4];
-                loop {
-                    match file.read_exact(&mut buf) {
-                        Ok(()) => {
-                            if tx.blocking_send(()).is_err() {
-                                break; // Receiver dropped — daemon shutting down.
-                            }
-                        }
-                        Err(_) => break,
+                while file.read_exact(&mut buf).is_ok() {
+                    if tx.blocking_send(()).is_err() {
+                        break; // Receiver dropped — daemon shutting down.
                     }
                 }
                 unsafe { notify_cancel(token) };
