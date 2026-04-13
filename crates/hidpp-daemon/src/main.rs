@@ -136,6 +136,7 @@ fn run_tray_app(
     }
 
     let proxy = event_loop.create_proxy();
+    let signal_proxy = event_loop.create_proxy();
 
     // Command channel: tray UI → background daemon.
     let (cmd_tx, cmd_rx) = tokio::sync::mpsc::channel::<DaemonCommand>(8);
@@ -168,7 +169,7 @@ fn run_tray_app(
     }
 
     // Catch SIGTERM (sent by launchd on service stop / system shutdown)
-    // and trigger a graceful shutdown through the daemon command channel.
+    // and trigger a graceful shutdown through both the daemon and the event loop.
     {
         let sigterm_tx = cmd_tx.clone();
         std::thread::Builder::new()
@@ -191,10 +192,10 @@ fn run_tray_app(
                         tokio::signal::ctrl_c().await.ok();
                     }
                     info!("received shutdown signal");
-                    if sigterm_tx.send(DaemonCommand::Shutdown).await.is_err() {
-                        // Daemon already exited — nothing to shut down.
-                        std::process::exit(0);
-                    }
+                    // Tell the daemon to clean up HID resources.
+                    let _ = sigterm_tx.send(DaemonCommand::Shutdown).await;
+                    // Tell the event loop to exit (works even if daemon already exited).
+                    let _ = signal_proxy.send_event(DaemonEvent::Shutdown);
                 });
             })
             .expect("signal handler thread");
