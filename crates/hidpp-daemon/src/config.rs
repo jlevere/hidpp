@@ -159,7 +159,7 @@ pub fn load(path: &Path) -> anyhow::Result<Config> {
     let content = std::fs::read_to_string(path)?;
     let config = parse(&content)?;
 
-    tracing::info!(
+    tracing::debug!(
         "loaded config from {} ({} buttons, {} gestures)",
         path.display(),
         config.buttons.len(),

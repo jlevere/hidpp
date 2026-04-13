@@ -16,6 +16,7 @@ use muda::MenuEvent;
 use tao::event::{Event, StartCause};
 use tao::event_loop::{ControlFlow, EventLoopBuilder};
 use tracing::{info, warn};
+use tracing_subscriber::prelude::*;
 
 use bridge::{DaemonCommand, DaemonEvent};
 
@@ -51,17 +52,11 @@ enum Command {
 fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
 
-    tracing_subscriber::fmt()
-        .with_env_filter(
-            tracing_subscriber::EnvFilter::try_from_default_env()
-                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new(&cli.log_level)),
-        )
-        .with_target(false)
-        .with_level(true)
-        .init();
+    init_logging(&cli.log_level);
 
-    // Panic hook — ensure crashes are logged to stderr (captured by launchd).
+    // Panic hook — ensure crashes are logged to the log file and stderr.
     std::panic::set_hook(Box::new(|info| {
+        tracing::error!("hidppd crashed: {info}");
         eprintln!("hidppd crashed: {info}");
     }));
 
@@ -144,7 +139,12 @@ fn run_tray_app(
     let reconnect_id = ts.reconnect_item.id().clone();
     let edit_config_id = ts.edit_config_item.id().clone();
     let login_id = ts.start_at_login_item.id().clone();
+    let device_id = ts.device_item.id().clone();
     let menu_channel = MenuEvent::receiver();
+
+    // URL to open when the device item is clicked (set on permission errors).
+    let mut device_item_url: Option<&str> = None;
+    let mut permission_error = false;
 
     // First-launch notification.
     if first_launch {
@@ -178,6 +178,12 @@ fn run_tray_app(
                     dpi,
                 } => {
                     ts.device_item.set_text(name);
+                    ts.device_item.set_enabled(false);
+                    device_item_url = None;
+                    if permission_error {
+                        permission_error = false;
+                        ts.reconnect_item.set_text("Reconnect");
+                    }
                     if let Some(pct) = battery_pct {
                         ts.battery_item.set_text(format!("Battery: {pct}%"));
                         ts.tray.set_title(Some(&format!("{pct}%")));
@@ -192,6 +198,8 @@ fn run_tray_app(
                 }
                 DaemonEvent::Disconnected | DaemonEvent::Reconnecting => {
                     ts.device_item.set_text("Searching...");
+                    ts.device_item.set_enabled(false);
+                    device_item_url = None;
                     ts.battery_item.set_text("Battery: --");
                     ts.dpi_item.set_text("DPI: --");
                     ts.tray.set_title(Some("--"));
@@ -210,9 +218,30 @@ fn run_tray_app(
                     ts.last_action_item.set_text(format!("Last: {description}"));
                 }
                 DaemonEvent::Error(msg) => {
-                    // Truncate long error messages so the menu doesn't stretch.
                     let short = if msg.len() > 40 { &msg[..40] } else { msg };
-                    ts.device_item.set_text(format!("Error: {short}"));
+                    // Permission errors become clickable — open the relevant settings pane.
+                    // Also swap Reconnect → Relaunch since macOS caches TCC at process start.
+                    if msg.contains("Input Monitoring") {
+                        ts.device_item.set_text(format!("{short} →"));
+                        ts.device_item.set_enabled(true);
+                        device_item_url = Some("x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent");
+                        if !permission_error {
+                            permission_error = true;
+                            ts.reconnect_item.set_text("Relaunch");
+                        }
+                    } else if msg.contains("Accessibility") {
+                        ts.device_item.set_text(format!("{short} →"));
+                        ts.device_item.set_enabled(true);
+                        device_item_url = Some("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility");
+                        if !permission_error {
+                            permission_error = true;
+                            ts.reconnect_item.set_text("Relaunch");
+                        }
+                    } else {
+                        ts.device_item.set_text(format!("Error: {short}"));
+                        ts.device_item.set_enabled(false);
+                        device_item_url = None;
+                    }
                 }
             }
         }
@@ -255,7 +284,13 @@ fn run_tray_app(
                     let _ = cmd_tx.try_send(DaemonCommand::Shutdown);
                     *control_flow = ControlFlow::Exit;
                 } else if ev.id == reconnect_id {
-                    let _ = cmd_tx.try_send(DaemonCommand::Reconnect);
+                    if permission_error {
+                        // macOS caches TCC permissions at process start.
+                        // Full exit lets launchd/systemd restart us fresh.
+                        std::process::exit(0);
+                    } else {
+                        let _ = cmd_tx.try_send(DaemonCommand::Reconnect);
+                    }
                 } else if ev.id == edit_config_id {
                     #[cfg(target_os = "macos")]
                     let _ = std::process::Command::new("open")
@@ -265,6 +300,10 @@ fn run_tray_app(
                     let _ = std::process::Command::new("xdg-open")
                         .arg(config::default_config_path())
                         .spawn();
+                } else if ev.id == device_id {
+                    if let Some(url) = device_item_url {
+                        let _ = std::process::Command::new("open").arg(url).spawn();
+                    }
                 } else if ev.id == login_id {
                     if service::is_installed() {
                         if service::uninstall().is_ok() {
@@ -322,4 +361,68 @@ fn single_instance_lock() -> Result<std::os::unix::net::UnixListener, String> {
 fn single_instance_lock() -> Result<(), String> {
     // No single-instance enforcement on non-Unix platforms.
     Ok(())
+}
+
+/// Set up tracing with dual output: stderr + platform log.
+///
+/// - macOS: stderr + os_log (visible in Console.app / `log show`)
+/// - Linux: stderr + log file at `$XDG_STATE_HOME/hidpp/hidppd.log`
+fn init_logging(log_level: &str) {
+    let env_filter = tracing_subscriber::EnvFilter::try_from_default_env()
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new(log_level));
+
+    let stderr_layer = tracing_subscriber::fmt::layer()
+        .with_target(false)
+        .with_level(true);
+
+    #[cfg(target_os = "macos")]
+    {
+        let oslog_layer = tracing_oslog::OsLogger::new("com.jlevere.hidpp", "default");
+
+        tracing_subscriber::registry()
+            .with(env_filter)
+            .with(stderr_layer)
+            .with(oslog_layer)
+            .init();
+    }
+
+    #[cfg(not(target_os = "macos"))]
+    {
+        let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
+        let state_dir = std::env::var("XDG_STATE_HOME")
+            .unwrap_or_else(|_| format!("{home}/.local/state"));
+        let log_path = std::path::Path::new(&state_dir).join("hidpp/hidppd.log");
+
+        if let Some(parent) = log_path.parent() {
+            let _ = std::fs::create_dir_all(parent);
+        }
+
+        match std::fs::OpenOptions::new()
+            .create(true)
+            .append(true)
+            .open(&log_path)
+        {
+            Ok(file) => {
+                let file_layer = tracing_subscriber::fmt::layer()
+                    .with_target(false)
+                    .with_level(true)
+                    .with_ansi(false)
+                    .with_writer(std::sync::Mutex::new(file));
+
+                tracing_subscriber::registry()
+                    .with(env_filter)
+                    .with(stderr_layer)
+                    .with(file_layer)
+                    .init();
+            }
+            Err(e) => {
+                tracing_subscriber::registry()
+                    .with(env_filter)
+                    .with(stderr_layer)
+                    .init();
+
+                tracing::warn!("could not open log file {}: {e}", log_path.display());
+            }
+        }
+    }
 }

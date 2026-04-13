@@ -68,6 +68,8 @@ mod macos {
     }
 
     fn generate_plist(exe_path: &Path) -> String {
+        let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
+        let log_path = Path::new(&home).join("Library/Logs/hidppd.log");
         format!(
             r#"<?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -90,9 +92,14 @@ mod macos {
     <string>Background</string>
     <key>ThrottleInterval</key>
     <integer>5</integer>
+    <key>StandardOutPath</key>
+    <string>{log}</string>
+    <key>StandardErrorPath</key>
+    <string>{log}</string>
 </dict>
 </plist>"#,
             exe = exe_path.display(),
+            log = log_path.display(),
         )
     }
 

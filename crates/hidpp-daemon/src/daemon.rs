@@ -7,7 +7,7 @@ use hidpp::types::{ControlId, DeviceIndex};
 use hidpp_transport::native::HidapiEnumerator;
 use tao::event_loop::EventLoopProxy;
 use tokio::sync::broadcast;
-use tracing::{info, warn};
+use tracing::{debug, info, warn};
 
 use crate::action;
 use crate::bridge::{DaemonCommand, DaemonEvent};
@@ -85,20 +85,26 @@ pub async fn run(
         .unwrap_or_else(crate::config::default_config_path);
 
     info!("hidppd starting");
-    #[cfg(target_os = "macos")]
-    let mut permission_prompt_shown = false;
 
     // Spawn a wake watcher that fires when the system power state changes.
     // This lets us re-divert buttons after the mouse wakes from sleep.
     let (wake_tx, mut wake_rx) = tokio::sync::mpsc::channel(4);
     crate::platform::spawn_wake_watcher(wake_tx);
 
+    // Track last error to avoid spamming the log with repeated identical errors.
+    let mut last_error: Option<String> = None;
+
     loop {
         // Reload config on every iteration so ReloadConfig picks up changes.
         let cfg = match crate::config::load(&path) {
             Ok(c) => c,
             Err(e) => {
-                let _ = proxy.send_event(DaemonEvent::Error(format!("config: {e}")));
+                let msg = format!("config: {e}");
+                if last_error.as_deref() != Some(&msg) {
+                    warn!("{msg}");
+                    last_error = Some(msg);
+                }
+                let _ = proxy.send_event(DaemonEvent::Error("Config error".to_string()));
                 tokio::time::sleep(Duration::from_secs(5)).await;
                 continue;
             }
@@ -113,27 +119,25 @@ pub async fn run(
             }
             Ok(false) => {
                 info!("device disconnected, reconnecting...");
+                last_error = None;
                 let _ = proxy.send_event(DaemonEvent::Disconnected);
             }
             Err(e) => {
-                warn!("error: {e}");
                 let err_str = e.to_string();
                 let user_msg = if err_str.contains("no HID++") {
                     "No device found"
                 } else if err_str.contains("not permitted") || err_str.contains("IOHIDDevice") {
-                    #[cfg(target_os = "macos")]
-                    if !permission_prompt_shown {
-                        permission_prompt_shown = true;
-                        let _ = std::process::Command::new("open")
-                            .arg("x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")
-                            .spawn();
-                    }
                     "Grant Input Monitoring in System Settings"
                 } else if err_str.contains("PingFailed") {
                     "Device not responding"
                 } else {
                     "Connection failed"
                 };
+                // Only log on state change — don't spam the same error every 2s.
+                if last_error.as_deref() != Some(user_msg) {
+                    warn!("{user_msg}: {e}");
+                    last_error = Some(user_msg.to_string());
+                }
                 let _ = proxy.send_event(DaemonEvent::Error(user_msg.to_string()));
             }
         }
@@ -255,6 +259,13 @@ async fn connect_and_listen(
         }
     }
 
+    // Check Accessibility permission early so the user sees the error immediately.
+    if !action::ensure_init() {
+        let _ = proxy.send_event(DaemonEvent::Error(
+            "Grant Accessibility permission in System Settings".to_string(),
+        ));
+    }
+
     // Battery updates come via push notifications (0x1004 events) in handle_notification.
     let mut rx = device.subscribe();
     let mut gestures = GestureTracker::new();
@@ -320,13 +331,25 @@ async fn connect_and_listen(
                         } else {
                             DIVERT_FLAGS
                         };
-                        if device
+                        match device
                             .special_key_set_reporting(ControlId(cid), flags, ControlId(0), 0)
                             .await
-                            .is_err()
                         {
-                            info!("re-divert failed, reconnecting");
-                            return Ok(false);
+                            Ok(r) => {
+                                // Only log if the divert state is wrong.
+                                let ok = if cfg.is_gesture_cid(cid) {
+                                    r.is_diverted() && r.raw_xy_enabled()
+                                } else {
+                                    r.is_diverted()
+                                };
+                                if !ok {
+                                    warn!("re-divert CID {cid} (0x{cid:04X}): device rejected divert flags");
+                                }
+                            }
+                            Err(_) => {
+                                info!("re-divert failed, reconnecting");
+                                return Ok(false);
+                            }
                         }
                     }
                 }
@@ -476,7 +499,18 @@ fn handle_notification(
             });
         }
 
-        _ => {}
+        _ => {
+            let hex: String = params
+                .iter()
+                .take(8)
+                .map(|b| format!("{b:02X}"))
+                .collect::<Vec<_>>()
+                .join(" ");
+            debug!(
+                "unhandled notification: feature=0x{fid:04X} fn={} [{hex}]",
+                function_id.0,
+            );
+        }
     }
 }
 

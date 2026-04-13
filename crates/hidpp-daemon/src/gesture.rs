@@ -1,6 +1,8 @@
 use std::collections::HashMap;
 use std::fmt;
 
+use tracing::debug;
+
 /// Direction resolved from accumulated XY displacement.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum GestureDirection {
@@ -57,6 +59,7 @@ impl GestureTracker {
 
     /// Called when a gesture-configured button is pressed.
     pub fn button_pressed(&mut self, cid: u16) {
+        debug!(cid, "gesture tracker: started tracking");
         self.active.insert(
             cid,
             ActiveGesture {
@@ -75,6 +78,16 @@ impl GestureTracker {
         let abs_dx = gesture.dx.abs();
         let abs_dy = gesture.dy.abs();
         let magnitude = abs_dx.max(abs_dy);
+
+        debug!(
+            cid,
+            dx = gesture.dx,
+            dy = gesture.dy,
+            magnitude,
+            threshold,
+            first_xy_discarded = gesture.first_xy_discarded,
+            "gesture tracker: released"
+        );
 
         if magnitude < threshold {
             return Some(GestureResult::Tap);
