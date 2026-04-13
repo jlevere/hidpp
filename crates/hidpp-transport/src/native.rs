@@ -130,26 +130,42 @@ impl HidapiTransport {
         let mut consecutive_errors: u32 = 0;
         const MAX_CONSECUTIVE_ERRORS: u32 = 50; // ~2.5s of continuous errors
 
+        // Adaptive polling: start responsive, back off when idle to reduce
+        // CPU wakes and allow the system to sleep. Resets on any data.
+        let mut idle_polls: u32 = 0;
+        const ACTIVE_TIMEOUT_MS: i32 = 10;
+        const IDLE_TIMEOUT_MS: i32 = 100;
+        const IDLE_THRESHOLD: u32 = 50; // ~0.5s of no data before backing off
+
         loop {
             // Drain any newly registered pending requests.
+            // A new pending request means a response is expected — stay responsive.
             while let Ok(req) = pending_rx.try_recv() {
                 pending.push(req);
+                idle_polls = 0;
             }
 
-            // Try to read a report (non-blocking, short poll).
+            let timeout = if !pending.is_empty() || idle_polls < IDLE_THRESHOLD {
+                ACTIVE_TIMEOUT_MS
+            } else {
+                IDLE_TIMEOUT_MS
+            };
+
+            // Try to read a report.
             let read_result = {
                 let dev = device.lock().await;
-                dev.read_timeout(&mut buf, 10)
+                dev.read_timeout(&mut buf, timeout)
             };
 
             match read_result {
                 Ok(0) => {
-                    // No data available. Yield to avoid busy-spinning.
+                    // No data available.
                     consecutive_errors = 0;
-                    tokio::time::sleep(Duration::from_millis(1)).await;
+                    idle_polls = idle_polls.saturating_add(1);
                 }
                 Ok(n) if n >= 4 => {
                     consecutive_errors = 0;
+                    idle_polls = 0;
                     // HID++ uses numbered reports (0x10, 0x11, 0x12). For numbered
                     // reports, all platforms (macOS, Linux, Windows) include the
                     // report ID as byte 0 in read(). We handle both 19-byte

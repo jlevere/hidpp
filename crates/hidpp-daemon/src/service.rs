@@ -88,8 +88,6 @@ mod macos {
         <key>SuccessfulExit</key>
         <false/>
     </dict>
-    <key>ProcessType</key>
-    <string>Background</string>
     <key>ThrottleInterval</key>
     <integer>5</integer>
     <key>StandardOutPath</key>

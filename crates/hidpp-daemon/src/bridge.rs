@@ -16,6 +16,8 @@ pub enum DaemonEvent {
         description: String,
     },
     Error(String),
+    /// The daemon thread has exited — the event loop should exit too.
+    Shutdown,
 }
 
 /// Commands sent from the tray UI to the background daemon thread.

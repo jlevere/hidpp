@@ -191,6 +191,11 @@ async fn connect_and_listen(
     cmd_rx: &mut tokio::sync::mpsc::Receiver<DaemonCommand>,
     wake_rx: &mut tokio::sync::mpsc::Receiver<()>,
 ) -> anyhow::Result<bool> {
+    // Prevent system idle sleep during device setup (connect, discover, divert).
+    // Dropped automatically once we enter the notification loop.
+    let _power_guard =
+        crate::platform::PowerAssertion::prevent_idle_sleep("HID++ device setup");
+
     let enumerator = HidapiEnumerator::new()?;
     let devices = enumerator.enumerate();
     let dev_info = devices
@@ -266,6 +271,9 @@ async fn connect_and_listen(
             }
         }
     }
+
+    // Device setup complete — release the sleep assertion.
+    drop(_power_guard);
 
     // Check Accessibility permission early so the user sees the error immediately.
     if !action::ensure_init() {

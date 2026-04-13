@@ -8,6 +8,16 @@ mod platform;
 mod service;
 mod tray;
 
+// Embed Info.plist into the Mach-O binary so macOS TCC (Input Monitoring,
+// Accessibility) can identify the app by bundle ID across binary updates,
+// avoiding duplicate permission entries in System Settings.
+#[cfg(target_os = "macos")]
+#[allow(unsafe_code)]
+#[unsafe(link_section = "__TEXT,__info_plist")]
+#[used]
+static INFO_PLIST: [u8; include_bytes!("../../../bundle/Info.plist").len()] =
+    *include_bytes!("../../../bundle/Info.plist");
+
 use std::path::PathBuf;
 
 use clap::{Parser, Subcommand};
@@ -157,10 +167,42 @@ fn run_tray_app(
         }
     }
 
+    // Catch SIGTERM (sent by launchd on service stop / system shutdown)
+    // and trigger a graceful shutdown through the daemon command channel.
+    {
+        let sigterm_tx = cmd_tx.clone();
+        std::thread::Builder::new()
+            .name("signal-handler".into())
+            .spawn(move || {
+                let rt = tokio::runtime::Builder::new_current_thread()
+                    .enable_all()
+                    .build()
+                    .expect("signal handler runtime");
+                rt.block_on(async {
+                    #[cfg(unix)]
+                    {
+                        let mut sigterm =
+                            tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
+                                .expect("SIGTERM handler");
+                        sigterm.recv().await;
+                    }
+                    #[cfg(not(unix))]
+                    {
+                        tokio::signal::ctrl_c().await.ok();
+                    }
+                    info!("received shutdown signal");
+                    let _ = sigterm_tx.send(DaemonCommand::Shutdown).await;
+                });
+            })
+            .expect("signal handler thread");
+    }
+
     // Spawn background daemon thread.
     std::thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
-        rt.block_on(daemon::run(&config_path, device_index, proxy, cmd_rx));
+        rt.block_on(daemon::run(&config_path, device_index, proxy.clone(), cmd_rx));
+        // Daemon exited (shutdown command or signal) — tell the event loop to quit.
+        let _ = proxy.send_event(DaemonEvent::Shutdown);
     });
 
     info!("HID++ running");
@@ -216,6 +258,9 @@ fn run_tray_app(
                 }
                 DaemonEvent::ActionExecuted { description } => {
                     ts.last_action_item.set_text(format!("Last: {description}"));
+                }
+                DaemonEvent::Shutdown => {
+                    *control_flow = ControlFlow::Exit;
                 }
                 DaemonEvent::Error(msg) => {
                     let short = if msg.len() > 40 { &msg[..40] } else { msg };
@@ -286,8 +331,9 @@ fn run_tray_app(
                 } else if ev.id == reconnect_id {
                     if permission_error {
                         // macOS caches TCC permissions at process start.
-                        // Full exit lets launchd/systemd restart us fresh.
-                        std::process::exit(0);
+                        // Graceful shutdown lets launchd/systemd restart us fresh.
+                        let _ = cmd_tx.try_send(DaemonCommand::Shutdown);
+                        *control_flow = ControlFlow::Exit;
                     } else {
                         let _ = cmd_tx.try_send(DaemonCommand::Reconnect);
                     }
