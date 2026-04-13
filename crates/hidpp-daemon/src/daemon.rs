@@ -189,7 +189,7 @@ async fn connect_and_listen(
         .first()
         .ok_or_else(|| anyhow::anyhow!("no HID++ devices found"))?;
 
-    info!(
+    debug!(
         "connecting to {} ({:04X}:{:04X})",
         dev_info.name.as_deref().unwrap_or("Unknown"),
         dev_info.vendor_id,
