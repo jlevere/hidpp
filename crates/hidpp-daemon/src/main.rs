@@ -191,7 +191,10 @@ fn run_tray_app(
                         tokio::signal::ctrl_c().await.ok();
                     }
                     info!("received shutdown signal");
-                    let _ = sigterm_tx.send(DaemonCommand::Shutdown).await;
+                    if sigterm_tx.send(DaemonCommand::Shutdown).await.is_err() {
+                        // Daemon already exited — nothing to shut down.
+                        std::process::exit(0);
+                    }
                 });
             })
             .expect("signal handler thread");
