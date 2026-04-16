@@ -126,6 +126,7 @@ fn run_tray_app(
     }
 
     // Create tao event loop.
+    #[allow(unused_mut)] // mut needed on macOS for set_activation_policy
     let mut event_loop = EventLoopBuilder::<DaemonEvent>::with_user_event().build();
 
     // Hide dock icon.

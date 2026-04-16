@@ -275,6 +275,9 @@ async fn connect_and_listen(
     }
 
     // Device setup complete — release the sleep assertion.
+    // (On non-macOS PowerAssertion is a no-op unit struct, but the
+    // explicit drop documents the intent.)
+    #[allow(clippy::drop_non_drop)]
     drop(_power_guard);
 
     // Check Accessibility permission early so the user sees the error immediately.
