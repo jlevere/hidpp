@@ -182,9 +182,10 @@ fn run_tray_app(
                 rt.block_on(async {
                     #[cfg(unix)]
                     {
-                        let mut sigterm =
-                            tokio::signal::unix::signal(tokio::signal::unix::SignalKind::terminate())
-                                .expect("SIGTERM handler");
+                        let mut sigterm = tokio::signal::unix::signal(
+                            tokio::signal::unix::SignalKind::terminate(),
+                        )
+                        .expect("SIGTERM handler");
                         sigterm.recv().await;
                     }
                     #[cfg(not(unix))]
@@ -204,7 +205,12 @@ fn run_tray_app(
     // Spawn background daemon thread.
     std::thread::spawn(move || {
         let rt = tokio::runtime::Runtime::new().expect("tokio runtime");
-        rt.block_on(daemon::run(&config_path, device_index, proxy.clone(), cmd_rx));
+        rt.block_on(daemon::run(
+            &config_path,
+            device_index,
+            proxy.clone(),
+            cmd_rx,
+        ));
         // Daemon exited (shutdown command or signal) — tell the event loop to quit.
         let _ = proxy.send_event(DaemonEvent::Shutdown);
     });
@@ -438,8 +444,8 @@ fn init_logging(log_level: &str) {
     #[cfg(not(target_os = "macos"))]
     {
         let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
-        let state_dir = std::env::var("XDG_STATE_HOME")
-            .unwrap_or_else(|_| format!("{home}/.local/state"));
+        let state_dir =
+            std::env::var("XDG_STATE_HOME").unwrap_or_else(|_| format!("{home}/.local/state"));
         let log_path = std::path::Path::new(&state_dir).join("hidpp/hidppd.log");
 
         if let Some(parent) = log_path.parent() {

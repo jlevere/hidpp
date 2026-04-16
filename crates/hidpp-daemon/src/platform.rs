@@ -7,8 +7,8 @@
 #[cfg(target_os = "macos")]
 #[allow(unsafe_code)]
 mod imp {
-    use std::ffi::c_void;
     use std::ffi::CString;
+    use std::ffi::c_void;
     use std::io::Read;
     use std::os::fd::FromRawFd;
 
@@ -44,9 +44,7 @@ mod imp {
             unsafe { notify_register_file_descriptor(name.as_ptr(), &mut fd, 0, &mut token) };
 
         if status != 0 || fd < 0 {
-            tracing::warn!(
-                "failed to register for power state notifications (status={status})"
-            );
+            tracing::warn!("failed to register for power state notifications (status={status})");
             return;
         }
 
@@ -80,14 +78,8 @@ mod imp {
         const K_CF_NUMBER_INT_TYPE: u64 = 9; // kCFNumberIntType
 
         unsafe extern "C" {
-            fn IOHIDManagerCreate(
-                allocator: *const c_void,
-                options: u32,
-            ) -> *mut c_void;
-            fn IOHIDManagerSetDeviceMatching(
-                manager: *mut c_void,
-                matching: *const c_void,
-            );
+            fn IOHIDManagerCreate(allocator: *const c_void, options: u32) -> *mut c_void;
+            fn IOHIDManagerSetDeviceMatching(manager: *mut c_void, matching: *const c_void);
             fn IOHIDManagerRegisterDeviceMatchingCallback(
                 manager: *mut c_void,
                 callback: unsafe extern "C" fn(*mut c_void, i32, *mut c_void, *mut c_void),
@@ -332,6 +324,6 @@ mod imp {
     }
 }
 
+pub use imp::PowerAssertion;
 pub use imp::spawn_hid_watcher;
 pub use imp::spawn_wake_watcher;
-pub use imp::PowerAssertion;

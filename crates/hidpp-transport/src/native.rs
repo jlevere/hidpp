@@ -249,12 +249,7 @@ impl HidapiTransport {
         self.send(report).await?;
 
         // Wait for response with timeout.
-        match tokio::time::timeout(
-            Duration::from_millis(RESPONSE_TIMEOUT_MS),
-            response_rx,
-        )
-        .await
-        {
+        match tokio::time::timeout(Duration::from_millis(RESPONSE_TIMEOUT_MS), response_rx).await {
             Ok(Ok(response)) => Ok(response),
             Ok(Err(_)) => Err(TransportError::Disconnected),
             Err(_) => Err(TransportError::Timeout),

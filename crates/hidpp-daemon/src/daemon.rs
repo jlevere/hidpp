@@ -220,8 +220,7 @@ async fn connect_and_listen(
     wake_rx: &mut tokio::sync::mpsc::Receiver<()>,
 ) -> anyhow::Result<bool> {
     // Prevent system idle sleep during device setup (connect, discover, divert).
-    let _power_guard =
-        crate::platform::PowerAssertion::prevent_idle_sleep("HID++ device setup");
+    let _power_guard = crate::platform::PowerAssertion::prevent_idle_sleep("HID++ device setup");
 
     let device = connect_device(index_override).await?;
     let name = device.name().to_string();
@@ -351,9 +350,7 @@ async fn connect_and_listen(
 }
 
 /// Headless connect_and_listen — no diversion, no actions, just log.
-async fn connect_and_listen_headless(
-    index_override: Option<DeviceIndex>,
-) -> anyhow::Result<()> {
+async fn connect_and_listen_headless(index_override: Option<DeviceIndex>) -> anyhow::Result<()> {
     let device = connect_device(index_override).await?;
 
     let mut rx = device.subscribe();
@@ -448,9 +445,7 @@ fn handle_notification(
                                     gesture::GestureDirection::Up => gesture_cfg.up.as_ref(),
                                     gesture::GestureDirection::Down => gesture_cfg.down.as_ref(),
                                     gesture::GestureDirection::Left => gesture_cfg.left.as_ref(),
-                                    gesture::GestureDirection::Right => {
-                                        gesture_cfg.right.as_ref()
-                                    }
+                                    gesture::GestureDirection::Right => gesture_cfg.right.as_ref(),
                                 };
                                 (format!("swipe {dir_name}"), a)
                             }
@@ -479,11 +474,7 @@ fn handle_notification(
                     gestures.button_pressed(cid);
                 } else if let Some(action) = cfg.buttons.get(&cid) {
                     let desc = action_description(action);
-                    execute_and_notify(
-                        action,
-                        &format!("button CID {cid}: {desc}"),
-                        proxy,
-                    );
+                    execute_and_notify(action, &format!("button CID {cid}: {desc}"), proxy);
                 }
             }
         }

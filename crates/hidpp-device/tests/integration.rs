@@ -95,7 +95,7 @@ async fn dpi_read() {
 
     let dpi = device.dpi_get().await.expect("DPI read failed");
 
-    assert!(dpi >= 200 && dpi <= 8000, "DPI out of range: {dpi}");
+    assert!((200..=8000).contains(&dpi), "DPI out of range: {dpi}");
     println!("DPI: {dpi}");
 }
 
@@ -221,7 +221,7 @@ async fn config_export() {
     println!("{toml}");
 
     // Should contain device name.
-    assert!(toml.contains("MX Master") || toml.contains(&device.name()));
+    assert!(toml.contains("MX Master") || toml.contains(device.name()));
 
     // Round-trip: parse the TOML back.
     let parsed = hidpp_device::DeviceConfig::from_toml(&toml).expect("TOML parse failed");
