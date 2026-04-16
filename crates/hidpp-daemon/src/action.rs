@@ -5,6 +5,17 @@ use tracing::{error, info, warn};
 
 use crate::config::{Action, ExplicitAction};
 
+/// Outcome of executing an action.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ActionOutcome {
+    /// Action executed successfully.
+    Executed,
+    /// Accessibility permission not granted — caller should show error.
+    PermissionDenied,
+    /// Action failed (bad keystroke, key error, etc.) — already logged.
+    Failed,
+}
+
 /// Global enigo instance. Initialized lazily on first use.
 static ENIGO: Mutex<Option<Enigo>> = Mutex::new(None);
 
@@ -51,24 +62,22 @@ pub fn retry_init() {
 }
 
 /// Execute an action. Initializes enigo lazily if needed.
-/// Returns false if Accessibility permission is missing.
-pub fn execute(action: &Action) -> bool {
+pub fn execute(action: &Action) -> ActionOutcome {
     match action {
         Action::Keystroke(keys) => execute_keystroke(keys),
         Action::Explicit(ExplicitAction::Keystroke { keys }) => execute_keystroke(keys),
         Action::Explicit(ExplicitAction::Command { run }) => {
             execute_command(run);
-            true
+            ActionOutcome::Executed
         }
     }
 }
 
 /// Parse and execute a keystroke string like "ctrl+shift+left".
-/// Returns false if Accessibility permission is missing.
-fn execute_keystroke(keystroke: &str) -> bool {
+fn execute_keystroke(keystroke: &str) -> ActionOutcome {
     let parts: Vec<&str> = keystroke.split('+').map(str::trim).collect();
     if parts.is_empty() {
-        return true;
+        return ActionOutcome::Failed;
     }
 
     let (modifier_strs, main_str) = parts.split_at(parts.len() - 1);
@@ -76,31 +85,33 @@ fn execute_keystroke(keystroke: &str) -> bool {
 
     let Some(main_key) = main_str.first().and_then(|s| parse_key(s)) else {
         error!("unknown key in keystroke: {keystroke}");
-        return true;
+        return ActionOutcome::Failed;
     };
 
     if !ensure_init() {
-        error!(
-            "grant Accessibility permission: System Settings → Privacy & Security → Accessibility"
-        );
-        return false;
+        return ActionOutcome::PermissionDenied;
     }
 
     let mut guard = ENIGO.lock().unwrap();
     let Some(enigo) = guard.as_mut() else {
-        return true;
+        return ActionOutcome::Failed;
     };
 
     // Press modifiers, click main key, release modifiers in reverse.
     for m in &modifiers {
         if let Err(e) = enigo.key(*m, Direction::Press) {
             error!("key press failed: {e}");
-            return true;
+            return ActionOutcome::Failed;
         }
     }
 
     if let Err(e) = enigo.key(main_key, Direction::Click) {
         error!("key click failed: {e}");
+        // Still release pressed modifiers before returning.
+        for m in modifiers.iter().rev() {
+            let _ = enigo.key(*m, Direction::Release);
+        }
+        return ActionOutcome::Failed;
     }
 
     for m in modifiers.iter().rev() {
@@ -109,14 +120,11 @@ fn execute_keystroke(keystroke: &str) -> bool {
         }
     }
 
-    info!("keystroke: {keystroke}");
-    true
+    ActionOutcome::Executed
 }
 
 /// Run a shell command in the background. Reaps the child on a separate thread.
 fn execute_command(cmd: &str) {
-    info!("command: {cmd}");
-
     #[cfg(unix)]
     let result = std::process::Command::new("sh").args(["-c", cmd]).spawn();
 

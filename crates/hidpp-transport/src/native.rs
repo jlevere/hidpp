@@ -17,7 +17,8 @@ const HIDPP_USAGE_PAGE_FF43: u16 = 0xFF43;
 const HIDPP_USAGE_PAGE_FF00: u16 = 0xFF00;
 
 /// Default timeout for waiting on a response (ms).
-const RESPONSE_TIMEOUT_MS: i32 = 2000;
+/// Used both as hidapi read timeout (i32) and tokio timeout (u64).
+const RESPONSE_TIMEOUT_MS: u64 = 2000;
 
 /// Enumerate connected Logitech HID++ devices.
 pub struct HidapiEnumerator {
@@ -249,7 +250,7 @@ impl HidapiTransport {
 
         // Wait for response with timeout.
         match tokio::time::timeout(
-            Duration::from_millis(RESPONSE_TIMEOUT_MS as u64),
+            Duration::from_millis(RESPONSE_TIMEOUT_MS),
             response_rx,
         )
         .await

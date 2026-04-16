@@ -3,6 +3,49 @@ use std::path::{Path, PathBuf};
 
 use serde::Deserialize;
 
+pub const SAMPLE_CONFIG: &str = r#"# hidppd config — maps diverted buttons and gestures to actions.
+#
+# Button CIDs for MX Master 3S:
+#   82  = Middle Click
+#   83  = Back
+#   86  = Forward
+#   195 = Gesture Button (thumb)
+#   196 = Mode Shift (scroll wheel click)
+#
+# Keystroke format: "modifier+modifier+key"
+#   Modifiers: ctrl, alt, shift, cmd (or meta/super/win)
+#   Keys: a-z, 0-9, f1-f20, left/right/up/down, tab, return,
+#         space, escape, home, end, pageup, pagedown, delete,
+#         playpause, next, prev, volumeup, volumedown, mute
+#
+# Simple button → keystroke:
+#   [buttons]
+#   83 = "alt+left"          # Back button → browser back
+#   86 = "alt+right"         # Forward → browser forward
+#
+# Gesture button — hold + swipe for directional actions:
+#   [gestures.195]
+#   up = "ctrl+up"           # Swipe up → Mission Control
+#   down = "ctrl+down"       # Swipe down → App Exposé
+#   left = "ctrl+left"       # Swipe left → prev desktop
+#   right = "ctrl+right"     # Swipe right → next desktop
+#   tap = "playpause"        # Quick tap → play/pause
+#   threshold = 50           # Min displacement (default: 50)
+#
+# Command actions:
+#   83 = { type = "command", run = "open -a Safari" }
+
+[buttons]
+83 = "alt+left"
+86 = "alt+right"
+
+[gestures.195]
+up = "ctrl+up"
+down = "ctrl+down"
+left = "ctrl+left"
+right = "ctrl+right"
+"#;
+
 /// Raw config as deserialized from TOML (string keys).
 #[derive(Debug, Deserialize, Default)]
 struct RawConfig {

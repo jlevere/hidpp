@@ -72,7 +72,7 @@ fn main() -> anyhow::Result<()> {
 
     match cli.command.unwrap_or(Command::Run) {
         Command::SampleConfig => {
-            print!("{}", daemon::SAMPLE_CONFIG);
+            print!("{}", config::SAMPLE_CONFIG);
             Ok(())
         }
         Command::Listen => {
@@ -119,7 +119,7 @@ fn run_tray_app(
         if let Some(parent) = cfg_path.parent() {
             let _ = std::fs::create_dir_all(parent);
         }
-        match std::fs::write(&cfg_path, daemon::SAMPLE_CONFIG) {
+        match std::fs::write(&cfg_path, config::SAMPLE_CONFIG) {
             Ok(()) => info!("created default config at {}", cfg_path.display()),
             Err(e) => warn!("failed to create config at {}: {e}", cfg_path.display()),
         }
@@ -270,18 +270,17 @@ fn run_tray_app(
                     let short = if msg.len() > 40 { &msg[..40] } else { msg };
                     // Permission errors become clickable — open the relevant settings pane.
                     // Also swap Reconnect → Relaunch since macOS caches TCC at process start.
-                    if msg.contains("Input Monitoring") {
-                        ts.device_item.set_text(format!("{short} →"));
-                        ts.device_item.set_enabled(true);
-                        device_item_url = Some("x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent");
-                        if !permission_error {
-                            permission_error = true;
-                            ts.reconnect_item.set_text("Relaunch");
-                        }
+                    let perm_url = if msg.contains("Input Monitoring") {
+                        Some("x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")
                     } else if msg.contains("Accessibility") {
+                        Some("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
+                    } else {
+                        None
+                    };
+                    if let Some(url) = perm_url {
                         ts.device_item.set_text(format!("{short} →"));
                         ts.device_item.set_enabled(true);
-                        device_item_url = Some("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility");
+                        device_item_url = Some(url);
                         if !permission_error {
                             permission_error = true;
                             ts.reconnect_item.set_text("Relaunch");

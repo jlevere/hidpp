@@ -58,7 +58,7 @@ pub fn uninstall() -> anyhow::Result<()> {
 mod macos {
     use super::*;
 
-    const PLIST_LABEL: &str = "com.hidpp.daemon";
+    const PLIST_LABEL: &str = "com.jlevere.hidpp";
 
     pub(crate) fn plist_path() -> PathBuf {
         let home = std::env::var("HOME").unwrap_or_else(|_| ".".into());
