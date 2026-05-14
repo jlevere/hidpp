@@ -156,6 +156,12 @@ fn run_tray_app(
 
     // URL to open when the device item is clicked (set on permission errors).
     let mut device_item_url: Option<&str> = None;
+    // Set when the daemon has hit an Input Monitoring permission error.
+    // macOS caches IOKit TCC at process start — granting the permission
+    // doesn't help the running daemon. Surfaces a "Restart to apply
+    // permissions" rebrand on the Reconnect item so the user knows
+    // clicking it will terminate (launchd respawns with fresh TCC).
+    let mut input_monitoring_blocked = false;
 
     // First-launch notification — name the actual config file so the user
     // knows where to look. The "Edit Config..." tray item opens this path.
@@ -240,6 +246,10 @@ fn run_tray_app(
                     ts.device_item.set_text(name);
                     ts.device_item.set_enabled(false);
                     device_item_url = None;
+                    if input_monitoring_blocked {
+                        input_monitoring_blocked = false;
+                        ts.reconnect_item.set_text("Reconnect");
+                    }
                     if let Some(pct) = battery_pct {
                         ts.battery_item.set_text(format!("Battery: {pct}%"));
                         ts.tray.set_title(Some(&format!("{pct}%")));
@@ -279,7 +289,8 @@ fn run_tray_app(
                 DaemonEvent::Error(msg) => {
                     let short = if msg.len() > 40 { &msg[..40] } else { msg };
                     // Permission errors become clickable — open the relevant settings pane.
-                    let perm_url = if msg.contains("Input Monitoring") {
+                    let is_input_monitoring = msg.contains("Input Monitoring");
+                    let perm_url = if is_input_monitoring {
                         Some("x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")
                     } else if msg.contains("Accessibility") {
                         Some("x-apple.systempreferences:com.apple.preference.security?Privacy_Accessibility")
@@ -290,6 +301,12 @@ fn run_tray_app(
                         ts.device_item.set_text(format!("{short} →"));
                         ts.device_item.set_enabled(true);
                         device_item_url = Some(url);
+                        // Only Input Monitoring needs a process restart;
+                        // Accessibility re-checks on the next retry_init.
+                        if is_input_monitoring && !input_monitoring_blocked {
+                            input_monitoring_blocked = true;
+                            ts.reconnect_item.set_text("Restart to apply permissions");
+                        }
                     } else {
                         ts.device_item.set_text(format!("Error: {short}"));
                         ts.device_item.set_enabled(false);
@@ -311,7 +328,14 @@ fn run_tray_app(
                     let _ = cmd_tx.try_send(DaemonCommand::Shutdown);
                     *control_flow = ControlFlow::Exit;
                 } else if ev.id == reconnect_id {
-                    let _ = cmd_tx.try_send(DaemonCommand::Reconnect);
+                    if input_monitoring_blocked {
+                        // IOKit caches TCC at process start. Only a respawn
+                        // picks up a fresh Input Monitoring grant.
+                        let _ = cmd_tx.try_send(DaemonCommand::Shutdown);
+                        *control_flow = ControlFlow::Exit;
+                    } else {
+                        let _ = cmd_tx.try_send(DaemonCommand::Reconnect);
+                    }
                 } else if ev.id == edit_config_id {
                     #[cfg(target_os = "macos")]
                     let _ = std::process::Command::new("open")

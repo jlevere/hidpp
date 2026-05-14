@@ -47,6 +47,20 @@ enum DeadlineUpdate {
     Clear,
 }
 
+/// How the outer reconnect loop should behave after `connect_and_listen`
+/// returns. `bool` conflated "user wants to retry" with "device disappeared,
+/// wait for it" — both needed different post-loop behavior.
+enum ListenOutcome {
+    /// User asked to shut down; exit the daemon.
+    Shutdown,
+    /// User clicked Reconnect, system woke, or HID device arrival fired.
+    /// Retry the connect attempt immediately — there's nothing to wait for.
+    RetryNow,
+    /// The device disappeared (broadcast channel closed). Wait for the next
+    /// arrival event or user command before retrying.
+    WaitForEvent,
+}
+
 /// Drain any pending events from a channel without blocking.
 fn drain<T>(rx: &mut tokio::sync::mpsc::Receiver<T>) {
     while rx.try_recv().is_ok() {}
@@ -100,15 +114,23 @@ pub async fn run(
 
         let _ = proxy.send_event(DaemonEvent::Reconnecting);
 
-        match connect_and_listen(&cfg, index_override, &proxy, &mut cmd_rx, &mut wake_rx).await {
-            Ok(true) => {
+        let wait = match connect_and_listen(&cfg, index_override, &proxy, &mut cmd_rx, &mut wake_rx).await {
+            Ok(ListenOutcome::Shutdown) => {
                 info!("shutdown requested");
                 return;
             }
-            Ok(false) => {
+            Ok(ListenOutcome::RetryNow) => {
+                // User clicked Reconnect or the system signaled a state
+                // change. Loop straight back into connect without parking.
+                last_error = None;
+                let _ = proxy.send_event(DaemonEvent::Disconnected);
+                false
+            }
+            Ok(ListenOutcome::WaitForEvent) => {
                 info!("device disconnected, awaiting next event");
                 last_error = None;
                 let _ = proxy.send_event(DaemonEvent::Disconnected);
+                true
             }
             Err(e) => {
                 let user_msg = classify_error(&e);
@@ -117,7 +139,12 @@ pub async fn run(
                     last_error = Some(user_msg.to_string());
                 }
                 let _ = proxy.send_event(DaemonEvent::Error(user_msg.to_string()));
+                true
             }
+        };
+
+        if !wait {
+            continue;
         }
 
         // Event-driven wait between connection attempts. A device arrival
@@ -243,18 +270,21 @@ async fn connect_device(
 
 /// Connect, divert, listen — with tray event proxy.
 ///
-/// Returns Ok(true) on shutdown, Ok(false) on disconnect / reload, Err on
-/// connect/divert failure. The listen loop is a single select! with one
-/// arm per event source — there are no timers other than the per-press
-/// rawXY validation watchdog, which exists only while a gesture button is
-/// physically held down.
+/// Returns a `ListenOutcome` telling the caller whether to retry
+/// immediately, wait for an event before retrying, or shut down. Errors
+/// propagate from the initial connect/divert path.
+///
+/// The listen loop is a single select! with one arm per event source —
+/// there are no timers other than the per-press rawXY validation
+/// watchdog, which exists only while a gesture button is physically
+/// held down.
 async fn connect_and_listen(
     cfg: &Config,
     index_override: Option<DeviceIndex>,
     proxy: &EventLoopProxy<DaemonEvent>,
     cmd_rx: &mut tokio::sync::mpsc::Receiver<DaemonCommand>,
     wake_rx: &mut tokio::sync::mpsc::Receiver<()>,
-) -> anyhow::Result<bool> {
+) -> anyhow::Result<ListenOutcome> {
     // Prevent system idle sleep during device setup (connect, discover, divert).
     let _power_guard = crate::platform::PowerAssertion::prevent_idle_sleep("HID++ device setup");
 
@@ -355,26 +385,26 @@ async fn connect_and_listen(
                         warn!("dropped {n} notifications");
                     }
                     Err(broadcast::error::RecvError::Closed) => {
-                        return Ok(false);
+                        return Ok(ListenOutcome::WaitForEvent);
                     }
                 }
             }
             cmd = cmd_rx.recv() => {
                 match cmd {
                     Some(DaemonCommand::Reconnect) => {
-                        info!("reconnect/reload requested");
+                        info!("reconnect requested");
                         action::retry_init();
-                        return Ok(false);
+                        return Ok(ListenOutcome::RetryNow);
                     }
                     Some(DaemonCommand::Shutdown) | None => {
-                        return Ok(true);
+                        return Ok(ListenOutcome::Shutdown);
                     }
                 }
             }
             _ = wake_rx.recv() => {
                 drain(wake_rx);
                 info!("reconnection trigger (wake/HID), re-diverting buttons");
-                return Ok(false);
+                return Ok(ListenOutcome::RetryNow);
             }
             _ = tokio::time::sleep_until(xy_deadline.unwrap_or_else(tokio::time::Instant::now)), if xy_deadline.is_some() => {
                 xy_deadline = None;
@@ -391,7 +421,7 @@ async fn connect_and_listen(
                         .await
                     {
                         warn!("re-divert CID {cid} failed: {e} — reconnecting");
-                        return Ok(false);
+                        return Ok(ListenOutcome::WaitForEvent);
                     }
                 }
             }
