@@ -63,12 +63,19 @@ function showConnect(): void {
     })();
   });
 
-  const browse = el("button", { class: "browse" }, "browse all devices →");
-  browse.addEventListener("click", () => {
-    void showDemoPicker();
-  });
+  root.append(btn, status);
 
-  root.append(btn, status, browse);
+  // Demo catalog is a useful "see what's supported before installing"
+  // affordance but distracts from the primary Connect path on the
+  // landing. Reach it by appending ?demo to the URL.
+  if (new URLSearchParams(window.location.search).has("demo")) {
+    const browse = el("button", { class: "browse" }, "browse demo catalog →");
+    browse.addEventListener("click", () => {
+      void showDemoPicker();
+    });
+    root.append(browse);
+  }
+
   app.replaceChildren(root);
 }
 
@@ -371,7 +378,17 @@ function renderDevicePage(data: PageData): void {
   const meta = el("span", { class: "meta" }, metaParts.join(" · "));
   if (data.demo) {
     meta.textContent = "";
-    meta.append(el("span", { class: "demo-tag" }, "DEMO"));
+    meta.append(
+      el(
+        "span",
+        {
+          class: "demo-tag",
+          title:
+            "Read-only preview from the device catalog — connect a real device to change settings.",
+        },
+        "DEMO",
+      ),
+    );
   }
   const backBtn = el("button", { class: "btn-sm" }, "← back");
   backBtn.addEventListener("click", () => {
@@ -424,6 +441,18 @@ function renderDevicePage(data: PageData): void {
     }
 
     imgSection.append(imgInner);
+    if (isMxMaster3s) {
+      imgSection.append(
+        el(
+          "p",
+          {
+            style:
+              "color: var(--muted); font-size: 0.7rem; text-align: center; margin-top: 0.5rem;",
+          },
+          "Click a highlighted button to jump to its settings.",
+        ),
+      );
+    }
     root.append(imgSection);
   }
 

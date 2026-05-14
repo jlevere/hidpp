@@ -156,15 +156,22 @@ fn run_tray_app(
 
     // URL to open when the device item is clicked (set on permission errors).
     let mut device_item_url: Option<&str> = None;
-    let mut permission_error = false;
 
-    // First-launch notification.
+    // First-launch notification — name the actual config file so the user
+    // knows where to look. The "Edit Config..." tray item opens this path.
     if first_launch {
         #[cfg(target_os = "macos")]
         {
+            let msg = format!(
+                "Edit {} to map buttons and gestures.",
+                cfg_path.display()
+            );
+            let script = format!(
+                r#"display notification "{msg}" with title "HID++""#
+            );
             let _ = std::process::Command::new("osascript")
                 .arg("-e")
-                .arg(r#"display notification "Click the mouse icon in the menu bar to configure." with title "HID++""#)
+                .arg(&script)
                 .spawn();
         }
     }
@@ -233,10 +240,6 @@ fn run_tray_app(
                     ts.device_item.set_text(name);
                     ts.device_item.set_enabled(false);
                     device_item_url = None;
-                    if permission_error {
-                        permission_error = false;
-                        ts.reconnect_item.set_text("Reconnect");
-                    }
                     if let Some(pct) = battery_pct {
                         ts.battery_item.set_text(format!("Battery: {pct}%"));
                         ts.tray.set_title(Some(&format!("{pct}%")));
@@ -276,7 +279,6 @@ fn run_tray_app(
                 DaemonEvent::Error(msg) => {
                     let short = if msg.len() > 40 { &msg[..40] } else { msg };
                     // Permission errors become clickable — open the relevant settings pane.
-                    // Also swap Reconnect → Relaunch since macOS caches TCC at process start.
                     let perm_url = if msg.contains("Input Monitoring") {
                         Some("x-apple.systempreferences:com.apple.preference.security?Privacy_ListenEvent")
                     } else if msg.contains("Accessibility") {
@@ -288,10 +290,6 @@ fn run_tray_app(
                         ts.device_item.set_text(format!("{short} →"));
                         ts.device_item.set_enabled(true);
                         device_item_url = Some(url);
-                        if !permission_error {
-                            permission_error = true;
-                            ts.reconnect_item.set_text("Relaunch");
-                        }
                     } else {
                         ts.device_item.set_text(format!("Error: {short}"));
                         ts.device_item.set_enabled(false);
@@ -313,14 +311,7 @@ fn run_tray_app(
                     let _ = cmd_tx.try_send(DaemonCommand::Shutdown);
                     *control_flow = ControlFlow::Exit;
                 } else if ev.id == reconnect_id {
-                    if permission_error {
-                        // macOS caches TCC permissions at process start.
-                        // Graceful shutdown lets launchd/systemd restart us fresh.
-                        let _ = cmd_tx.try_send(DaemonCommand::Shutdown);
-                        *control_flow = ControlFlow::Exit;
-                    } else {
-                        let _ = cmd_tx.try_send(DaemonCommand::Reconnect);
-                    }
+                    let _ = cmd_tx.try_send(DaemonCommand::Reconnect);
                 } else if ev.id == edit_config_id {
                     #[cfg(target_os = "macos")]
                     let _ = std::process::Command::new("open")

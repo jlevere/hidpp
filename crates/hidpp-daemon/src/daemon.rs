@@ -424,17 +424,19 @@ async fn connect_and_listen_headless(index_override: Option<DeviceIndex>) -> any
     }
 }
 
-/// Execute an action and send the appropriate tray event.
+/// Execute an action, log it with CID context, and surface the short
+/// form to the tray's "Last:" line.
 fn execute_and_notify(
     action: &crate::config::Action,
-    description: &str,
+    log_desc: &str,
+    tray_desc: &str,
     proxy: &EventLoopProxy<DaemonEvent>,
 ) {
     match action::execute(action) {
         ActionOutcome::Executed => {
-            info!("{description}");
+            info!("{log_desc}");
             let _ = proxy.send_event(DaemonEvent::ActionExecuted {
-                description: description.to_string(),
+                description: tray_desc.to_string(),
             });
         }
         ActionOutcome::PermissionDenied => {
@@ -506,9 +508,11 @@ fn handle_notification(
                         };
                         if let Some(action) = action {
                             let action_desc = action_description(action);
+                            let tray_desc = format!("{desc} → {action_desc}");
                             execute_and_notify(
                                 action,
-                                &format!("gesture CID {cid}: {desc} → {action_desc}"),
+                                &format!("gesture CID {cid}: {tray_desc}"),
+                                &tray_desc,
                                 proxy,
                             );
                         } else {
@@ -527,7 +531,12 @@ fn handle_notification(
                     arm = true;
                 } else if let Some(action) = cfg.buttons.get(&cid) {
                     let desc = action_description(action);
-                    execute_and_notify(action, &format!("button CID {cid}: {desc}"), proxy);
+                    execute_and_notify(
+                        action,
+                        &format!("button CID {cid}: {desc}"),
+                        desc,
+                        proxy,
+                    );
                 }
             }
             if arm {
