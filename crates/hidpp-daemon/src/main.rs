@@ -301,32 +301,6 @@ fn run_tray_app(
             }
         }
 
-        // Handle hidpp:// URL scheme (config push from web UI).
-        if let Event::Opened { urls } = &event {
-            for url in urls {
-                if url.scheme() == "hidpp" {
-                    info!("received URL: {url}");
-                    if let Some(toml_str) = url
-                        .query_pairs()
-                        .find(|(k, _)| k == "toml")
-                        .map(|(_, v)| v.into_owned())
-                    {
-                        match handle_config_url(&toml_str) {
-                            Ok(()) => {
-                                ts.last_action_item.set_text("Config updated from web UI");
-                                let _ = cmd_tx.try_send(DaemonCommand::ReloadConfig);
-                                info!("config updated from web UI, reloading");
-                            }
-                            Err(e) => {
-                                warn!("invalid config from URL: {e}");
-                                ts.last_action_item.set_text(format!("Config error: {e}"));
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
         // Handle menu clicks.
         if matches!(
             &event,
@@ -372,26 +346,6 @@ fn run_tray_app(
             }
         }
     });
-}
-
-/// Validate and write a TOML config received from a hidpp:// URL.
-///
-/// Security: rejects configs containing `command` actions to prevent
-/// arbitrary code execution from malicious websites opening hidpp:// URLs.
-fn handle_config_url(toml_str: &str) -> anyhow::Result<()> {
-    if toml_str.contains("type") && toml_str.contains("command") {
-        anyhow::bail!("command actions are not allowed via URL — edit config.toml directly");
-    }
-
-    config::validate(toml_str)?;
-
-    let path = config::default_config_path();
-    if let Some(parent) = path.parent() {
-        std::fs::create_dir_all(parent)?;
-    }
-    std::fs::write(&path, toml_str)?;
-    info!("wrote config to {}", path.display());
-    Ok(())
 }
 
 /// Acquire a single-instance lock via `flock(LOCK_EX | LOCK_NB)` on a

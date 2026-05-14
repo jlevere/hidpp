@@ -79,7 +79,7 @@ pub async fn run(
     let mut last_error: Option<String> = None;
 
     loop {
-        // Reload config on every iteration so ReloadConfig picks up changes.
+        // Reload config on every iteration so Reconnect picks up changes.
         let cfg = match crate::config::load(&path) {
             Ok(c) => c,
             Err(e) => {
@@ -89,10 +89,10 @@ pub async fn run(
                     last_error = Some(msg);
                 }
                 let _ = proxy.send_event(DaemonEvent::Error("Config error".to_string()));
-                // Wait for the user to fix it and signal us (Reconnect /
-                // ReloadConfig from the tray), or shut down. No polling.
+                // Wait for the user to fix it and click Reconnect from the
+                // tray, or shut down. No polling.
                 match cmd_rx.recv().await {
-                    Some(DaemonCommand::Reconnect | DaemonCommand::ReloadConfig) => continue,
+                    Some(DaemonCommand::Reconnect) => continue,
                     Some(DaemonCommand::Shutdown) | None => return,
                 }
             }
@@ -361,7 +361,7 @@ async fn connect_and_listen(
             }
             cmd = cmd_rx.recv() => {
                 match cmd {
-                    Some(DaemonCommand::Reconnect | DaemonCommand::ReloadConfig) => {
+                    Some(DaemonCommand::Reconnect) => {
                         info!("reconnect/reload requested");
                         action::retry_init();
                         return Ok(false);
