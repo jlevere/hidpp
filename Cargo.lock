@@ -894,6 +894,7 @@ dependencies = [
  "hidpp",
  "hidpp-device",
  "hidpp-transport",
+ "libc",
  "muda",
  "serde",
  "tao",

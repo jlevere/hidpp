@@ -31,7 +31,7 @@ use tracing_subscriber::prelude::*;
 use bridge::{DaemonCommand, DaemonEvent};
 
 #[derive(Parser)]
-#[command(name = "hidppd", about = "HID++ — Logitech device configurator")]
+#[command(name = "hidppd", version, about = "HID++ — Logitech device configurator")]
 struct Cli {
     #[command(subcommand)]
     command: Option<Command>,
@@ -394,23 +394,32 @@ fn handle_config_url(toml_str: &str) -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Acquire a single-instance lock. Returns a guard that releases on drop.
-/// Returns Err if another instance is already running.
+/// Acquire a single-instance lock via `flock(LOCK_EX | LOCK_NB)` on a
+/// lockfile in the system temp dir. Returns the open File — the kernel
+/// releases the lock automatically when the FD is closed on process exit,
+/// even on crash, so stale lockfiles never block a fresh start.
 #[cfg(unix)]
-fn single_instance_lock() -> Result<std::os::unix::net::UnixListener, String> {
-    use std::os::unix::net::UnixListener;
+#[allow(unsafe_code)]
+fn single_instance_lock() -> Result<std::fs::File, String> {
+    use std::os::fd::AsRawFd;
 
-    let sock_path = std::env::temp_dir().join("hidpp-daemon.sock");
+    let lock_path = std::env::temp_dir().join("hidpp-daemon.lock");
+    let file = std::fs::OpenOptions::new()
+        .create(true)
+        .write(true)
+        .truncate(false)
+        .open(&lock_path)
+        .map_err(|e| format!("lockfile open failed: {e}"))?;
 
-    // Try to bind. If it succeeds, we're the only instance.
-    match UnixListener::bind(&sock_path) {
-        Ok(listener) => Ok(listener),
-        Err(_) => {
-            // Socket exists — try to clean up stale socket and retry.
-            let _ = std::fs::remove_file(&sock_path);
-            UnixListener::bind(&sock_path).map_err(|_| "HID++ is already running.".to_string())
-        }
+    // SAFETY: file owns a valid open fd for the duration of this call;
+    // flock requires only a valid fd and an op flag, and the kernel
+    // releases the lock automatically when the fd is closed (on process
+    // exit, even abnormal).
+    let ret = unsafe { libc::flock(file.as_raw_fd(), libc::LOCK_EX | libc::LOCK_NB) };
+    if ret != 0 {
+        return Err("HID++ is already running.".to_string());
     }
+    Ok(file)
 }
 
 #[cfg(not(unix))]

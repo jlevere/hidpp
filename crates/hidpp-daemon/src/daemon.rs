@@ -31,11 +31,32 @@ const ACCESSIBILITY_ERROR: &str = "Grant Accessibility permission in System Sett
 const DIVERT_FLAGS: u8 = 0x03;
 const DIVERT_RAW_XY_FLAGS: u8 = 0x33;
 
-const MIN_RETRY_DELAY: Duration = Duration::from_secs(2);
-const MAX_RETRY_DELAY: Duration = Duration::from_secs(30);
+/// How long after a gesture-button press we wait for the first rawXY
+/// event. If none arrives in this window while the button is still held,
+/// we assume the firmware silently dropped its rawXY divert and re-issue
+/// it. The window only exists during a held press — never a free-running
+/// timer.
+const XY_VALIDATION_WINDOW: Duration = Duration::from_millis(150);
+
+/// Side effect requested by `handle_notification` on the rawXY validation
+/// deadline.
+enum DeadlineUpdate {
+    /// A gesture button was pressed — arm the validation window.
+    Arm,
+    /// rawXY arrived or the button was released — clear the window.
+    Clear,
+}
+
+/// Drain any pending events from a channel without blocking.
+fn drain<T>(rx: &mut tokio::sync::mpsc::Receiver<T>) {
+    while rx.try_recv().is_ok() {}
+}
 
 /// Run the daemon with a tray UI event proxy.
-/// Loops: connect → divert → listen → reconnect.
+///
+/// Loops: connect → divert → listen → wait-for-event. Every wait in this
+/// function is event-driven: either a user command, a system wake, or
+/// a HID device arrival. No timers, no polling.
 pub async fn run(
     config_path: &Option<PathBuf>,
     index_override: Option<DeviceIndex>,
@@ -48,16 +69,14 @@ pub async fn run(
 
     info!("hidppd starting");
 
-    // Spawn watchers that fire on events requiring reconnection:
-    // - wake watcher: system sleep/wake (power state change)
-    // - HID watcher: Logitech device arrival/removal (BLE reconnect)
-    // Both share the same channel — either event triggers re-divert.
+    // Event-driven watchers. Both fire on real OS signals, never on a clock.
+    //   - wake watcher: macOS notify(3) on systempowerstate
+    //   - HID watcher:  IOHIDManager device matched/removed callbacks
     let (wake_tx, mut wake_rx) = tokio::sync::mpsc::channel(8);
     crate::platform::spawn_wake_watcher(wake_tx.clone());
     crate::platform::spawn_hid_watcher(wake_tx);
 
     let mut last_error: Option<String> = None;
-    let mut retry_delay = MIN_RETRY_DELAY;
 
     loop {
         // Reload config on every iteration so ReloadConfig picks up changes.
@@ -70,8 +89,12 @@ pub async fn run(
                     last_error = Some(msg);
                 }
                 let _ = proxy.send_event(DaemonEvent::Error("Config error".to_string()));
-                tokio::time::sleep(Duration::from_secs(5)).await;
-                continue;
+                // Wait for the user to fix it and signal us (Reconnect /
+                // ReloadConfig from the tray), or shut down. No polling.
+                match cmd_rx.recv().await {
+                    Some(DaemonCommand::Reconnect | DaemonCommand::ReloadConfig) => continue,
+                    Some(DaemonCommand::Shutdown) | None => return,
+                }
             }
         };
 
@@ -83,9 +106,8 @@ pub async fn run(
                 return;
             }
             Ok(false) => {
-                info!("device disconnected, reconnecting...");
+                info!("device disconnected, awaiting next event");
                 last_error = None;
-                retry_delay = MIN_RETRY_DELAY;
                 let _ = proxy.send_event(DaemonEvent::Disconnected);
             }
             Err(e) => {
@@ -98,22 +120,26 @@ pub async fn run(
             }
         }
 
-        // Wait before reconnect with exponential backoff (2s → 30s).
+        // Event-driven wait between connection attempts. A device arrival
+        // (HID watcher), system wake, or user command is the only thing
+        // that wakes us. If none of those happen we stay parked — much
+        // better than burning a retry timer that can't fix anything.
         tokio::select! {
-            _ = tokio::time::sleep(retry_delay) => {
-                retry_delay = (retry_delay * 2).min(MAX_RETRY_DELAY);
+            _ = wake_rx.recv() => {
+                drain(&mut wake_rx);
             }
             cmd = cmd_rx.recv() => {
                 if matches!(cmd, Some(DaemonCommand::Shutdown) | None) {
                     return;
                 }
-                retry_delay = MIN_RETRY_DELAY;
             }
         }
     }
 }
 
 /// Run in headless listen-only mode (no tray, no action execution).
+///
+/// Same event-driven discipline as `run`: waits on HID arrival for retries.
 pub async fn run_listen_only(
     config_path: &Option<PathBuf>,
     index_override: Option<DeviceIndex>,
@@ -124,11 +150,12 @@ pub async fn run_listen_only(
 
     info!("listen-only mode");
 
+    let (wake_tx, mut wake_rx) = tokio::sync::mpsc::channel(8);
+    crate::platform::spawn_hid_watcher(wake_tx);
+
     let mut last_error: Option<String> = None;
-    let mut retry_delay = MIN_RETRY_DELAY;
 
     loop {
-        // Reload config so it picks up changes between retries.
         let _cfg = match crate::config::load(&path) {
             Ok(c) => c,
             Err(e) => {
@@ -137,16 +164,18 @@ pub async fn run_listen_only(
                     warn!("{msg}");
                     last_error = Some(msg);
                 }
-                tokio::time::sleep(Duration::from_secs(5)).await;
+                // No tray to surface this — wait for a device event before
+                // retrying, so a broken file doesn't spam logs.
+                let _ = wake_rx.recv().await;
+                drain(&mut wake_rx);
                 continue;
             }
         };
 
         match connect_and_listen_headless(index_override).await {
             Ok(()) => {
-                info!("device disconnected, reconnecting...");
+                info!("device disconnected, awaiting next arrival");
                 last_error = None;
-                retry_delay = MIN_RETRY_DELAY;
             }
             Err(e) => {
                 let msg = e.to_string();
@@ -154,10 +183,11 @@ pub async fn run_listen_only(
                     warn!("error: {e}");
                     last_error = Some(msg);
                 }
-                tokio::time::sleep(retry_delay).await;
-                retry_delay = (retry_delay * 2).min(MAX_RETRY_DELAY);
             }
         }
+
+        let _ = wake_rx.recv().await;
+        drain(&mut wake_rx);
     }
 }
 
@@ -212,6 +242,12 @@ async fn connect_device(
 }
 
 /// Connect, divert, listen — with tray event proxy.
+///
+/// Returns Ok(true) on shutdown, Ok(false) on disconnect / reload, Err on
+/// connect/divert failure. The listen loop is a single select! with one
+/// arm per event source — there are no timers other than the per-press
+/// rawXY validation watchdog, which exists only while a gesture button is
+/// physically held down.
 async fn connect_and_listen(
     cfg: &Config,
     index_override: Option<DeviceIndex>,
@@ -288,24 +324,32 @@ async fn connect_and_listen(
     // Drain stale events — IOHIDManager fires matching callbacks for
     // already-connected devices on creation. Discard those here so we
     // don't immediately trigger a spurious reconnect.
-    while wake_rx.try_recv().is_ok() {}
-
-    // Keepalive: periodically verify diversion is still set. Catches
-    // silent BLE reconnects where the HID handle stays valid but
-    // the device firmware has reset its volatile diversion state.
-    let keepalive_cid = cfg.all_diverted_cids().next();
-    let mut keepalive = tokio::time::interval(Duration::from_secs(300));
-    keepalive.tick().await; // Consume the immediate first tick.
+    drain(wake_rx);
 
     let mut rx = device.subscribe();
     let mut gestures = GestureTracker::new();
+
+    // rawXY validation deadline. Some(t) means a gesture button is held
+    // and we expect rawXY by time t. Cleared by either the first rawXY
+    // (proof divert is live) or the button release. If it fires, the
+    // firmware almost certainly dropped its volatile rawXY divert and
+    // we re-issue divert on all gesture CIDs.
+    let mut xy_deadline: Option<tokio::time::Instant> = None;
 
     loop {
         tokio::select! {
             result = rx.recv() => {
                 match result {
                     Ok(report) => {
-                        handle_notification(&device, &report, cfg, &mut gestures, proxy);
+                        match handle_notification(&device, &report, cfg, &mut gestures, proxy) {
+                            Some(DeadlineUpdate::Arm) => {
+                                xy_deadline = Some(tokio::time::Instant::now() + XY_VALIDATION_WINDOW);
+                            }
+                            Some(DeadlineUpdate::Clear) => {
+                                xy_deadline = None;
+                            }
+                            None => {}
+                        }
                     }
                     Err(broadcast::error::RecvError::Lagged(n)) => {
                         warn!("dropped {n} notifications");
@@ -328,22 +372,25 @@ async fn connect_and_listen(
                 }
             }
             _ = wake_rx.recv() => {
-                while wake_rx.try_recv().is_ok() {}
+                drain(wake_rx);
                 info!("reconnection trigger (wake/HID), re-diverting buttons");
                 return Ok(false);
             }
-            _ = keepalive.tick(), if keepalive_cid.is_some() => {
-                let cid = keepalive_cid.unwrap();
-                match device.special_key_reporting(ControlId(cid)).await {
-                    Ok(r) if r.is_diverted() => {
-                        debug!("keepalive: CID {cid} still diverted");
-                    }
-                    Ok(_) => {
-                        info!("keepalive: CID {cid} diversion lost, reconnecting");
-                        return Ok(false);
-                    }
-                    Err(e) => {
-                        warn!("keepalive: CID {cid} check failed ({e}), reconnecting");
+            _ = tokio::time::sleep_until(xy_deadline.unwrap_or_else(tokio::time::Instant::now)), if xy_deadline.is_some() => {
+                xy_deadline = None;
+                warn!("rawXY missing for held gesture button — re-diverting");
+                let gesture_cids: Vec<u16> = cfg.gestures.keys().copied().collect();
+                for cid in gesture_cids {
+                    if let Err(e) = device
+                        .special_key_set_reporting(
+                            ControlId(cid),
+                            DIVERT_RAW_XY_FLAGS,
+                            ControlId(0),
+                            0,
+                        )
+                        .await
+                    {
+                        warn!("re-divert CID {cid} failed: {e} — reconnecting");
                         return Ok(false);
                     }
                 }
@@ -409,14 +456,15 @@ fn format_hex(params: &[u8]) -> String {
         .join(" ")
 }
 
-/// Handle notification with gesture tracking and action execution, send events to tray.
+/// Handle a notification: execute any mapped action, update gesture state,
+/// and report what the caller should do with the rawXY validation deadline.
 fn handle_notification(
     device: &hidpp_device::Device,
     report: &LongReport,
     cfg: &Config,
     gestures: &mut GestureTracker,
     proxy: &EventLoopProxy<DaemonEvent>,
-) {
+) -> Option<DeadlineUpdate> {
     let feature_index = report.feature_index();
     let function_id = report.function_id();
     let params = report.params();
@@ -468,17 +516,24 @@ fn handle_notification(
                         }
                     }
                 }
-                return;
+                return Some(DeadlineUpdate::Clear);
             }
 
             // Button(s) pressed.
+            let mut arm = false;
             for &cid in &cids {
                 if cfg.is_gesture_cid(cid) {
                     gestures.button_pressed(cid);
+                    arm = true;
                 } else if let Some(action) = cfg.buttons.get(&cid) {
                     let desc = action_description(action);
                     execute_and_notify(action, &format!("button CID {cid}: {desc}"), proxy);
                 }
+            }
+            if arm {
+                Some(DeadlineUpdate::Arm)
+            } else {
+                None
             }
         }
 
@@ -487,6 +542,7 @@ fn handle_notification(
             let dx = i16::from_be_bytes([params[0], params[1]]);
             let dy = i16::from_be_bytes([params[2], params[3]]);
             gestures.feed_raw_xy(dx, dy);
+            Some(DeadlineUpdate::Clear)
         }
 
         // UnifiedBattery — battery status change (push notification).
@@ -498,6 +554,7 @@ fn handle_notification(
                 percentage,
                 charging,
             });
+            None
         }
 
         _ => {
@@ -506,6 +563,7 @@ fn handle_notification(
                 "unhandled notification: feature=0x{fid:04X} fn={} [{hex}]",
                 function_id.0,
             );
+            None
         }
     }
 }
