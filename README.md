@@ -19,17 +19,16 @@ brew services start hidpp
 
 Grant **Input Monitoring** and **Accessibility** in System Settings → Privacy & Security.
 
-### Manual (macOS)
-
-Download the DMG from [Releases](https://github.com/jlevere/hidpp/releases), drag HID++ to Applications, then:
+### From source (Linux / Windows / macOS)
 
 ```
-xattr -cr /Applications/HID++.app
+cargo install --git https://github.com/jlevere/hidpp --locked \
+  --bins -p hidpp-cli -p hidpp-daemon
 ```
 
-### Linux / Windows
+Tracks `main`. To pin a release, add `--tag vX.Y.Z`.
 
-Download from [Releases](https://github.com/jlevere/hidpp/releases). Linux users: install `udev/99-hidpp.rules` for non-root HID access.
+Linux users: install `udev/99-hidpp.rules` for non-root HID access. Build deps: `libudev-dev`, `libxkbcommon-dev`, `libglib2.0-dev`, `libgtk-3-dev`, `libxdo-dev`.
 
 ## Config
 
@@ -65,15 +64,12 @@ hidpp set dpi 1600
 hidpp export
 ```
 
-## Building
+## Development
 
 ```
-brew install jlevere/tap/hidpp          # from tap
-nix build .#dmg                          # Nix DMG
-cargo build --workspace --exclude hidpp-web  # cargo
+cargo build --workspace --exclude hidpp-web  # native
+nix build .#dmg                              # local macOS DMG
 ```
-
-Linux build deps: `libudev-dev`, `libxkbcommon-dev`, `libglib2.0-dev`, `libgtk-3-dev`, `libxdo-dev`.
 
 ## License
 
